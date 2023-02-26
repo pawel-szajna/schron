@@ -9,9 +9,11 @@ endif()
 
 add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
-add_subdirectory(src/sdlwrapper)
-
 include_directories(src)
+
+add_subdirectory(src/raycaster)
+add_subdirectory(src/sdlwrapper)
+add_subdirectory(src/util)
 
 add_executable(
         schron
@@ -22,4 +24,5 @@ target_link_libraries(
         schron
         PRIVATE
         sdlwrapper
+        raycaster
 )
