@@ -9,5 +9,5 @@ endif()
 
 add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
-add_subdirectory(sprig)
+add_subdirectory(lib/sprig)
 add_subdirectory(src)

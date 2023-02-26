@@ -1,22 +1,22 @@
 add_library(
-        game
-        game.cpp
+        scripting
+        scripting.cpp
 )
 
 target_include_directories(
-        game
-        PRIVATE
+        scripting
+        PUBLIC
         ../../lib/sol2/include
         /usr/include/lua5.3
 )
 
 target_compile_options(
-        game
+        scripting
         PRIVATE
         -Wall -Werror -pedantic -O3
 )
 
 target_link_libraries(
-        game
+        scripting
         PUBLIC
 )

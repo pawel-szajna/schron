@@ -3,6 +3,7 @@
 #include "game_mode.hpp"
 #include "mode_init.hpp"
 #include "mode_main_menu.hpp"
+#include "scripting/scripting.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 #include "util/constants.hpp"
@@ -16,7 +17,8 @@ Game::Game() :
     mainWindow(sdl::make_main_window(800, 600, false)),
     screen(sdl::make_surface(c::renderWidth, c::renderHeight)),
     world(std::make_unique<world::World>()),
-    ui(std::make_unique<ui::UI>(mainWindow))
+    ui(std::make_unique<ui::UI>(mainWindow)),
+    scripting(std::make_unique<scripting::Scripting>(*ui, *world))
 {
     modes.emplace(GameMode::Init, std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>());

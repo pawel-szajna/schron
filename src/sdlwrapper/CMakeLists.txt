@@ -12,7 +12,7 @@ target_compile_options(
 target_include_directories(
         sdlwrapper
         PUBLIC
-        ../../sprig/source
+        ../../lib/sprig/source
 )
 
 target_link_libraries(

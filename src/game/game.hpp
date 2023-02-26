@@ -8,6 +8,11 @@
 #include <memory>
 #include <unordered_map>
 
+namespace scripting
+{
+class Scripting;
+}
+
 namespace ui
 {
 class UI;
@@ -46,6 +51,7 @@ private:
 
     std::unique_ptr<world::World> world;
     std::unique_ptr<ui::UI> ui;
+    std::unique_ptr<scripting::Scripting> scripting;
 
     int noiseLevel{12};
     raycaster::Noise noise{noiseLevel};
