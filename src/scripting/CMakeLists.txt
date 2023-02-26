@@ -1,6 +1,7 @@
 add_library(
         scripting
         scripting.cpp
+        ui_bindings.cpp
 )
 
 target_include_directories(
@@ -19,4 +20,5 @@ target_compile_options(
 target_link_libraries(
         scripting
         PUBLIC
+        lua5.3
 )

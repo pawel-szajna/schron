@@ -1,5 +1,6 @@
 #pragma once
 
+#include "key_handler.hpp"
 #include "object.hpp"
 
 #include <vector>
@@ -18,6 +19,8 @@ public:
     UI(sdl::Surface& target);
 
     void render();
+
+    KeyHandler keyHandler{};
 
 private:
 

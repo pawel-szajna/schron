@@ -20,9 +20,9 @@ Game::Game() :
     ui(std::make_unique<ui::UI>(mainWindow)),
     scripting(std::make_unique<scripting::Scripting>(*ui, *world))
 {
-    modes.emplace(GameMode::Init, std::make_unique<DummyMode>());
-    modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>());
-    modes.emplace(GameMode::Quit, std::make_unique<DummyMode>());
+    modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
+    modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
+    modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");
 }
