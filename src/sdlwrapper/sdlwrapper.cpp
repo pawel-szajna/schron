@@ -151,4 +151,9 @@ bool keyPressed(int key)
 
     return false;
 }
+
+bool quitEvent()
+{
+    return event.type == SDL_QUIT;
+}
 }

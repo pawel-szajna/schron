@@ -96,4 +96,5 @@ void delay(int ms);
 double currentTime();
 void pollEvents();
 bool keyPressed(int key);
+bool quitEvent();
 }
