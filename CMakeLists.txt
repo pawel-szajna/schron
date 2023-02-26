@@ -15,6 +15,7 @@ add_subdirectory(src/game)
 add_subdirectory(src/raycaster)
 add_subdirectory(src/sdlwrapper)
 add_subdirectory(src/util)
+add_subdirectory(src/world)
 
 add_executable(
         schron
@@ -27,4 +28,5 @@ target_link_libraries(
         game
         sdlwrapper
         raycaster
+        world
 )
