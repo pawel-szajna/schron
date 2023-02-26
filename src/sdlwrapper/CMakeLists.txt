@@ -6,7 +6,13 @@ add_library(
 target_compile_options(
         sdlwrapper
         PRIVATE
-        -Wall -Werror -pedantic -O3
+        -Wall -Wno-error -pedantic -O3 # libsprig has conversion warnings :(
+)
+
+target_include_directories(
+        sdlwrapper
+        PUBLIC
+        ../../sprig/source
 )
 
 target_link_libraries(
@@ -14,4 +20,5 @@ target_link_libraries(
         PUBLIC
         SDL
         SDL_ttf
+        sprig
 )

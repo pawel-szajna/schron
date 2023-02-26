@@ -1,16 +1,16 @@
 add_library(
-        raycaster
-        caster.cpp
-        noise.cpp
+        ui
+        object.cpp
+        ui.cpp
 )
 
 target_compile_options(
-        raycaster
+        ui
         PRIVATE
         -Wall -Werror -pedantic -O3
 )
 
 target_link_libraries(
-        raycaster
+        ui
         PUBLIC
 )

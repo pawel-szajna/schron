@@ -11,9 +11,12 @@ add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
 include_directories(src)
 
+add_subdirectory(sprig)
+
 add_subdirectory(src/game)
 add_subdirectory(src/raycaster)
 add_subdirectory(src/sdlwrapper)
+add_subdirectory(src/ui)
 add_subdirectory(src/util)
 add_subdirectory(src/world)
 
@@ -28,5 +31,6 @@ target_link_libraries(
         game
         sdlwrapper
         raycaster
+        ui
         world
 )

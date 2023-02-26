@@ -1,7 +1,6 @@
 #include "sdlwrapper.hpp"
 
-// #include "sprig.h"
-
+#include "sprig.h"
 #include <spdlog/spdlog.h>
 
 namespace sdl
@@ -99,8 +98,7 @@ Surface make_main_window(int width, int height, bool fullScreen)
 
 Surface transform(Surface& surface, int scale)
 {
-    //return Surface(SPG_Transform(*surface, 0, 0, (float)scale, (float)scale, 0));
-    return sdl::make_surface(0, 0);
+    return Surface(SPG_Transform(*surface, 0, 0, (float)scale, (float)scale, 0));
 }
 
 void initialize()

@@ -4,6 +4,7 @@
 #include "mode_init.hpp"
 #include "mode_main_menu.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "ui/ui.hpp"
 #include "util/constants.hpp"
 #include "world/world.hpp"
 
@@ -12,9 +13,10 @@
 namespace game
 {
 Game::Game() :
-    mainWindow((sdl::initialize(), sdl::make_main_window(800, 600, false))),
+    mainWindow(sdl::make_main_window(800, 600, false)),
     screen(sdl::make_surface(c::renderWidth, c::renderHeight)),
-    world(std::make_unique<world::World>())
+    world(std::make_unique<world::World>()),
+    ui(std::make_unique<ui::UI>(mainWindow))
 {
     modes.emplace(GameMode::Init, std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>());
@@ -23,10 +25,7 @@ Game::Game() :
     spdlog::debug("Game initialization complete");
 }
 
-Game::~Game()
-{
-    sdl::teardown();
-}
+Game::~Game() = default;
 
 void Game::start()
 {
@@ -76,7 +75,9 @@ void Game::mainLoop()
             switchMode(*stateChange);
         }
 
+        noise.render(screen);
         screen.draw(mainWindow);
+        ui->render();
         mainWindow.update();
 
         sdl::setTitle(std::format("Schron ({} fps)", (int)(1 / frameTime)));
