@@ -11,18 +11,20 @@ add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 
 include_directories(src)
 
+add_subdirectory(src/game)
 add_subdirectory(src/raycaster)
 add_subdirectory(src/sdlwrapper)
 add_subdirectory(src/util)
 
 add_executable(
         schron
-        main.cpp
+        src/main.cpp
 )
 
 target_link_libraries(
         schron
         PRIVATE
+        game
         sdlwrapper
         raycaster
 )
