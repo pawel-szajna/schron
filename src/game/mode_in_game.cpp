@@ -49,11 +49,13 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     if (keys[SDLK_DOWN]) walkFactor -= 1;
     if (keys[SDLK_UP])   walkFactor += 1;
+    if (keys[SDLK_x]) strafeFactor -= 1;
+    if (keys[SDLK_z]) strafeFactor += 1;
     if (keys[SDLK_RIGHT]) rotationFactor += 1;
     if (keys[SDLK_LEFT])  rotationFactor -= 1;
     if (keys[SDLK_q] || keys[SDLK_ESCAPE]) return GameMode::Quit;
 
-    if (walkFactor != 0)
+    if (walkFactor != 0 or strafeFactor != 0)
     {
         auto movementSpeed = 1.5 * frameTime;
         playerX += movementSpeed * (walkFactor * std::cos(playerAngle) + strafeFactor * std::sin(playerAngle));
