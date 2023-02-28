@@ -166,17 +166,9 @@ void Engine::renderWall(const world::Sector& sector,
         }
     }
 
-    if (wall.neighbour.has_value())
+    if (wall.neighbour.has_value() and sectors.front().renderDepth > 0)
     {
-        if (sectors.front().renderDepth > 0)
-        {
-            spdlog::debug("Adding neighbour {} to queue", *wall.neighbour);
-            sectors.push({*wall.neighbour, beginX, endX, sectors.front().renderDepth - 1});
-        }
-        else
-        {
-            spdlog::debug("Neighbour {} skipped, depth exceeded", *wall.neighbour);
-        }
+        sectors.push({*wall.neighbour, beginX, endX, sectors.front().renderDepth - 1});
     }
 }
 
