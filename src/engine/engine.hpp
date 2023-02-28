@@ -32,7 +32,7 @@ class Engine
     struct QueuedSector
     {
         int id;
-        int xLeft{}, xRight{};
+        int leftXBoundary{}, rightXBoundary{};
         int renderDepth{0};
     };
 

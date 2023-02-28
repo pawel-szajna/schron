@@ -60,15 +60,15 @@ void Engine::renderWall(const world::Sector& sector,
                         const world::Wall& wall,
                         double playerX, double playerY, double playerZ, double playerAngle)
 {
-    auto wallX1 = wall.xStart - playerX;
-    auto wallX2 = wall.xEnd - playerX;
-    auto wallY1 = wall.yStart - playerY;
-    auto wallY2 = wall.yEnd - playerY;
+    auto wallStartX = wall.xStart - playerX;
+    auto wallStartY = wall.yStart - playerY;
+    auto wallEndX = wall.xEnd - playerX;
+    auto wallEndY = wall.yEnd - playerY;
 
-    double transformedX1 = wallX1 * std::sin(playerAngle) - wallY1 * std::cos(playerAngle);
-    double transformedX2 = wallX2 * std::sin(playerAngle) - wallY2 * std::cos(playerAngle);
-    double transformedZ1 = wallX1 * std::cos(playerAngle) + wallY1 * std::sin(playerAngle);
-    double transformedZ2 = wallX2 * std::cos(playerAngle) + wallY2 * std::sin(playerAngle);
+    auto transformedX1 = wallStartX * std::sin(playerAngle) - wallStartY * std::cos(playerAngle);
+    auto transformedX2 = wallEndX * std::sin(playerAngle) - wallEndY * std::cos(playerAngle);
+    auto transformedZ1 = wallStartX * std::cos(playerAngle) + wallStartY * std::sin(playerAngle);
+    auto transformedZ2 = wallEndX * std::cos(playerAngle) + wallEndY * std::sin(playerAngle);
 
     if (transformedZ1 <= 0 and transformedZ2 <= 0)
     {
@@ -77,7 +77,7 @@ void Engine::renderWall(const world::Sector& sector,
 
     if (transformedZ1 <= 0 or transformedZ2 <= 0)
     {
-        double nearZ = 1e-4, farZ = 5, nearSide = 1e-5, farSide = 20.0;
+        auto nearZ = 1e-4, farZ = 5.0, nearSide = 1e-5, farSide = 20.0;
 
         auto [i1x, i1y] = intersect(transformedX1, transformedZ1, transformedX2, transformedZ2, -nearSide, nearZ, -farSide, farZ);
         auto [i2x, i2y] = intersect(transformedX1, transformedZ1, transformedX2, transformedZ2, nearSide, nearZ, farSide, farZ);
@@ -103,10 +103,10 @@ void Engine::renderWall(const world::Sector& sector,
     double scaleX2 = fovH / transformedZ2;
     double scaleY2 = fovV / transformedZ2;
 
-    int x1 = c::renderWidth / 2 - (int)(transformedX1 * scaleX1);
-    int x2 = c::renderWidth / 2 - (int)(transformedX2 * scaleX2);
+    int leftX  = c::renderWidth / 2 - (int)(transformedX1 * scaleX1);
+    int rightX = c::renderWidth / 2 - (int)(transformedX2 * scaleX2);
 
-    if (x1 >= x2 or x2 < sectors.front().xLeft or x1 > sectors.front().xRight)
+    if (leftX >= rightX or rightX < sectors.front().leftXBoundary or leftX > sectors.front().rightXBoundary)
     {
         return;
     }
@@ -124,23 +124,23 @@ void Engine::renderWall(const world::Sector& sector,
         neighbourFloorY = neighbourSector.floor - playerZ;
     }
 
-    int y1a = c::renderHeight / 2 - (int)(ceilingY * scaleY1);
-    int y1b = c::renderHeight / 2 - (int)(floorY * scaleY1);
-    int y2a = c::renderHeight / 2 - (int)(ceilingY * scaleY2);
-    int y2b = c::renderHeight / 2 - (int)(floorY * scaleY2);
+    int leftYTop     = c::renderHeight / 2 - (int)(ceilingY * scaleY1);
+    int leftYBottom  = c::renderHeight / 2 - (int)(floorY * scaleY1);
+    int rightYTop    = c::renderHeight / 2 - (int)(ceilingY * scaleY2);
+    int rightYBottom = c::renderHeight / 2 - (int)(floorY * scaleY2);
 
-    int ny1a = c::renderHeight / 2 - (int)(neighbourCeilingY * scaleY1);
-    int ny1b = c::renderHeight / 2 - (int)(neighbourFloorY * scaleY1);
-    int ny2a = c::renderHeight / 2 - (int)(neighbourCeilingY * scaleY2);
-    int ny2b = c::renderHeight / 2 - (int)(neighbourFloorY * scaleY2);
+    int neighbourLeftYTop     = c::renderHeight / 2 - (int)(neighbourCeilingY * scaleY1);
+    int neighbourLeftYBottom  = c::renderHeight / 2 - (int)(neighbourFloorY * scaleY1);
+    int neighbourRightYTop    = c::renderHeight / 2 - (int)(neighbourCeilingY * scaleY2);
+    int neighbourRightYBottom = c::renderHeight / 2 - (int)(neighbourFloorY * scaleY2);
 
-    int beginX = std::max(x1, sectors.front().xLeft);
-    int endX   = std::min(x2, sectors.front().xRight);
+    int beginX = std::max(leftX, sectors.front().leftXBoundary);
+    int endX   = std::min(rightX, sectors.front().rightXBoundary);
 
     for (int x = beginX; x <= endX; ++x)
     {
-        int wallTop    = std::clamp((x - x1) * (y2a - y1a) / (x2 - x1) + y1a, limitTop[x], limitBottom[x]);
-        int wallBottom = std::clamp((x - x1) * (y2b - y1b) / (x2 - x1) + y1b, limitTop[x], limitBottom[x]);
+        int wallTop    = std::clamp((x - leftX) * (rightYTop - leftYTop) / (rightX - leftX) + leftYTop, limitTop[x], limitBottom[x]);
+        int wallBottom = std::clamp((x - leftX) * (rightYBottom - leftYBottom) / (rightX - leftX) + leftYBottom, limitTop[x], limitBottom[x]);
 
         constexpr static auto colorWall    = gray(0x99);
         constexpr static auto colorCeiling = color(0xaa, 0x88, 0x88);
@@ -151,11 +151,13 @@ void Engine::renderWall(const world::Sector& sector,
 
         if (wall.neighbour.has_value())
         {
-            int neighbourTop    = std::clamp((x - x1) * (ny2a - ny1a) / (x2 - x1) + ny1a, limitTop[x], limitBottom[x]);
-            int neighbourBottom = std::clamp((x - x1) * (ny2b - ny1b) / (x2 - x1) + ny1b, limitTop[x], limitBottom[x]);
+            int neighbourTop    = std::clamp((x - leftX) * (neighbourRightYTop - neighbourLeftYTop) / (rightX - leftX) + neighbourLeftYTop,
+                                             limitTop[x], limitBottom[x]);
+            int neighbourBottom = std::clamp((x - leftX) * (neighbourRightYBottom - neighbourLeftYBottom) / (rightX - leftX) + neighbourLeftYBottom,
+                                             limitTop[x], limitBottom[x]);
 
-            line(x, wallTop,             neighbourTop - 1, x == x1 || x == x2 ? 0 : colorWall);
-            line(x, neighbourBottom + 1, wallBottom,       x == x1 || x == x2 ? 0 : colorWall);
+            line(x, wallTop,             neighbourTop - 1, x == leftX || x == rightX ? 0 : colorWall);
+            line(x, neighbourBottom + 1, wallBottom, x == leftX || x == rightX ? 0 : colorWall);
 
             limitTop[x]    = std::clamp(std::max(wallTop, neighbourTop), limitTop[x], c::renderHeight - 1);
             limitBottom[x] = std::clamp(std::min(wallBottom, neighbourBottom), 0, limitBottom[x]);
