@@ -4,7 +4,7 @@
 
 #include <functional>
 
-namespace raycaster
+namespace engine
 {
 class Noise
 {

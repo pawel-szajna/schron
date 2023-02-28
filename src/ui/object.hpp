@@ -11,11 +11,13 @@ class Object
 public:
 
     Object(int id, int x, int y);
+    virtual ~Object() = default;
+
+    virtual void render(sdl::Surface& target, SDL_Rect coords) = 0;
 
 private:
 
     int id;
     int x, y;
-    sdl::Surface surface;
 };
 }

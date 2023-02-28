@@ -1,6 +1,6 @@
 #include "noise.hpp"
 
-namespace raycaster
+namespace engine
 {
 Noise::Noise(int& level) :
     level(level),

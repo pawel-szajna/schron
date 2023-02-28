@@ -1,7 +1,7 @@
 include_directories(.)
 
+add_subdirectory(engine)
 add_subdirectory(game)
-add_subdirectory(raycaster)
 add_subdirectory(scripting)
 add_subdirectory(sdlwrapper)
 add_subdirectory(ui)
@@ -17,7 +17,7 @@ target_link_libraries(
         schron
         PRIVATE
         game
-        raycaster
+        engine
         scripting
         sdlwrapper
         ui

@@ -1,6 +1,7 @@
 #include "game.hpp"
 
 #include "game_mode.hpp"
+#include "mode_in_game.hpp"
 #include "mode_init.hpp"
 #include "mode_main_menu.hpp"
 #include "scripting/scripting.hpp"
@@ -14,7 +15,7 @@
 namespace game
 {
 Game::Game() :
-    mainWindow(sdl::make_main_window(800, 600, false)),
+    mainWindow(sdl::make_main_window(1024, 768, false)),
     screen(sdl::make_surface(c::renderWidth, c::renderHeight)),
     world(std::make_unique<world::World>()),
     ui(std::make_unique<ui::UI>(mainWindow)),
@@ -22,6 +23,7 @@ Game::Game() :
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
+    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, screen));
     modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");
@@ -31,7 +33,7 @@ Game::~Game() = default;
 
 void Game::start()
 {
-    switchMode(GameMode::MainMenu);
+    switchMode(GameMode::InGame);
     mainLoop();
 }
 

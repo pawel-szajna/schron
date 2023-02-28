@@ -1,6 +1,5 @@
 add_library(
         world
-        field.cpp
         level.cpp
         world.cpp
 )

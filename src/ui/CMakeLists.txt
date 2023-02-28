@@ -1,5 +1,6 @@
 add_library(
         ui
+        editor/editor.cpp
         key_handler.cpp
         object.cpp
         ui.cpp

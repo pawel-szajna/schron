@@ -2,6 +2,7 @@ add_library(
         game
         game.cpp
         mode_main_menu.cpp
+        mode_in_game.cpp
 )
 
 target_include_directories(

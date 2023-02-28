@@ -1,6 +1,7 @@
 #include "mode_main_menu.hpp"
 
 #include "scripting/scripting.hpp"
+#include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 
 namespace game

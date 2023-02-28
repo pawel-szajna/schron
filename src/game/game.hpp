@@ -1,8 +1,8 @@
 #pragma once
 
+#include "engine/noise.hpp"
 #include "game_mode.hpp"
 #include "mode_executor.hpp"
-#include "raycaster/noise.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 
 #include <memory>
@@ -53,7 +53,7 @@ private:
     std::unique_ptr<ui::UI> ui;
     std::unique_ptr<scripting::Scripting> scripting;
 
-    int noiseLevel{12};
-    raycaster::Noise noise{noiseLevel};
+    int noiseLevel{13};
+    engine::Noise noise{noiseLevel};
 };
 }
