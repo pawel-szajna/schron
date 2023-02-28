@@ -8,6 +8,7 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 #include "util/constants.hpp"
+#include "util/format.hpp"
 #include "world/world.hpp"
 
 #include <spdlog/spdlog.h>

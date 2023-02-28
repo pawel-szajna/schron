@@ -8,14 +8,16 @@
 
 namespace world
 {
-struct Wall
+class Wall
 {
+public:
     double xStart, yStart, xEnd, yEnd;
     std::optional<int> neighbour{std::nullopt};
 };
 
-struct Sector
+class Sector
 {
+public:
     int id{};
     std::vector<Wall> walls{};
     double ceiling{1.0};

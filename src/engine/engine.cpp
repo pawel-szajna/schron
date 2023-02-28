@@ -24,12 +24,6 @@ constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, 
     auto m = cross(x1 - x2, y1 - y2, x3 - x4, y3 - y4);
     return std::make_pair(cross(c1, x1 - x2, c2, x3 - x4) / m, cross(c1, y1 - y2, c2, y3 - y4) / m);
 };
-
-namespace tile
-{
-constexpr auto type(int tile) { return tile % 16; }
-constexpr auto texture(int tile) { return (tile / 16) % 16; }
-}
 }
 
 Engine::Engine(world::Level& level) :
@@ -148,8 +142,8 @@ void Engine::renderWall(const world::Sector& sector,
         int wallTop    = std::clamp((x - x1) * (y2a - y1a) / (x2 - x1) + y1a, limitTop[x], limitBottom[x]);
         int wallBottom = std::clamp((x - x1) * (y2b - y1b) / (x2 - x1) + y1b, limitTop[x], limitBottom[x]);
 
+        constexpr static auto colorWall    = gray(0x99);
         constexpr static auto colorCeiling = color(0xaa, 0x88, 0x88);
-        constexpr static auto colorWall    = color(0x99, 0x99, 0x99);
         constexpr static auto colorFloor   = color(0x88, 0xaa, 0x88);
 
         line(x, limitTop[x], wallTop, colorCeiling);

@@ -3,6 +3,8 @@
 
 #include "game/game.hpp"
 
+#undef main
+
 int main()
 {
     spdlog::set_level(spdlog::level::debug);

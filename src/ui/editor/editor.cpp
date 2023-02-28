@@ -46,7 +46,10 @@ void Editor::render(sdl::Surface& target, SDL_Rect coords)
         SDL_FillRect(*surface, &pos, west ? 0x88777777 : 0x88555555);
     };
 */
-    //for (auto& [_, sector] : level.map)
+    for (auto& [_, sector] : level.map)
+    {
+        (void)sector;
+    }
 //    {
 //        rect(scale * sector.x1 - mapX,
 //             scale * sector.y1 - mapY,

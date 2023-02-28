@@ -30,10 +30,10 @@ private:
 
     sol::state lua;
 
-    std::unique_ptr<UiBindings> uiBindings;
+    [[maybe_unused]] std::unique_ptr<UiBindings> uiBindings;
 
-    ui::UI& ui;
-    world::World& world;
+    [[maybe_unused]] ui::UI& ui;
+    [[maybe_unused]] world::World& world;
 
 };
 }

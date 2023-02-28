@@ -28,6 +28,6 @@ public:
 public: // TODO private
 
     sdl::Surface& target;
-    std::vector<std::unique_ptr<Object>> objects{};
+    std::vector<std::unique_ptr<Object>> objects;
 };
 }
