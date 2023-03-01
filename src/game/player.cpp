@@ -33,12 +33,18 @@ void Player::handleMovement(double walk, double strafe, double rotate, const wor
         return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
     };
 
+    const auto& sector = level.sector(position.sector);
+    auto targetZ = sector.floor + 0.6;
+    if (position.z != targetZ)
+    {
+        position.z = std::clamp(targetZ, position.z - 0.05, position.z + 0.1);
+    }
+
     if (walk != 0 or strafe != 0)
     {
         auto deltaX = walk * std::cos(position.angle) + strafe * std::sin(position.angle);
         auto deltaY = walk * std::sin(position.angle) - strafe * std::cos(position.angle);
 
-        const auto& sector = level.sector(position.sector);
         for (const auto& wall : sector.walls)
         {
             if (intersect(position.x, position.y, position.x + deltaX, position.y + deltaY,
