@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mode_executor.hpp"
+#include "player.hpp"
 
 #include <memory>
 
@@ -44,10 +45,7 @@ public:
 
 private:
 
-    double playerX = 0.0;
-    double playerY = 0.0;
-    double playerZ = 0.5;
-    double playerAngle = 0.0;
+    Player player{};
 
     std::unique_ptr<engine::Engine> engine{};
     std::unique_ptr<ui::editor::Editor> editor{};

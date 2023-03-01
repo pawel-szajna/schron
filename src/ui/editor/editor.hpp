@@ -15,7 +15,7 @@ class Editor : public Object
 {
 public:
 
-    Editor(world::Level& level, double& playerX, double& playerY);
+    Editor(world::Level& level, const double& playerX, const double& playerY);
     virtual ~Editor();
 
     void render(sdl::Surface &target, SDL_Rect coords) override;
@@ -23,8 +23,8 @@ public:
 private:
 
     double mapX{-256}, mapY{-192};
-    double& playerX;
-    double& playerY;
+    const double& playerX;
+    const double& playerY;
 
     world::Level& level;
     sdl::Surface surface;

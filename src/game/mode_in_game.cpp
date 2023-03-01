@@ -25,7 +25,7 @@ void ModeInGame::entry()
     auto& level = world.level(1);
 
     engine = std::make_unique<engine::Engine>(level);
-    editor = std::make_unique<ui::editor::Editor>(level, playerX, playerY);
+    editor = std::make_unique<ui::editor::Editor>(level, player.getPosition().x, player.getPosition().y);
     ui.objects.push_back(std::move(editor));
 }
 
@@ -55,19 +55,9 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     if (keys[SDLK_LEFT])  rotationFactor -= 1;
     if (keys[SDLK_q] || keys[SDLK_ESCAPE]) return GameMode::Quit;
 
-    if (walkFactor != 0 or strafeFactor != 0)
-    {
-        auto movementSpeed = 1.5 * frameTime;
-        playerX += movementSpeed * (walkFactor * std::cos(playerAngle) + strafeFactor * std::sin(playerAngle));
-        playerY += movementSpeed * (walkFactor * std::sin(playerAngle) - strafeFactor * std::cos(playerAngle));
-    }
+    player.handleMovement(walkFactor * frameTime, strafeFactor * frameTime, rotationFactor * frameTime, world.level(1));
 
-    if (rotationFactor != 0)
-    {
-        playerAngle += rotationFactor * frameTime * 2.0;
-    }
-
-    engine->frame(playerX, playerY, playerZ, playerAngle);
+    engine->frame(player.getPosition());
     engine->draw(target);
 
     return noChange;

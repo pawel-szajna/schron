@@ -21,7 +21,7 @@ public:
     Level(int width, int height, std::string name);
 
     void put(Sector&& sector);
-    const Sector& sector(int id) { return map.at(id); }
+    const Sector& sector(int id) const { return map.at(id); }
 
 private:
     int width;

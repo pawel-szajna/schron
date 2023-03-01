@@ -2,13 +2,17 @@
 
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "util/constants.hpp"
-#include "util/position.hpp"
 
 #include <array>
 #include <cstdint>
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+
+namespace game
+{
+struct Position;
+}
 
 namespace sdl
 {
@@ -29,33 +33,33 @@ constexpr auto TEXTURE_HEIGHT{120};
 
 class Engine
 {
-    struct QueuedSector
+    struct SectorRenderParams
     {
         int id;
-        int leftXBoundary{}, rightXBoundary{};
-        int renderDepth{0};
+        int leftXBoundary, rightXBoundary;
+        int depth{0};
+        double offsetX{0}, offsetY{0}, offsetZ{0}, offsetAngle{0};
     };
 
 public:
 
     Engine(world::Level& level);
 
-    void frame(double playerX, double playerY, double playerZ, double playerAngle);
+    void frame(const game::Position& player);
     void draw(sdl::Surface& target);
 
 private:
 
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
-                    double playerX, double playerY, double playerZ, double playerAngle);
+                    const game::Position& player);
     void line(int x, int yStart, int yEnd, int color);
     void flushBuffer();
 
     std::unordered_map<int, std::array<Uint32, TEXTURE_WIDTH * TEXTURE_HEIGHT>> textures;
     std::array<std::array<uint32_t, c::renderHeight>, c::renderWidth> buffer{};
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
-    std::queue<QueuedSector> sectors{};
-    std::unordered_set<int> rendered{};
+    std::queue<SectorRenderParams> renderQueue{};
 
     sdl::Surface view;
     world::Level& level;

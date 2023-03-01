@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-#include "util/position.hpp"
+#include "game/player.hpp"
 #include "world/level.hpp"
 #include "world/sector.hpp"
 
@@ -33,24 +33,28 @@ Engine::Engine(world::Level& level) :
     spdlog::info("Initializing engine");
 }
 
-void Engine::frame(double playerX, double playerY, double playerZ, double playerAngle)
+void Engine::frame(const game::Position& player)
 {
+    constexpr static auto renderStart = 0;
+    constexpr static auto renderEnd = c::renderWidth - 1;
+    constexpr static auto initialDepth = 4;
+
     limitTop.fill(0);
     limitBottom.fill(c::renderHeight - 1);
-    sectors.push({1, 0, c::renderWidth - 1, 4});
-    rendered.clear();
 
-    while (not sectors.empty())
+    renderQueue.push(SectorRenderParams{player.sector, renderStart, renderEnd, initialDepth});
+
+    while (not renderQueue.empty())
     {
-        auto id = sectors.front().id;
+        auto id = renderQueue.front().id;
 
         const world::Sector& sector = level.sector(id);
-        for (const auto& wall: sector.walls)
+        for (const auto& wall : sector.walls)
         {
-            renderWall(sector, wall, playerX, playerY, playerZ, playerAngle);
+            renderWall(sector, wall, player);
         }
 
-        sectors.pop();
+        renderQueue.pop();
     }
 
     flushBuffer();
@@ -58,70 +62,81 @@ void Engine::frame(double playerX, double playerY, double playerZ, double player
 
 void Engine::renderWall(const world::Sector& sector,
                         const world::Wall& wall,
-                        double playerX, double playerY, double playerZ, double playerAngle)
+                        const game::Position& player)
 {
-    auto wallStartX = wall.xStart - playerX;
-    auto wallStartY = wall.yStart - playerY;
-    auto wallEndX = wall.xEnd - playerX;
-    auto wallEndY = wall.yEnd - playerY;
+    const auto& renderParameters = renderQueue.front();
 
-    auto transformedX1 = wallStartX * std::sin(playerAngle) - wallStartY * std::cos(playerAngle);
-    auto transformedX2 = wallEndX * std::sin(playerAngle) - wallEndY * std::cos(playerAngle);
-    auto transformedZ1 = wallStartX * std::cos(playerAngle) + wallStartY * std::sin(playerAngle);
-    auto transformedZ2 = wallEndX * std::cos(playerAngle) + wallEndY * std::sin(playerAngle);
+    auto wallStartX = wall.xStart - player.x - renderParameters.offsetX;
+    auto wallStartY = wall.yStart - player.y - renderParameters.offsetY;
+    auto wallEndX = wall.xEnd - player.x - renderParameters.offsetX;
+    auto wallEndY = wall.yEnd - player.y - renderParameters.offsetY;
 
-    if (transformedZ1 <= 0 and transformedZ2 <= 0)
+    auto renderedAngle = player.angle - renderParameters.offsetAngle;
+
+    auto transformedLeftX  = wallStartX * std::sin(renderedAngle) - wallStartY * std::cos(renderedAngle);
+    auto transformedRightX =   wallEndX * std::sin(renderedAngle) -   wallEndY * std::cos(renderedAngle);
+    auto transformedLeftZ  = wallStartX * std::cos(renderedAngle) + wallStartY * std::sin(renderedAngle);
+    auto transformedRightZ =   wallEndX * std::cos(renderedAngle) +   wallEndY * std::sin(renderedAngle);
+
+    if (transformedLeftZ <= 0 and transformedRightZ <= 0)
     {
         return;
     }
 
-    if (transformedZ1 <= 0 or transformedZ2 <= 0)
+    if (transformedLeftZ <= 0 or transformedRightZ <= 0)
     {
         auto nearZ = 1e-4, farZ = 5.0, nearSide = 1e-5, farSide = 20.0;
 
-        auto [i1x, i1y] = intersect(transformedX1, transformedZ1, transformedX2, transformedZ2, -nearSide, nearZ, -farSide, farZ);
-        auto [i2x, i2y] = intersect(transformedX1, transformedZ1, transformedX2, transformedZ2, nearSide, nearZ, farSide, farZ);
+        auto [i1x, i1y] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
+                                    -nearSide, nearZ, -farSide, farZ);
+        auto [i2x, i2y] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
+                                    nearSide, nearZ, farSide, farZ);
 
-        if (transformedZ1 < nearZ)
+        if (transformedLeftZ < nearZ)
         {
-            transformedX1 = i1y > 0 ? i1x : i2x;
-            transformedZ1 = i1y > 0 ? i1y : i2y;
+            transformedLeftX = i1y > 0 ? i1x : i2x;
+            transformedLeftZ = i1y > 0 ? i1y : i2y;
         }
 
-        if (transformedZ2 < nearZ)
+        if (transformedRightZ < nearZ)
         {
-            transformedX2 = i1y > 0 ? i1x : i2x;
-            transformedZ2 = i1y > 0 ? i1y : i2y;
+            transformedRightX = i1y > 0 ? i1x : i2x;
+            transformedRightZ = i1y > 0 ? i1y : i2y;
         }
     }
 
     constexpr static double fovH = c::renderHeight * 0.73;
     constexpr static double fovV = c::renderWidth * 0.2;
 
-    double scaleX1 = fovH / transformedZ1;
-    double scaleY1 = fovV / transformedZ1;
-    double scaleX2 = fovH / transformedZ2;
-    double scaleY2 = fovV / transformedZ2;
+    double scaleX1 = fovH / transformedLeftZ;
+    double scaleY1 = fovV / transformedLeftZ;
+    double scaleX2 = fovH / transformedRightZ;
+    double scaleY2 = fovV / transformedRightZ;
 
-    int leftX  = c::renderWidth / 2 - (int)(transformedX1 * scaleX1);
-    int rightX = c::renderWidth / 2 - (int)(transformedX2 * scaleX2);
+    int leftX  = c::renderWidth / 2 - (int)(transformedLeftX * scaleX1);
+    int rightX = c::renderWidth / 2 - (int)(transformedRightX * scaleX2);
 
-    if (leftX >= rightX or rightX < sectors.front().leftXBoundary or leftX > sectors.front().rightXBoundary)
+    if (leftX >= rightX or rightX < renderParameters.leftXBoundary or leftX > renderParameters.rightXBoundary)
     {
         return;
     }
 
-    double ceilingY = sector.ceiling - playerZ;
-    double floorY = sector.floor - playerZ;
+    double ceilingY = sector.ceiling - player.z - renderParameters.offsetZ;
+    double floorY   = sector.floor   - player.z - renderParameters.offsetZ;
 
-    double neighbourCeilingY = 0.0;
-    double neighbourFloorY = 0.0;
+    double neighbourCeilingY = renderParameters.offsetZ;
+    double neighbourFloorY = renderParameters.offsetZ;
 
-    if (wall.neighbour.has_value())
+    if (wall.portal.has_value())
     {
-        const auto& neighbourSector = level.sector(*wall.neighbour);
-        neighbourCeilingY = neighbourSector.ceiling - playerZ;
-        neighbourFloorY = neighbourSector.floor - playerZ;
+        const auto& neighbourSector = level.sector(wall.portal->sector);
+        neighbourCeilingY = neighbourSector.ceiling - player.z;
+        neighbourFloorY = neighbourSector.floor - player.z;
+        if (wall.portal->transform.has_value())
+        {
+            neighbourCeilingY -= wall.portal->transform->z;
+            neighbourFloorY -= wall.portal->transform->z;
+        }
     }
 
     int leftYTop     = c::renderHeight / 2 - (int)(ceilingY * scaleY1);
@@ -134,8 +149,8 @@ void Engine::renderWall(const world::Sector& sector,
     int neighbourRightYTop    = c::renderHeight / 2 - (int)(neighbourCeilingY * scaleY2);
     int neighbourRightYBottom = c::renderHeight / 2 - (int)(neighbourFloorY * scaleY2);
 
-    int beginX = std::max(leftX, sectors.front().leftXBoundary);
-    int endX   = std::min(rightX, sectors.front().rightXBoundary);
+    int beginX = std::max(leftX, renderParameters.leftXBoundary);
+    int endX   = std::min(rightX, renderParameters.rightXBoundary);
 
     for (int x = beginX; x <= endX; ++x)
     {
@@ -149,7 +164,7 @@ void Engine::renderWall(const world::Sector& sector,
         line(x, limitTop[x], wallTop, colorCeiling);
         line(x, wallBottom, limitBottom[x], colorFloor);
 
-        if (wall.neighbour.has_value())
+        if (wall.portal.has_value())
         {
             int neighbourTop    = std::clamp((x - leftX) * (neighbourRightYTop - neighbourLeftYTop) / (rightX - leftX) + neighbourLeftYTop,
                                              limitTop[x], limitBottom[x]);
@@ -168,9 +183,30 @@ void Engine::renderWall(const world::Sector& sector,
         }
     }
 
-    if (wall.neighbour.has_value() and sectors.front().renderDepth > 0)
+    auto currentRenderDepth = renderParameters.depth;
+    if (wall.portal.has_value() and currentRenderDepth > 0)
     {
-        sectors.push({*wall.neighbour, beginX, endX, sectors.front().renderDepth - 1});
+        if (wall.portal->transform.has_value())
+        {
+            const auto& transform = *wall.portal->transform;
+            renderQueue.push(SectorRenderParams{wall.portal->sector,
+                                                beginX, endX,
+                                                currentRenderDepth - 1,
+                                                renderParameters.offsetX + transform.x,
+                                                renderParameters.offsetY + transform.y,
+                                                renderParameters.offsetZ + transform.z,
+                                                renderParameters.offsetAngle + transform.angle});
+        }
+        else
+        {
+            renderQueue.push(SectorRenderParams{wall.portal->sector,
+                                                beginX, endX,
+                                                currentRenderDepth - 1,
+                                                renderParameters.offsetX,
+                                                renderParameters.offsetY,
+                                                renderParameters.offsetZ,
+                                                renderParameters.offsetAngle});
+        }
     }
 }
 

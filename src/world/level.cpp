@@ -1,5 +1,6 @@
 #include "level.hpp"
 
+#include <numbers>
 #include <spdlog/spdlog.h>
 
 namespace world
@@ -13,14 +14,18 @@ Level::Level(int width,
 {
     spdlog::debug("Creating level {}", this->name);
 
+    // constexpr static auto deg90 = 90.0 * std::numbers::pi / 180.0;
+
     put(PolygonalSectorBuilder(-2, -2)
             .withId(1)
             .withCeiling(1.5)
             .withFloor(0.0)
             .withWall(3, -2)
             .withWall(3, -1)
-            .withWall(3, 2, 2)
+            .withWall(3, 2, Wall::Portal{2})
             .withWall(-2, 2)
+            .withWall(-3, 1)
+            .withWall(-3, -1, Wall::Portal{3, Wall::Portal::Transformation{8, 3, -0.5, 0}})
             .withWall(-2, -2)
             .build());
     put(RectangularSectorBuilder()
@@ -38,19 +43,15 @@ Level::Level(int width,
             .withFloor(-0.5)
             .withNorthNeighbour(2, 3, 2, 5, 2)
             .build());
+    map.at(3).walls.at(1).portal = Wall::Portal{1, Wall::Portal::Transformation{-8, -3, 0.5, 0}};
 }
 
 void Level::put(Sector&& sector)
 {
-    spdlog::info("NEW SECTOR id = {}", sector.id);
-    for (const auto& wall : sector.walls)
-    {
-        spdlog::debug("[{},{}] - [{},{}] -> {}", wall.xStart, wall.yStart, wall.xEnd, wall.yEnd, wall.neighbour.has_value() ? *wall.neighbour : -1);
-    }
     if (map.contains(sector.id))
     {
         spdlog::warn("Duplicate sector {}", sector.id);
     }
-    map.emplace(sector.id, sector);
+    map.emplace(sector.id, std::move(sector));
 }
 }
