@@ -124,14 +124,14 @@ void Engine::renderWall(const world::Sector& sector,
     double ceilingY = sector.ceiling - player.z - renderParameters.offsetZ;
     double floorY   = sector.floor   - player.z - renderParameters.offsetZ;
 
-    double neighbourCeilingY = renderParameters.offsetZ;
-    double neighbourFloorY = renderParameters.offsetZ;
+    double neighbourCeilingY = -renderParameters.offsetZ;
+    double neighbourFloorY   = -renderParameters.offsetZ;
 
     if (wall.portal.has_value())
     {
         const auto& neighbourSector = level.sector(wall.portal->sector);
-        neighbourCeilingY = neighbourSector.ceiling - player.z;
-        neighbourFloorY = neighbourSector.floor - player.z;
+        neighbourCeilingY += neighbourSector.ceiling - player.z;
+        neighbourFloorY   += neighbourSector.floor - player.z;
         if (wall.portal->transform.has_value())
         {
             neighbourCeilingY -= wall.portal->transform->z;
