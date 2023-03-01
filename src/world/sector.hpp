@@ -24,6 +24,33 @@ public:
     double floor{0.0};
 };
 
+struct PolygonalSectorBuilder
+{
+    PolygonalSectorBuilder(double x1, double y1) : lastX(x1), lastY(y1) {}
+    auto withId(int id) -> decltype(*this)& { sid = id; return *this; }
+    auto withCeiling(double ceiling) -> decltype(*this)& { sceiling = ceiling; return *this; }
+    auto withFloor(double floor) -> decltype(*this)& { sfloor = floor; return *this; }
+    auto withWall(double x, double y, std::optional<int> neighbour = std::nullopt) -> decltype(*this)&
+    {
+        walls.push_back(Wall{lastX, lastY, x, y, neighbour});
+        lastX = x;
+        lastY = y;
+        return *this;
+    }
+
+    auto build() -> Sector
+    {
+        return Sector{sid, std::move(walls), sceiling, sfloor};
+    }
+
+private:
+
+    int sid{};
+    std::vector<Wall> walls{};
+    double sceiling{}, sfloor{};
+    double lastX, lastY;
+};
+
 struct RectangularSectorBuilder
 {
     struct NeighbourParams { double x1, y1, x2, y2; int id; };

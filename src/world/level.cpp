@@ -13,21 +13,16 @@ Level::Level(int width,
 {
     spdlog::debug("Creating level {}", this->name);
 
-    auto x = RectangularSectorBuilder()
+    put(PolygonalSectorBuilder(-2, -2)
             .withId(1)
-            .withDimensions(-2, -2, 3, 2)
             .withCeiling(1.5)
             .withFloor(0.0)
-            .withEastNeighbour(2, 3, -1, 3, 2)
-            .build();
-    x.walls[x.walls.size() - 1].xEnd -= 1;
-    x.walls[x.walls.size() - 1].yEnd += 1;
-    x.walls.push_back(Wall{x.walls[x.walls.size() - 1].xEnd,
-                           x.walls[x.walls.size() - 1].yEnd,
-                           x.walls[0].xStart,
-                           x.walls[0].yStart,
-                           std::nullopt});
-    put(std::move(x));
+            .withWall(3, -2)
+            .withWall(3, -1)
+            .withWall(3, 2, 2)
+            .withWall(-2, 2)
+            .withWall(-2, -2)
+            .build());
     put(RectangularSectorBuilder()
             .withId(2)
             .withDimensions(3, -1, 5, 2)
