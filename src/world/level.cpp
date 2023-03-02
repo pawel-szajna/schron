@@ -1,5 +1,7 @@
 #include "level.hpp"
 
+#include "builders.hpp"
+
 #include <numbers>
 #include <spdlog/spdlog.h>
 

@@ -1,5 +1,6 @@
 add_library(
         world
+        builders.cpp
         level.cpp
         world.cpp
 )
