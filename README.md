@@ -7,19 +7,31 @@ decaying.
 
 ## Prerequisites
 
-* `libsdl` (ancient version – 1.2 was used for development, might
-  get replaced with a newer release one day)
-* `libsprig`
-* `spdlog`
-* `sol2`
+* lua 5.3 (as the only one which caused problems when bundled)
 * C++23 compiler (tested with `g++` 13)
 * CMake
 
 ## Compilation
 
-Apart from getting the required packages installed (the hard step),
-the compilation should be pretty straightforward. The usual steps
-of:
+The compilation should be pretty straightforward. First of all (the
+hardest part), lua should be somehow obtained. This might include your
+package manager on Unix-like systems (apt, zypper, dnf, homebrew) or
+some Windows magic on Windows.
+
+Due to how different OSes install packages, you *might* have to update
+the `CMakeLists.txt` (the main one, in the root directory) to help the
+build system locate lua.
+
+Most of the dependencies are compiled along the project (as this
+helped resolve some conflicts with SDL versioning). To get those
+dependencies, use git submodules:
+
+```
+$ git submodule init
+$ git submodule update
+```
+
+Afterwards, the usual steps of:
 
 ```
 $ mkdir build
