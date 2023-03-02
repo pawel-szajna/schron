@@ -22,8 +22,8 @@ public:
 
 private:
 
-    void keyHandlerMap(int keycode, std::string callback);
-    void keyHandlerUnmap(int keycode);
+    [[maybe_unused]] void keyHandlerMap(int keycode, std::string callback);
+    [[maybe_unused]] void keyHandlerUnmap(int keycode);
 
     sol::state& lua;
     ui::UI& ui;

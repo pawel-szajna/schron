@@ -36,7 +36,7 @@ class ModeInGame : public ModeExecutor
 {
 public:
 
-    ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& target);
+    ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& view);
     virtual ~ModeInGame();
 
     void entry() override;
@@ -53,6 +53,6 @@ private:
     ui::UI& ui;
     world::World& world;
 
-    sdl::Surface& target;
+    sdl::Surface& view;
 };
 }

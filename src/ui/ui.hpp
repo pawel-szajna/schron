@@ -18,7 +18,7 @@ class UI
 {
 public:
 
-    UI(sdl::Surface& target);
+    UI();
     ~UI();
 
     void render();
@@ -27,7 +27,6 @@ public:
 
 public: // TODO private
 
-    sdl::Surface& target;
     std::vector<std::unique_ptr<Object>> objects;
 };
 }

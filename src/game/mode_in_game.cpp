@@ -1,6 +1,7 @@
 #include "mode_in_game.hpp"
 
 #include "engine/engine.hpp"
+#include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/editor/editor.hpp"
 #include "ui/ui.hpp"
@@ -8,14 +9,15 @@
 #include "world/world.hpp"
 
 #include <cmath>
+#include <SDL_scancode.h>
 #include <spdlog/spdlog.h>
 
 namespace game
 {
-ModeInGame::ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& target) :
+ModeInGame::ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& view) :
     ui(ui),
     world(world),
-    target(target)
+    view(view)
 {}
 
 ModeInGame::~ModeInGame() = default;
@@ -37,7 +39,12 @@ void ModeInGame::exit()
 
 std::optional<GameMode> ModeInGame::frame(double frameTime)
 {
-    uint8_t* keys = SDL_GetKeyState(nullptr);
+    const uint8_t* keys = sdl::keyboard();
+
+    if (keys[SDL_SCANCODE_Q] or keys[SDL_SCANCODE_ESCAPE])
+    {
+        return GameMode::Quit;
+    }
 
     static bool raising = true;
     auto& dynamicSector = const_cast<world::Sector&>(world.level(1).sector(2));
@@ -45,20 +52,19 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     if (dynamicSector.floor <= -2.0) raising = true;
     dynamicSector.floor += (raising ? 1 : -1) * frameTime;
 
-    double walkFactor = 0.0, rotationFactor = 0.0, strafeFactor = 0.0;
+    double walkDirection = 0.0, rotationDirection = 0.0, strafeDirection = 0.0;
 
-    if (keys[SDLK_DOWN]) walkFactor -= 1;
-    if (keys[SDLK_UP])   walkFactor += 1;
-    if (keys[SDLK_x]) strafeFactor -= 1;
-    if (keys[SDLK_z]) strafeFactor += 1;
-    if (keys[SDLK_RIGHT]) rotationFactor += 1;
-    if (keys[SDLK_LEFT])  rotationFactor -= 1;
-    if (keys[SDLK_q] || keys[SDLK_ESCAPE]) return GameMode::Quit;
+    if (keys[SDL_SCANCODE_DOWN])  walkDirection -= 1;
+    if (keys[SDL_SCANCODE_UP])    walkDirection += 1;
+    if (keys[SDL_SCANCODE_X])     strafeDirection -= 1;
+    if (keys[SDL_SCANCODE_Z])     strafeDirection += 1;
+    if (keys[SDL_SCANCODE_RIGHT]) rotationDirection += 1;
+    if (keys[SDL_SCANCODE_LEFT])  rotationDirection -= 1;
 
-    player.handleMovement(walkFactor * frameTime, strafeFactor * frameTime, rotationFactor * frameTime, world.level(1));
+    player.handleMovement(walkDirection * frameTime, strafeDirection * frameTime, rotationDirection * frameTime, world.level(1));
 
     engine->frame(player.getPosition());
-    engine->draw(target);
+    engine->draw(view);
 
     return noChange;
 }

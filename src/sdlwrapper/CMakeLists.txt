@@ -1,6 +1,10 @@
 add_library(
         sdlwrapper
+        renderer.cpp
         sdlwrapper.cpp
+        surface.cpp
+        texture.cpp
+        window.cpp
 )
 
 target_compile_options(
@@ -12,13 +16,12 @@ target_compile_options(
 target_include_directories(
         sdlwrapper
         PUBLIC
-        ../../lib/sprig/source
+        ../../lib/SDL/include
 )
 
 target_link_libraries(
         sdlwrapper
         PUBLIC
-        SDL
-        SDL_ttf
-        sprig
+        SDL2
+        SDL2_ttf
 )

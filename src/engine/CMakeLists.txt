@@ -13,4 +13,5 @@ target_compile_options(
 target_link_libraries(
         engine
         PUBLIC
+        sdlwrapper
 )

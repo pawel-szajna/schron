@@ -1,0 +1,4 @@
+add_subdirectory(SDL)
+add_subdirectory(SDL_ttf)
+add_subdirectory(sol2)
+add_subdirectory(spdlog)

@@ -3,8 +3,7 @@
 namespace engine
 {
 Noise::Noise(int& level) :
-    level(level),
-    noise(sdl::make_alpha_surface(noiseWidth, noiseHeight))
+    level(level)
 {}
 
 void Noise::render(sdl::Surface& target)
@@ -18,26 +17,27 @@ void Noise::render(sdl::Surface& target)
         generate();
     }
 
-    auto noiseBig = sdl::transform(noise, 4);
-    noiseBig.render(target);
+    noise.render(target);
 }
 
 void Noise::fillWithNoise(const std::function<int()>& transparencyApplier)
 {
-    auto pixels = (uint32_t*)noise->pixels;
-    for (auto y = 0; y < noiseHeight; ++y)
+    auto pixels = noise.pixels();
+    for (auto y = 0; y < 768; y += 8)
     {
-        for (auto x = 0; x < noiseWidth; ++x)
+        for (auto x = 0; x < 1024; x += 8)
         {
             auto pixel = rand() % 256;
             pixel = (pixel << 16) + (pixel << 8) + pixel;
             pixel += transparencyApplier();
-            *pixels = pixel;
-            ++pixels;
+            for (int i = 0; i < 8; ++i)
+            {
+                for (int j = 0; j < 8; ++j)
+                {
+                    pixels[(y + j) * 1024 + (x + i)] = pixel;
+                }
+            }
         }
-
-        pixels += noise->pitch / 4;
-        pixels -= noiseWidth;
     }
 }
 

@@ -2,8 +2,7 @@
 #include <memory>
 
 #include "game/game.hpp"
-
-#undef main
+#include "sdlwrapper/sdlwrapper.hpp"
 
 int main()
 {

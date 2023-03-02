@@ -1,4 +1,7 @@
-include_directories(.)
+include_directories(
+        .
+        ../lib/spdlog/include
+)
 
 add_subdirectory(engine)
 add_subdirectory(game)
@@ -13,13 +16,8 @@ add_executable(
         main.cpp
 )
 
-target_link_libraries(
+target_link_libraries( # TODO: sort out dependencies
         schron
         PRIVATE
         game
-        engine
-        scripting
-        sdlwrapper
-        ui
-        world
 )

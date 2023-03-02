@@ -1,6 +1,7 @@
 #pragma once
 
-#include "sdlwrapper/sdlwrapper.hpp"
+#include "sdlwrapper/common_types.hpp"
+#include "sdlwrapper/surface.hpp"
 #include "util/constants.hpp"
 
 #include <array>
@@ -54,14 +55,13 @@ private:
                     const world::Wall& wall,
                     const game::Position& player);
     void line(int x, int yStart, int yEnd, int color);
-    void flushBuffer();
 
-    std::unordered_map<int, std::array<Uint32, TEXTURE_WIDTH * TEXTURE_HEIGHT>> textures;
-    std::array<std::array<uint32_t, c::renderHeight>, c::renderWidth> buffer{};
+    std::unordered_map<int, std::array<uint32_t, TEXTURE_WIDTH * TEXTURE_HEIGHT>> textures;
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
     std::queue<SectorRenderParams> renderQueue{};
 
-    sdl::Surface view;
+    sdl::Surface view{c::renderWidth, c::renderHeight, 0};
+
     world::Level& level;
 };
 }

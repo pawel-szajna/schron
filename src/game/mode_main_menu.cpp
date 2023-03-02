@@ -4,6 +4,8 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 
+#include <SDL_keycode.h>
+
 namespace game
 {
 ModeMainMenu::ModeMainMenu(scripting::Scripting& scripting, ui::UI& ui) :

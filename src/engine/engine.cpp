@@ -1,13 +1,12 @@
 #include "engine.hpp"
 
 #include "game/player.hpp"
+#include "sdlwrapper/renderer.hpp"
 #include "world/level.hpp"
 #include "world/sector.hpp"
 
 #include <algorithm>
 #include <cmath>
-#include <execution>
-#include <ranges>
 #include <spdlog/spdlog.h>
 
 namespace engine
@@ -27,7 +26,6 @@ constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, 
 }
 
 Engine::Engine(world::Level& level) :
-    view(sdl::make_surface(c::renderWidth, c::renderHeight)),
     level(level)
 {
     spdlog::info("Initializing engine");
@@ -56,8 +54,6 @@ void Engine::frame(const game::Position& player)
 
         renderQueue.pop();
     }
-
-    flushBuffer();
 }
 
 void Engine::renderWall(const world::Sector& sector,
@@ -218,37 +214,16 @@ void Engine::line(int x, int yStart, int yEnd, int color)
     {
         return;
     }
-    buffer[x][yStart] = 0;
+    view[yStart * c::renderWidth + x] = 0;
     for (int y = yStart + 1; y < yEnd; ++y)
     {
-        buffer[x][y] = color;
+        view[y * c::renderWidth + x] = color;
     }
-    buffer[x][yEnd] = 0;
-}
-
-void Engine::flushBuffer()
-{
-    auto pixels = (uint32_t*)view->pixels;
-
-    for (auto y = 0; y < c::renderHeight; ++y)
-    {
-        for (auto x = 0; x < c::renderWidth; ++x)
-        {
-            *pixels = buffer[x][y];
-            ++pixels;
-        }
-        pixels += view->pitch / 4;
-        pixels -= c::renderWidth;
-    }
-
-    for (auto x = 0; x < c::renderWidth; ++x)
-    {
-        buffer[x].fill(0);
-    }
+    view[yEnd * c::renderWidth + x] = 0;
 }
 
 void Engine::draw(sdl::Surface& target)
 {
-    view.draw(target);
+    view.renderStretched(target);
 }
 }

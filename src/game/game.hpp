@@ -3,7 +3,10 @@
 #include "engine/noise.hpp"
 #include "game_mode.hpp"
 #include "mode_executor.hpp"
-#include "sdlwrapper/sdlwrapper.hpp"
+#include "sdlwrapper/renderer.hpp"
+#include "sdlwrapper/surface.hpp"
+#include "sdlwrapper/texture.hpp"
+#include "sdlwrapper/window.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -46,8 +49,10 @@ private:
 
     ModesMap modes{};
 
-    sdl::Surface mainWindow;
-    sdl::Surface screen;
+    sdl::Window window{"Schron", 1024, 768, 0};
+    sdl::Renderer renderer{window};
+    sdl::Texture texture{renderer, sdl::Texture::Access::Streaming, 1024, 768};
+    sdl::Surface view{1024, 768};
 
     std::unique_ptr<world::World> world;
     std::unique_ptr<ui::UI> ui;

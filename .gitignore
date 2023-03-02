@@ -2,6 +2,5 @@
 cmake-build-debug
 cmake-build-release
 build
-lib
 .DS_Store
 

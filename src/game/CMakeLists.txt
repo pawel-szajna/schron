@@ -10,7 +10,6 @@ target_include_directories(
         game
         PRIVATE
         ../../lib/sol2/include
-        /usr/include/lua5.3
 )
 
 target_compile_options(
@@ -22,4 +21,8 @@ target_compile_options(
 target_link_libraries(
         game
         PUBLIC
+        engine
+        scripting
+        ui
+        world
 )

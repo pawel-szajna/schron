@@ -16,15 +16,13 @@
 namespace game
 {
 Game::Game() :
-    mainWindow(sdl::make_main_window(1024, 768, false)),
-    screen(sdl::make_surface(c::renderWidth, c::renderHeight)),
     world(std::make_unique<world::World>()),
-    ui(std::make_unique<ui::UI>(mainWindow)),
+    ui(std::make_unique<ui::UI>()),
     scripting(std::make_unique<scripting::Scripting>(*ui, *world))
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
-    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, screen));
+    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, view));
     modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");
@@ -53,9 +51,10 @@ void Game::switchMode(GameMode target)
 
 void Game::mainLoop()
 {
-    double newTime{}, oldTime{};
+    double newTime{}, oldTime{}, windowUpdateTime{};
+    int framesCounter{};
 
-    while (mode != GameMode::Quit)
+    while (++framesCounter, mode != GameMode::Quit)
     {
         sdl::pollEvents();
 
@@ -69,10 +68,8 @@ void Game::mainLoop()
         auto frameTime = (newTime - oldTime) / 1000.0;
         if (frameTime < c::frameLimit)
         {
-            sdl::delay(c::frameLimit - frameTime);
+            // sdl::delay(c::frameLimit - frameTime);
         }
-
-        screen.clear();
 
         auto stateChange = modes.at(mode)->frame(frameTime);
         if (stateChange.has_value())
@@ -80,12 +77,20 @@ void Game::mainLoop()
             switchMode(*stateChange);
         }
 
-        noise.render(screen);
-        screen.draw(mainWindow);
-        ui->render();
-        mainWindow.update();
+        noise.render(view);
+        view.render(texture);
+        view.empty();
 
-        sdl::setTitle(std::format("Schron ({} fps)", (int)(1 / frameTime)));
+        renderer.clear();
+        renderer.copy(texture);
+        renderer.present();
+
+        if (newTime - windowUpdateTime >= 1000)
+        {
+            window.setTitle(std::format("Schron ({} fps)", framesCounter));
+            framesCounter = 0;
+            windowUpdateTime = newTime;
+        }
     }
 }
 }

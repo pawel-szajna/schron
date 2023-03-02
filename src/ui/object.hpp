@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sdlwrapper/sdlwrapper.hpp"
+#include "sdlwrapper/renderer.hpp"
 
 namespace ui
 {
@@ -13,7 +13,7 @@ public:
     Object(int id, int x, int y);
     virtual ~Object() = default;
 
-    virtual void render(sdl::Surface& target, SDL_Rect coords) = 0;
+    virtual void render(sdl::Renderer& target) = 0;
 
 private:
 

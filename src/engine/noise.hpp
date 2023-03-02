@@ -1,7 +1,9 @@
 #pragma once
 
-#include "sdlwrapper/sdlwrapper.hpp"
+#include "sdlwrapper/common_types.hpp"
+#include "sdlwrapper/surface.hpp"
 
+#include <array>
 #include <functional>
 
 namespace engine
@@ -23,6 +25,6 @@ private:
     void generateLinear(int intensity);
 
     int& level;
-    sdl::Surface noise;
+    sdl::Surface noise{1024, 768};
 };
 }

@@ -7,8 +7,11 @@ add_library(
 target_include_directories(
         scripting
         PUBLIC
-        ../../lib/sol2/include
-        /usr/include/lua5.3
+)
+
+target_link_directories(
+        scripting
+        PUBLIC
 )
 
 target_compile_options(
@@ -19,6 +22,8 @@ target_compile_options(
 
 target_link_libraries(
         scripting
-        PUBLIC
-        lua5.3
+        PRIVATE
+        sol2
+        lua
+        ui
 )

@@ -15,4 +15,5 @@ target_compile_options(
 target_link_libraries(
         ui
         PUBLIC
+        sdlwrapper
 )

@@ -3,7 +3,7 @@
 #ifdef SPDLOG_USE_STD_FORMAT
 #include <format>
 #else
-#include <fmt/format.h>
+#include <spdlog/fmt/bundled/format.h>
 namespace std
 {
 template<typename ...T>
