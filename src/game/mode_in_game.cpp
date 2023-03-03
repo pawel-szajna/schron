@@ -3,7 +3,7 @@
 #include "engine/engine.hpp"
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
-#include "ui/editor/editor.hpp"
+#include "ui/mini_map.hpp"
 #include "ui/ui.hpp"
 #include "world/level.hpp"
 #include "world/world.hpp"
@@ -27,8 +27,7 @@ void ModeInGame::entry()
     auto& level = world.level(1);
 
     engine = std::make_unique<engine::Engine>(renderer, level);
-    editor = std::make_unique<ui::editor::Editor>(level, player.getPosition().x, player.getPosition().y);
-    ui.add(std::move(editor));
+    ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
 }
 
 void ModeInGame::exit()

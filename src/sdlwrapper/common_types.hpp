@@ -12,6 +12,13 @@ struct Rectangle
     int width, height;
 };
 
+struct Vertex
+{
+    float x, y;
+    uint8_t r, g, b, a;
+    float texX, texY;
+};
+
 enum class BlendMode
 {
     None,

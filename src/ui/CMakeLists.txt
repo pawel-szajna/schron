@@ -3,6 +3,7 @@ add_library(
         STATIC
         editor/editor.cpp
         key_handler.cpp
+        mini_map.cpp
         ui.cpp
 )
 

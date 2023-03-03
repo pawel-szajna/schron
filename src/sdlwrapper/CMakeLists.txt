@@ -6,6 +6,7 @@ add_library(
         sdlwrapper.cpp
         surface.cpp
         texture.cpp
+        vertices.cpp
         window.cpp
 )
 

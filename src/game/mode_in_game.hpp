@@ -48,7 +48,6 @@ private:
     Player player{};
 
     std::unique_ptr<engine::Engine> engine{};
-    std::unique_ptr<ui::editor::Editor> editor{};
 
     ui::UI& ui;
     world::World& world;

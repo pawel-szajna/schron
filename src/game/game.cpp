@@ -68,7 +68,7 @@ void Game::mainLoop()
         auto frameTime = (newTime - oldTime) / 1000.0;
         if (frameTime < c::frameLimit)
         {
-            // sdl::delay(c::frameLimit - frameTime);
+            sdl::delay(c::frameLimit - frameTime);
         }
 
         renderer.clear();
@@ -80,6 +80,7 @@ void Game::mainLoop()
         }
 
         noise.render();
+        ui->render();
         renderer.present();
 
         if (newTime - windowUpdateTime >= 1000)

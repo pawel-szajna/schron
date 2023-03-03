@@ -1,12 +1,17 @@
 #include "renderer.hpp"
 
 #include "common_types.hpp"
+#include "surface.hpp"
 #include "texture.hpp"
 #include "util/format.hpp"
+#include "vertices.hpp"
 #include "window.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <SDL.h>
+#include <spdlog/spdlog.h>
+#include <vector>
 
 namespace sdl
 {
@@ -14,6 +19,12 @@ Renderer::Renderer(Window& window, int index, uint32_t flags)
 {
     assign(SDL_CreateRenderer(*window, index, flags),
            "SDL renderer");
+}
+
+Renderer::Renderer(Surface& surface)
+{
+    assign(SDL_CreateSoftwareRenderer(*surface),
+           "SDL software renderer");
 }
 
 Renderer::~Renderer()
@@ -53,5 +64,23 @@ void Renderer::present() noexcept
 Texture Renderer::createTexture(Texture::Access access, int width, int height)
 {
     return Texture(*this, access, width, height);
+}
+
+void Renderer::renderGeometry(const std::vector<Vertex>& vertices)
+{
+    SDL_SetRenderDrawBlendMode(wrapped, SDL_BLENDMODE_BLEND);
+    if (vertices.size() < 3)
+    {
+        throw std::invalid_argument{"polygon has not enough edges"};
+    }
+    for (auto vertex = 1u; vertex < vertices.size() - 1; ++vertex)
+    {
+        auto converted = sdl::Vertices({vertices[0], vertices[vertex], vertices[vertex + 1]});
+        auto result = SDL_RenderGeometry(wrapped, nullptr, converted.data(), converted.size(), nullptr, 0);
+        if (result != Success)
+        {
+            throw std::runtime_error{std::format("render failed: {}", SDL_GetError())};
+        }
+    }
 }
 }
