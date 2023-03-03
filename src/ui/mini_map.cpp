@@ -63,6 +63,41 @@ void MiniMap::render(sdl::Renderer& renderer)
     surfaceRenderer.clear();
     surfaceRenderer.renderGeometry(box);
 
+    constexpr static auto gridRange = 5;
+
+    auto drawGridLine = [&](double x1, double x2, double y1, double y2)
+    {
+        auto angle = position.angle - std::numbers::pi;
+
+        double transformedX1 = x1 * std::sin(angle) - y1 * std::cos(angle);
+        double transformedX2 = x2 * std::sin(angle) - y2 * std::cos(angle);
+        double transformedY1 = x1 * std::cos(angle) + y1 * std::sin(angle);
+        double transformedY2 = x2 * std::cos(angle) + y2 * std::sin(angle);
+
+        transformedX1 = mapScale * transformedX1 + mapWidth / 2;
+        transformedX2 = mapScale * transformedX2 + mapWidth / 2;
+        transformedY1 = mapScale * transformedY1 + mapHeight / 2;
+        transformedY2 = mapScale * transformedY2 + mapHeight / 2;
+
+        surfaceRenderer.renderLine(transformedX1, transformedY1, transformedX2, transformedY2, 255, 255, 255, 64);
+    };
+
+    for (int x = -gridRange; x <= gridRange; ++x)
+    {
+        double x1 = x - position.x + std::floor(position.x);
+        double y1 = -gridRange - position.y + std::floor(position.y);
+        double y2 =  gridRange - position.y + std::floor(position.y);
+        drawGridLine(x1, x1, y1, y2);
+    }
+
+    for (int y = -gridRange; y <= gridRange; ++y)
+    {
+        double x1 = -gridRange - position.x + std::floor(position.x);
+        double x2 =  gridRange - position.x + std::floor(position.x);
+        double y1 = y - position.y + std::floor(position.y);
+        drawGridLine(x1, x2, y1, y1);
+    }
+
     sectorQueue.push({.id = position.sector,
                       .recursion = 3,
                       .caller = -1,
