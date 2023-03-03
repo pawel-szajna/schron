@@ -1,5 +1,6 @@
 add_library(
         game
+        STATIC
         game.cpp
         mode_main_menu.cpp
         mode_in_game.cpp

@@ -1,5 +1,6 @@
 add_library(
         scripting
+        STATIC
         scripting.cpp
         ui_bindings.cpp
 )

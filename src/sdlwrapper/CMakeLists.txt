@@ -1,5 +1,6 @@
 add_library(
         sdlwrapper
+        STATIC
         converters.cpp
         renderer.cpp
         sdlwrapper.cpp

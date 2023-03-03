@@ -1,5 +1,6 @@
 add_library(
         world
+        STATIC
         builders.cpp
         level.cpp
         world.cpp

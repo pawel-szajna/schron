@@ -1,5 +1,6 @@
 add_library(
         engine
+        STATIC
         engine.cpp
         noise.cpp
 )
