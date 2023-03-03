@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numbers>
+
 namespace world
 {
 class Level;
@@ -10,7 +12,7 @@ namespace game
 struct Position
 {
     int sector{1};
-    double x{0.5}, y{0.5}, z{0.6}, angle;
+    double x{0.5}, y{0.5}, z{0.6}, angle{std::numbers::pi / 2};
 };
 
 class Player

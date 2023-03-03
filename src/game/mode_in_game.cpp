@@ -45,12 +45,6 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         return GameMode::Quit;
     }
 
-    static bool raising = true;
-    auto& dynamicSector = const_cast<world::Sector&>(world.level(1).sector(2));
-    if (dynamicSector.floor >= 0.0) raising = false;
-    if (dynamicSector.floor <= -2.0) raising = true;
-    dynamicSector.floor += (raising ? 1 : -1) * frameTime;
-
     if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);
     if (keys[SDL_SCANCODE_UP])    player.move(Player::Direction::Forward);
     if (keys[SDL_SCANCODE_X])     player.move(Player::Direction::Left);

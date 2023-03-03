@@ -55,7 +55,7 @@ private:
                    decltype(Sector::walls)& walls);
 
     int sid{};
-    double sx1{}, sy1{}, sx2{}, sy2{}, sCeiling{}, sFloor{};
+    double sx1{}, sy1{}, sx2{}, sy2{}, sCeiling{1.0}, sFloor{0.0};
     std::optional<NeighbourParams> north{};
     std::optional<NeighbourParams> east{};
     std::optional<NeighbourParams> south{};
