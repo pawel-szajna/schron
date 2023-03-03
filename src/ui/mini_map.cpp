@@ -18,7 +18,7 @@ constexpr auto mapHeight = 240;
 constexpr auto mapMargin = 32;
 constexpr auto mapTop = mapMargin;
 constexpr auto mapLeft = 1024 - mapWidth - mapMargin;
-constexpr auto mapScale = 40;
+constexpr auto mapScale = 32;
 
 constexpr sdl::Vertex grayVertex(float x, float y, uint8_t intensity, uint8_t alpha)
 {
@@ -63,7 +63,7 @@ void MiniMap::render(sdl::Renderer& renderer)
     surfaceRenderer.clear();
     surfaceRenderer.renderGeometry(box);
 
-    constexpr static auto gridRange = 5;
+    constexpr static auto gridRange = mapWidth / mapScale;
 
     auto drawGridLine = [&](double x1, double x2, double y1, double y2)
     {
@@ -99,7 +99,7 @@ void MiniMap::render(sdl::Renderer& renderer)
     }
 
     sectorQueue.push({.id = position.sector,
-                      .recursion = 3,
+                      .recursion = 5,
                       .caller = -1,
                       .transformX = 0,
                       .transformY = 0});
@@ -108,6 +108,7 @@ void MiniMap::render(sdl::Renderer& renderer)
     {
         auto current = sectorQueue.front();
         sectorQueue.pop();
+
         const auto& sector = level.sector(current.id);
         vertices.clear();
         std::transform(sector.walls.begin(),
@@ -140,8 +141,8 @@ void MiniMap::render(sdl::Renderer& renderer)
                     double newTransformY = current.transformY;
                     if (wall.portal->transform.has_value())
                     {
-                        newTransformX -= wall.portal->transform->x;
-                        newTransformY -= wall.portal->transform->y;
+                        newTransformX += wall.portal->transform->x;
+                        newTransformY += wall.portal->transform->y;
                     }
                     sectorQueue.push({.id = wall.portal->sector,
                                       .recursion = current.recursion - 1,
@@ -152,6 +153,14 @@ void MiniMap::render(sdl::Renderer& renderer)
             }
         }
     }
+
+    const static std::vector<sdl::Vertex> playerArrow
+    {
+        sdl::Vertex{mapWidth / 2 - mapScale / 5, mapHeight / 2 + mapScale / 5, 255, 192, 192, 90, 0, 0},
+        sdl::Vertex{mapWidth / 2, mapHeight / 2 - mapScale / 5, 255, 192, 192, 90, 0, 0},
+        sdl::Vertex{mapWidth / 2 + mapScale / 5, mapHeight / 2 + mapScale / 5, 255, 192, 192, 90, 0, 0}
+    };
+    surfaceRenderer.renderGeometry(playerArrow);
 
     surfaceRenderer.present();
     surface.render(texture);

@@ -11,6 +11,24 @@ namespace
 {
 constexpr auto rotationSpeed{2.4};
 constexpr auto movementSpeed{1.8};
+
+bool overlap(double x1, double x2, double y1, double y2)
+{
+    return std::min(x1, x2) <= std::max(y1, y2) and
+           std::min(y1, y2) <= std::max(x1, x2);
+}
+
+bool intersect(double box1x1, double box1y1, double box1x2, double box1y2,
+               double box2x1, double box2y1, double box2x2, double box2y2)
+{
+    return overlap(box1x1, box1x2, box2x1, box2x2) and
+           overlap(box1y1, box1y2, box2y1, box2y2);
+}
+
+double side(double px, double py, double x1, double y1, double x2, double y2)
+{
+    return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
+}
 }
 
 Player::Player()
@@ -75,21 +93,6 @@ void Player::rotate(Rotation rotation)
 
 void Player::frame(const world::Level& level, double frameTime)
 {
-    auto overlap = [](double x1, double x2, double y1, double y2)
-    {
-        return std::min(x1, x2) <= std::max(y1, y2) and
-               std::min(y1, y2) <= std::max(x1, x2);
-    };
-    auto intersect = [&](double box1x1, double box1y1, double box1x2, double box1y2,
-                         double box2x1, double box2y1, double box2x2, double box2y2)
-    {
-        return overlap(box1x1, box1x2, box2x1, box2x2) and overlap(box1y1, box1y2, box2y1, box2y2);
-    };
-    auto side = [](double px, double py, double x1, double y1, double x2, double y2)
-    {
-        return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
-    };
-
     const auto& sector = level.sector(position.sector);
     auto targetZ = sector.floor + 0.6;
     if (position.z != targetZ)
@@ -127,11 +130,6 @@ void Player::frame(const world::Level& level, double frameTime)
                         }
                         break;
                     }
-                    else
-                    {
-                        deltaX = 0;
-                        deltaY = 0;
-                    }
                 }
             }
         }
@@ -139,8 +137,8 @@ void Player::frame(const world::Level& level, double frameTime)
         position.x += deltaX;
         position.y += deltaY;
 
-        if ((target.x - position.x) * (moving * std::cos(position.angle)) <= 0 and
-            (target.y - position.y) * (moving * std::sin(position.angle)) <= 0)
+        if ((target.x - position.x) * (moving * std::cos(position.angle)) <= 1e-4 and
+            (target.y - position.y) * (moving * std::sin(position.angle)) <= 1e-4)
         {
             position.x = target.x;
             position.y = target.y;
