@@ -7,13 +7,7 @@ add_library(
         window.cpp
 )
 
-if(MSVC)
-    target_compile_options(
-        sdlwrapper
-        PRIVATE
-        /Wall /WX /O2
-    )
-else()
+if(NOT MSVC)
     target_compile_options(
         sdlwrapper
         PRIVATE

@@ -12,13 +12,7 @@ target_include_directories(
         ../../lib/sol2/include
 )
 
-if(MSVC)
-    target_compile_options(
-        game
-        PRIVATE
-        /Wall /WX /O2
-    )
-else()
+if(NOT MSVC)
     target_compile_options(
         game
         PRIVATE

@@ -4,13 +4,7 @@ add_library(
         noise.cpp
 )
 
-if(MSVC)
-    target_compile_options(
-        engine
-        PRIVATE
-        /Wall /WX /O2
-    )
-else()
+if(NOT MSVC)
     target_compile_options(
         engine
         PRIVATE

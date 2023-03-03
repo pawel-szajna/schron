@@ -5,11 +5,13 @@ add_library(
         world.cpp
 )
 
-target_compile_options(
+if(NOT MSVC)
+    target_compile_options(
         world
         PRIVATE
         -Wall -Werror -pedantic -O3
-)
+    )
+endif()
 
 target_link_libraries(
         world

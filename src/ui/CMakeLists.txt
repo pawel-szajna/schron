@@ -6,13 +6,7 @@ add_library(
         ui.cpp
 )
 
-if(MSVC)
-    target_compile_options(
-        ui
-        PRIVATE
-        /Wall /WX /O2
-    )
-else()
+if(NOT MSVC)
     target_compile_options(
         ui
         PRIVATE

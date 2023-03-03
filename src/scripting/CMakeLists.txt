@@ -14,13 +14,7 @@ target_link_directories(
         PUBLIC
 )
 
-if(MSVC)
-    target_compile_options(
-        scripting
-        PRIVATE
-        /Wall /WX /O2
-    )
-else()
+if(NOT MSVC)
     target_compile_options(
         scripting
         PRIVATE
