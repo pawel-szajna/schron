@@ -2,6 +2,8 @@
 
 #include "wrapped.hpp"
 
+#include <cstdint>
+
 struct SDL_Texture;
 
 namespace sdl

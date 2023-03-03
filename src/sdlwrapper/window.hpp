@@ -2,6 +2,7 @@
 
 #include "wrapped.hpp"
 
+#include <cstdint>
 #include <string>
 
 struct SDL_Window;
