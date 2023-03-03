@@ -26,14 +26,14 @@ Most of the dependencies are compiled along the project (as this
 helped resolve some conflicts with SDL versioning). To get those
 dependencies, use git submodules:
 
-```
+```console
 $ git submodule init
 $ git submodule update
 ```
 
 Afterwards, the usual steps of:
 
-```
+```console
 $ mkdir build
 $ cd build
 $ cmake .. -GNinja
