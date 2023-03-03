@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <spdlog/spdlog.h>
 
 namespace sdl
 {
@@ -18,7 +19,7 @@ Surface::Surface(int width, int height, int alphaMask) :
 Surface::Surface(const std::string& filename)
 {
     assign(IMG_Load(filename.c_str()),
-           "SDL surface from image");
+           std::format("SDL surface from image ({}): {}", filename, SDL_GetError()));
     width = wrapped->w;
     height = wrapped->h;
 }

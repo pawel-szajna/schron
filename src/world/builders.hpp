@@ -15,7 +15,7 @@ public:
     PolygonalSectorBuilder& withId(int id);
     PolygonalSectorBuilder& withCeiling(double ceiling);
     PolygonalSectorBuilder& withFloor(double floor);
-    PolygonalSectorBuilder& withWall(double x, double y, std::optional<Wall::Portal> neighbour = std::nullopt);
+    PolygonalSectorBuilder& withWall(double x, double y, std::string texture = "wall", std::optional<Wall::Portal> neighbour = std::nullopt);
 
     Sector build();
 

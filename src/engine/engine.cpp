@@ -2,6 +2,7 @@
 
 #include "game/player.hpp"
 #include "sdlwrapper/renderer.hpp"
+#include "sdlwrapper/surface.hpp"
 #include "world/level.hpp"
 #include "world/sector.hpp"
 
@@ -14,7 +15,6 @@ namespace engine
 namespace
 {
 constexpr auto color(uint32_t red, uint32_t green, uint32_t blue) { return 65536 * red + 256 * green + blue; }
-constexpr auto gray(uint32_t brightness) { return color(brightness, brightness, brightness); }
 constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; };
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
 {
@@ -23,6 +23,17 @@ constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, 
     auto m = cross(x1 - x2, y1 - y2, x3 - x4, y3 - y4);
     return std::make_pair(cross(c1, x1 - x2, c2, x3 - x4) / m, cross(c1, y1 - y2, c2, y3 - y4) / m);
 };
+
+constexpr auto shade(uint32_t pixel, double distance)
+{
+    auto pR = (pixel & 0x00ff0000) >> 16;
+    auto pG = (pixel & 0x0000ff00) >> 8;
+    auto pB = (pixel & 0x000000ff) >> 0;
+    pR = std::clamp((int)((int)pR * (1 - distance / 5)), 0, (int)pR);
+    pG = std::clamp((int)((int)pG * (1 - distance / 5)), 0, (int)pG);
+    pB = std::clamp((int)((int)pB * (1 - distance / 5)), 0, (int)pB);
+    return (pR << 16) | (pG << 8) | (pB << 0);
+}
 }
 
 Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
@@ -31,6 +42,17 @@ Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
     level(level)
 {
     spdlog::info("Initialized engine");
+}
+
+sdl::Surface& Engine::texture(const std::string& name)
+{
+    if (not textures.contains(name))
+    {
+        spdlog::debug("Texture {} not loaded yet", name);
+        textures.emplace(name, std::format("res/gfx/{}.png", name));
+    }
+
+    return textures.at(name);
 }
 
 void Engine::frame(const game::Position& player)
@@ -78,6 +100,10 @@ void Engine::renderWall(const world::Sector& sector,
     auto transformedLeftZ  = wallStartX * std::cos(renderedAngle) + wallStartY * std::sin(renderedAngle);
     auto transformedRightZ =   wallEndX * std::cos(renderedAngle) +   wallEndY * std::sin(renderedAngle);
 
+    auto& t = texture(wall.texture);
+    int textureBoundaryLeft = 0;
+    int textureBoundaryRight = t.width - 1;
+
     if (transformedLeftZ <= 0 and transformedRightZ <= 0)
     {
         return;
@@ -92,6 +118,11 @@ void Engine::renderWall(const world::Sector& sector,
         auto [i2x, i2y] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
                                     nearSide, nearZ, farSide, farZ);
 
+        auto oldLeftX = transformedLeftX;
+        auto oldLeftZ = transformedLeftZ;
+        auto oldRightX = transformedRightX;
+        auto oldRightZ = transformedRightZ;
+
         if (transformedLeftZ < nearZ)
         {
             transformedLeftX = i1y > 0 ? i1x : i2x;
@@ -102,6 +133,17 @@ void Engine::renderWall(const world::Sector& sector,
         {
             transformedRightX = i1y > 0 ? i1x : i2x;
             transformedRightZ = i1y > 0 ? i1y : i2y;
+        }
+
+        if (std::abs(transformedRightX - transformedLeftX) > std::abs(transformedRightZ - transformedLeftZ))
+        {
+            textureBoundaryLeft = (transformedLeftX - oldLeftX) * (t.width - 1) / (oldRightX - oldLeftX);
+            textureBoundaryRight = (transformedRightX - oldRightX) * (t.width - 1) / (oldRightX - oldLeftX);
+        }
+        else
+        {
+            textureBoundaryLeft = (transformedLeftZ - oldLeftZ) * (t.width - 1) / (oldRightZ - oldLeftZ);
+            textureBoundaryRight = (transformedRightZ - oldLeftZ) * (t.width - 1) / (oldRightZ - oldLeftZ);
         }
     }
 
@@ -152,17 +194,50 @@ void Engine::renderWall(const world::Sector& sector,
     int beginX = std::max(leftX, renderParameters.leftXBoundary);
     int endX   = std::min(rightX, renderParameters.rightXBoundary);
 
+    auto wallLength = std::hypot(wallStartX - wallEndX, wallStartY - wallEndY);
+
+    auto distanceLeft = std::hypot(transformedLeftX - player.x, transformedLeftZ - player.y);
+    auto distanceRight = std::hypot(transformedRightX - player.x, transformedRightZ - player.y);
+
+    textureBoundaryRight *= wallLength * (sector.ceiling - sector.floor);
+
     for (int x = beginX; x <= endX; ++x)
     {
-        int wallTop    = std::clamp((x - leftX) * (rightYTop - leftYTop) / (rightX - leftX) + leftYTop, limitTop[x], limitBottom[x]);
-        int wallBottom = std::clamp((x - leftX) * (rightYBottom - leftYBottom) / (rightX - leftX) + leftYBottom, limitTop[x], limitBottom[x]);
+        auto distance = (x - leftX) * (distanceRight - distanceLeft) / (rightX - leftX) + distanceLeft;
 
-        constexpr static auto colorWall    = gray(0x99);
+        auto wallTop    = (x - leftX) * (rightYTop - leftYTop) / (rightX - leftX) + leftYTop;
+        auto wallBottom = (x - leftX) * (rightYBottom - leftYBottom) / (rightX - leftX) + leftYBottom;
+        auto visibleWallTop    = std::clamp(wallTop, limitTop[x], limitBottom[x]);
+        auto visibleWallBottom = std::clamp(wallBottom, limitTop[x], limitBottom[x]);
+
         constexpr static auto colorCeiling = color(0xaa, 0x88, 0x88);
-        constexpr static auto colorFloor   = color(0x88, 0xaa, 0x88);
 
-        line(x, limitTop[x], wallTop, colorCeiling);
-        line(x, wallBottom, limitBottom[x], colorFloor);
+        line(x, limitTop[x], visibleWallTop, colorCeiling);
+
+        auto& floorTexture = texture(sector.floorTexture);
+        auto& ceilingTexture = texture(sector.ceilingTexture);
+
+        for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
+        {
+            if (y < visibleWallBottom and y > visibleWallTop) continue;
+
+            auto transformedZ = (y < visibleWallTop ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
+            auto transformedX = transformedZ * (c::renderWidth / 2 - x) / fovH;
+
+            auto mapX = transformedZ * std::cos(player.angle) + transformedX * std::sin(player.angle) + player.x + renderParameters.offsetX;
+            auto mapY = transformedZ * std::sin(player.angle) - transformedX * std::cos(player.angle) + player.y + renderParameters.offsetY;
+
+            int textureWidth = (y < visibleWallTop ? ceilingTexture : floorTexture).width;
+            int textureHeight = (y < visibleWallTop ? ceilingTexture : floorTexture).height;
+
+            auto tX = (int)std::abs(textureWidth + mapX * textureWidth) % textureWidth;
+            auto tY = (int)std::abs(textureHeight + mapY * textureHeight) % textureHeight;
+
+            auto pixel = (y < visibleWallTop ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
+            buffer[x + y * c::renderWidth] = shade(pixel, std::hypot(transformedX, transformedZ));
+        }
+
+        int textureX = (textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
 
         if (wall.portal.has_value())
         {
@@ -171,15 +246,15 @@ void Engine::renderWall(const world::Sector& sector,
             int neighbourBottom = std::clamp((x - leftX) * (neighbourRightYBottom - neighbourLeftYBottom) / (rightX - leftX) + neighbourLeftYBottom,
                                              limitTop[x], limitBottom[x]);
 
-            line(x, wallTop,             neighbourTop - 1, x == leftX || x == rightX ? 0 : colorWall);
-            line(x, neighbourBottom + 1, wallBottom, x == leftX || x == rightX ? 0 : colorWall);
+            texturedLine(x, wallTop, wallBottom, visibleWallTop, neighbourTop - 1, t, textureX, distance);
+            texturedLine(x, wallTop, wallBottom, neighbourBottom + 1, visibleWallBottom, t, textureX, distance);
 
-            limitTop[x]    = std::clamp(std::max(wallTop, neighbourTop), limitTop[x], c::renderHeight - 1);
-            limitBottom[x] = std::clamp(std::min(wallBottom, neighbourBottom), 0, limitBottom[x]);
+            limitTop[x]    = std::clamp(std::max(visibleWallTop, neighbourTop), limitTop[x], c::renderHeight - 1);
+            limitBottom[x] = std::clamp(std::min(visibleWallBottom, neighbourBottom), 0, limitBottom[x]);
         }
         else
         {
-            line(x, wallTop, wallBottom, x > beginX and x < endX ? colorWall : 0);
+            texturedLine(x, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance);
         }
     }
 
@@ -224,6 +299,28 @@ void Engine::line(int x, int yStart, int yEnd, int color)
         buffer[y * c::renderWidth + x] = color;
     }
     buffer[yEnd * c::renderWidth + x] = 0;
+}
+
+void Engine::texturedLine(int x,
+                          int wallStart, int wallEnd,
+                          int yStart, int yEnd,
+                          sdl::Surface& t,
+                          int textureX,
+                          double distance)
+{
+    textureX %= t.width;
+    yStart = std::clamp(yStart, 0, c::renderHeight - 1);
+    yEnd   = std::clamp(yEnd, 0, c::renderHeight - 1);
+    if (yStart >= yEnd)
+    {
+        return;
+    }
+    for (int y = yStart; y <= yEnd; ++y)
+    {
+        int textureY = (t.height - 1) * (y - wallStart) / (wallEnd - wallStart);
+        auto pixel = t.pixels()[textureX + textureY * t.width];
+        buffer[y * c::renderWidth + x] = shade(pixel, distance);
+    }
 }
 
 void Engine::draw()

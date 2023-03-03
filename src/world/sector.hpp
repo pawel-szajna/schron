@@ -26,6 +26,7 @@ public:
 
     double xStart, yStart, xEnd, yEnd;
     std::optional<Portal> portal{std::nullopt};
+    std::string texture{"wall"};
 };
 
 class Sector
@@ -35,5 +36,7 @@ public:
     std::vector<Wall> walls{};
     double ceiling{1.0};
     double floor{0.0};
+    std::string ceilingTexture{"ceiling"};
+    std::string floorTexture{"floor"};
 };
 }

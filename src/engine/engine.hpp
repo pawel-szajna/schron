@@ -1,13 +1,14 @@
 #pragma once
 
 #include "sdlwrapper/common_types.hpp"
+#include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/texture.hpp"
 #include "util/constants.hpp"
 
 #include <array>
 #include <cstdint>
+#include <map>
 #include <queue>
-#include <unordered_map>
 #include <unordered_set>
 
 namespace game
@@ -51,12 +52,20 @@ public:
 
 private:
 
+    sdl::Surface& texture(const std::string& name);
+
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
                     const game::Position& player);
     void line(int x, int yStart, int yEnd, int color);
+    void texturedLine(int x,
+                      int wallStart, int wallEnd,
+                      int yStart, int yEnd,
+                      sdl::Surface& t,
+                      int textureX,
+                      double distance);
 
-    std::unordered_map<int, std::array<uint32_t, TEXTURE_WIDTH * TEXTURE_HEIGHT>> textures;
+    std::map<std::string, sdl::Surface> textures{};
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
     std::array<sdl::Pixel, c::renderWidth * c::renderHeight> buffer{};
     std::queue<SectorRenderParams> renderQueue{};
