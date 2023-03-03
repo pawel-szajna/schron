@@ -12,11 +12,19 @@ target_include_directories(
         ../../lib/sol2/include
 )
 
-target_compile_options(
+if(MSVC)
+    target_compile_options(
+        game
+        PRIVATE
+        /Wall /Wx /O2
+    )
+else()
+    target_compile_options(
         game
         PRIVATE
         -Wall -Werror -pedantic -O3
-)
+    )
+endif()
 
 target_link_libraries(
         game

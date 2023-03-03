@@ -14,11 +14,19 @@ target_link_directories(
         PUBLIC
 )
 
-target_compile_options(
+if(MSVC)
+    target_compile_options(
+        scripting
+        PRIVATE
+        /Wall /Wx /O2
+    )
+else()
+    target_compile_options(
         scripting
         PRIVATE
         -Wall -Werror -pedantic -O3
-)
+    )
+endif()
 
 target_link_libraries(
         scripting

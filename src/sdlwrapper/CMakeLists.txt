@@ -7,11 +7,19 @@ add_library(
         window.cpp
 )
 
-target_compile_options(
+if(MSVC)
+    target_compile_options(
         sdlwrapper
         PRIVATE
-        -Wall -Wno-error -pedantic -O3 # libsprig has conversion warnings :(
-)
+        /Wall /Wx /O2
+    )
+else()
+    target_compile_options(
+        sdlwrapper
+        PRIVATE
+        -Wall -Werror -pedantic -O3
+    )
+endif()
 
 target_include_directories(
         sdlwrapper

@@ -6,11 +6,19 @@ add_library(
         ui.cpp
 )
 
-target_compile_options(
+if(MSVC)
+    target_compile_options(
+        ui
+        PRIVATE
+        /Wall /Wx /O2
+    )
+else()
+    target_compile_options(
         ui
         PRIVATE
         -Wall -Werror -pedantic -O3
-)
+    )
+endif()
 
 target_link_libraries(
         ui
