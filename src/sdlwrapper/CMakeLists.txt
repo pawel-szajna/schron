@@ -29,4 +29,5 @@ target_link_libraries(
         PUBLIC
         SDL2
         SDL2_ttf
+        SDL2_image
 )

@@ -1,6 +1,9 @@
 #include "sdlwrapper.hpp"
 
+#include "util/format.hpp"
+
 #include <SDL.h>
+#include <SDL_image.h>
 #include <spdlog/spdlog.h>
 
 namespace sdl
@@ -9,7 +12,14 @@ namespace sdl
 void initialize()
 {
     spdlog::info("SDL initialization");
-    SDL_Init(SDL_INIT_EVERYTHING);
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    {
+        throw std::runtime_error{std::format("could not initialize SDL: {}", SDL_GetError())};
+    }
+    if (IMG_Init(IMG_INIT_PNG) == 0)
+    {
+        throw std::runtime_error{std::format("could not initialize SDL_image: {}", IMG_GetError())};
+    }
     // TTF_Init();
     SDL_ShowCursor(SDL_DISABLE);
 }
@@ -17,6 +27,7 @@ void initialize()
 void teardown()
 {
     spdlog::debug("Quitting SDL");
+    IMG_Quit();
     SDL_Quit();
 }
 

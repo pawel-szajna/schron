@@ -4,6 +4,7 @@
 #include "wrapped.hpp"
 
 #include <optional>
+#include <string>
 
 struct SDL_Surface;
 
@@ -16,6 +17,7 @@ class Surface : public Wrapped<SDL_Surface>
 public:
 
     Surface(int width, int height, int alphaMask = 0xff000000);
+    explicit Surface(const std::string& filename);
     ~Surface();
 
     void empty();
@@ -31,6 +33,6 @@ public:
     uint32_t* pixels();
     uint32_t& operator[](int index);
 
-    const int width, height;
+    int width, height;
 };
 }

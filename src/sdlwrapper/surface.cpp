@@ -3,6 +3,7 @@
 #include "texture.hpp"
 
 #include <SDL.h>
+#include <SDL_image.h>
 
 namespace sdl
 {
@@ -12,6 +13,14 @@ Surface::Surface(int width, int height, int alphaMask) :
 {
     assign(SDL_CreateRGBSurface(0, width, height, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, alphaMask),
            "SDL surface");
+}
+
+Surface::Surface(const std::string& filename)
+{
+    assign(IMG_Load(filename.c_str()),
+           "SDL surface from image");
+    width = wrapped->w;
+    height = wrapped->h;
 }
 
 Surface::~Surface()
