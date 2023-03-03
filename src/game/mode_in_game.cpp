@@ -51,16 +51,14 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     if (dynamicSector.floor <= -2.0) raising = true;
     dynamicSector.floor += (raising ? 1 : -1) * frameTime;
 
-    double walkDirection = 0.0, rotationDirection = 0.0, strafeDirection = 0.0;
+    if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);
+    if (keys[SDL_SCANCODE_UP])    player.move(Player::Direction::Forward);
+    if (keys[SDL_SCANCODE_X])     player.move(Player::Direction::Left);
+    if (keys[SDL_SCANCODE_Z])     player.move(Player::Direction::Right);
+    if (keys[SDL_SCANCODE_LEFT])  player.rotate(Player::Rotation::Left);
+    if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
 
-    if (keys[SDL_SCANCODE_DOWN])  walkDirection -= 1;
-    if (keys[SDL_SCANCODE_UP])    walkDirection += 1;
-    if (keys[SDL_SCANCODE_X])     strafeDirection -= 1;
-    if (keys[SDL_SCANCODE_Z])     strafeDirection += 1;
-    if (keys[SDL_SCANCODE_RIGHT]) rotationDirection += 1;
-    if (keys[SDL_SCANCODE_LEFT])  rotationDirection -= 1;
-
-    player.handleMovement(walkDirection * frameTime, strafeDirection * frameTime, rotationDirection * frameTime, world.level(1));
+    player.frame(world.level(1), frameTime);
 
     engine->frame(player.getPosition());
     engine->draw();

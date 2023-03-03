@@ -3,9 +3,16 @@
 #include "world/level.hpp"
 
 #include <cmath>
+#include <numbers>
 
 namespace game
 {
+namespace
+{
+constexpr auto rotationSpeed{2.4};
+constexpr auto movementSpeed{1.8};
+}
+
 Player::Player()
 {}
 
@@ -16,7 +23,57 @@ const Position& Player::getPosition() const
     return position;
 }
 
-void Player::handleMovement(double walk, double strafe, double rotate, const world::Level& level)
+void Player::move(Direction direction)
+{
+    if (moving or rotating)
+    {
+        return;
+    }
+
+    target = position;
+
+    switch (direction)
+    {
+    case Direction::Forward:
+        target.x += std::cos(position.angle);
+        target.y += std::sin(position.angle);
+        moving = 1;
+        break;
+    case Direction::Backward:
+        target.x -= std::cos(position.angle);
+        target.y -= std::sin(position.angle);
+        moving = -1;
+        break;
+    case Direction::Left:
+        break;
+    case Direction::Right:
+        break;
+    }
+}
+
+void Player::rotate(Rotation rotation)
+{
+    if (moving or rotating)
+    {
+        return;
+    }
+
+    target = position;
+
+    switch(rotation)
+    {
+    case Rotation::Left:
+        target.angle -= std::numbers::pi / 2;
+        rotating = -1;
+        break;
+    case Rotation::Right:
+        target.angle += std::numbers::pi / 2;
+        rotating = +1;
+        break;
+    }
+}
+
+void Player::frame(const world::Level& level, double frameTime)
 {
     auto overlap = [](double x1, double x2, double y1, double y2)
     {
@@ -37,13 +94,13 @@ void Player::handleMovement(double walk, double strafe, double rotate, const wor
     auto targetZ = sector.floor + 0.6;
     if (position.z != targetZ)
     {
-        position.z = std::clamp(targetZ, position.z - 0.05, position.z + 0.1);
+        position.z = std::clamp(targetZ, position.z - frameTime, position.z + frameTime * 2);
     }
 
-    if (walk != 0 or strafe != 0)
+    if (moving or strafing)
     {
-        auto deltaX = walk * std::cos(position.angle) + strafe * std::sin(position.angle);
-        auto deltaY = walk * std::sin(position.angle) - strafe * std::cos(position.angle);
+        auto deltaX = frameTime * moving * movementSpeed * std::cos(position.angle) + frameTime * strafing * movementSpeed * std::sin(position.angle);
+        auto deltaY = frameTime * moving * movementSpeed * std::sin(position.angle) - frameTime * strafing * movementSpeed * std::cos(position.angle);
 
         for (const auto& wall : sector.walls)
         {
@@ -63,6 +120,8 @@ void Player::handleMovement(double walk, double strafe, double rotate, const wor
                             position.x += portal.transform->x;
                             position.y += portal.transform->y;
                             position.z += portal.transform->z;
+                            target.x += portal.transform->x;
+                            target.y += portal.transform->y;
                             spdlog::debug("Portal - new: {} {} {}", position.x, position.y, position.z);
                             position.angle += portal.transform->angle;
                         }
@@ -79,11 +138,25 @@ void Player::handleMovement(double walk, double strafe, double rotate, const wor
 
         position.x += deltaX;
         position.y += deltaY;
+
+        if ((target.x - position.x) * (moving * std::cos(position.angle)) <= 0 and
+            (target.y - position.y) * (moving * std::sin(position.angle)) <= 0)
+        {
+            position.x = target.x;
+            position.y = target.y;
+            moving = 0;
+        }
     }
 
-    if (rotate != 0)
+    if (rotating != 0)
     {
-        position.angle += rotate;
+        position.angle += rotating * frameTime * rotationSpeed;
+
+        if ((target.angle - position.angle) * rotating < 0)
+        {
+            position.angle = target.angle;
+            rotating = 0;
+        }
     }
 }
 }

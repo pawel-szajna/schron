@@ -31,6 +31,6 @@ public:
 private:
 
     sdl::Renderer& renderer;
-    std::vector<std::unique_ptr<Object>> objects{};
+    std::vector<std::unique_ptr<Object>> objects;
 };
 }
