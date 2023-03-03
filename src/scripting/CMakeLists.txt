@@ -18,7 +18,7 @@ if(MSVC)
     target_compile_options(
         scripting
         PRIVATE
-        /Wall /Wx /O2
+        /Wall /WX /O2
     )
 else()
     target_compile_options(
