@@ -14,7 +14,6 @@ namespace engine
 {
 namespace
 {
-constexpr auto color(uint32_t red, uint32_t green, uint32_t blue) { return 65536 * red + 256 * green + blue; }
 constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; };
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
 {
@@ -135,7 +134,8 @@ void Engine::renderWall(const world::Sector& sector,
             transformedRightZ = i1y > 0 ? i1y : i2y;
         }
 
-        if (std::abs(transformedRightX - transformedLeftX) > std::abs(transformedRightZ - transformedLeftZ))
+        if (std::abs(transformedRightX - transformedLeftX) >
+            std::abs(transformedRightZ - transformedLeftZ))
         {
             textureBoundaryLeft = (transformedLeftX - oldLeftX) * (t.width - 1) / (oldRightX - oldLeftX);
             textureBoundaryRight = (transformedRightX - oldRightX) * (t.width - 1) / (oldRightX - oldLeftX);
@@ -210,10 +210,6 @@ void Engine::renderWall(const world::Sector& sector,
         auto visibleWallTop    = std::clamp(wallTop, limitTop[x], limitBottom[x]);
         auto visibleWallBottom = std::clamp(wallBottom, limitTop[x], limitBottom[x]);
 
-        constexpr static auto colorCeiling = color(0xaa, 0x88, 0x88);
-
-        line(x, limitTop[x], visibleWallTop, colorCeiling);
-
         auto& floorTexture = texture(sector.floorTexture);
         auto& ceilingTexture = texture(sector.ceilingTexture);
 
@@ -262,27 +258,25 @@ void Engine::renderWall(const world::Sector& sector,
     auto currentRenderDepth = renderParameters.depth;
     if (wall.portal.has_value() and currentRenderDepth > 0)
     {
+        auto newOffsetX = renderParameters.offsetX;
+        auto newOffsetY = renderParameters.offsetY;
+        auto newOffsetZ = renderParameters.offsetZ;
+        auto newOffsetAngle = renderParameters.offsetAngle;
+
         if (wall.portal->transform.has_value())
         {
             const auto& transform = *wall.portal->transform;
-            renderQueue.push(SectorRenderParams{wall.portal->sector,
-                                                beginX, endX,
-                                                currentRenderDepth - 1,
-                                                renderParameters.offsetX + transform.x,
-                                                renderParameters.offsetY + transform.y,
-                                                renderParameters.offsetZ + transform.z,
-                                                renderParameters.offsetAngle + transform.angle});
+            newOffsetX += transform.x;
+            newOffsetY += transform.y;
+            newOffsetZ += transform.z;
+            newOffsetAngle += transform.angle;
         }
-        else
-        {
-            renderQueue.push(SectorRenderParams{wall.portal->sector,
-                                                beginX, endX,
-                                                currentRenderDepth - 1,
-                                                renderParameters.offsetX,
-                                                renderParameters.offsetY,
-                                                renderParameters.offsetZ,
-                                                renderParameters.offsetAngle});
-        }
+
+        renderQueue.push(SectorRenderParams{wall.portal->sector,
+                                            beginX, endX,
+                                            currentRenderDepth - 1,
+                                            newOffsetX, newOffsetY, newOffsetZ,
+                                            newOffsetAngle});
     }
 }
 
