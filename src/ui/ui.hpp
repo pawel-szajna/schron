@@ -7,7 +7,7 @@
 
 namespace sdl
 {
-class Surface;
+class Renderer;
 }
 
 namespace ui
@@ -18,15 +18,19 @@ class UI
 {
 public:
 
-    UI();
+    explicit UI(sdl::Renderer& renderer);
     ~UI();
+
+    void add(std::unique_ptr<Object>&& object);
+    void clear();
 
     void render();
 
     KeyHandler keyHandler{};
 
-public: // TODO private
+private:
 
-    std::vector<std::unique_ptr<Object>> objects;
+    sdl::Renderer& renderer;
+    std::vector<std::unique_ptr<Object>> objects{};
 };
 }

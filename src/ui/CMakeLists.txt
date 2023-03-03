@@ -3,7 +3,6 @@ add_library(
         STATIC
         editor/editor.cpp
         key_handler.cpp
-        object.cpp
         ui.cpp
 )
 

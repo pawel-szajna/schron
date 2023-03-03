@@ -28,13 +28,13 @@ void ModeInGame::entry()
 
     engine = std::make_unique<engine::Engine>(renderer, level);
     editor = std::make_unique<ui::editor::Editor>(level, player.getPosition().x, player.getPosition().y);
-    ui.objects.push_back(std::move(editor));
+    ui.add(std::move(editor));
 }
 
 void ModeInGame::exit()
 {
     engine.reset();
-    ui.objects.clear();
+    ui.clear();
 }
 
 std::optional<GameMode> ModeInGame::frame(double frameTime)

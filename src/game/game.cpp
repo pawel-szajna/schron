@@ -17,7 +17,7 @@ namespace game
 {
 Game::Game() :
     world(std::make_unique<world::World>()),
-    ui(std::make_unique<ui::UI>()),
+    ui(std::make_unique<ui::UI>(renderer)),
     scripting(std::make_unique<scripting::Scripting>(*ui, *world))
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
