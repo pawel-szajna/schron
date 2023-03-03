@@ -196,8 +196,8 @@ void Engine::renderWall(const world::Sector& sector,
 
     auto wallLength = std::hypot(wallStartX - wallEndX, wallStartY - wallEndY);
 
-    auto distanceLeft = std::hypot(transformedLeftX - player.x, transformedLeftZ - player.y);
-    auto distanceRight = std::hypot(transformedRightX - player.x, transformedRightZ - player.y);
+    auto distanceLeft = std::hypot(transformedLeftX, transformedLeftZ, ceilingY - floorY);
+    auto distanceRight = std::hypot(transformedRightX, transformedRightZ, ceilingY - floorY);
 
     textureBoundaryRight *= wallLength * (sector.ceiling - sector.floor);
 
@@ -220,21 +220,22 @@ void Engine::renderWall(const world::Sector& sector,
         for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
         {
             if (y < visibleWallBottom and y > visibleWallTop) continue;
+            auto isCeiling = y < visibleWallTop;
 
-            auto transformedZ = (y < visibleWallTop ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
+            auto transformedZ = (isCeiling ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
             auto transformedX = transformedZ * (c::renderWidth / 2 - x) / fovH;
 
             auto mapX = transformedZ * std::cos(player.angle) + transformedX * std::sin(player.angle) + player.x + renderParameters.offsetX;
             auto mapY = transformedZ * std::sin(player.angle) - transformedX * std::cos(player.angle) + player.y + renderParameters.offsetY;
 
-            int textureWidth = (y < visibleWallTop ? ceilingTexture : floorTexture).width;
-            int textureHeight = (y < visibleWallTop ? ceilingTexture : floorTexture).height;
+            int textureWidth = (isCeiling ? ceilingTexture : floorTexture).width;
+            int textureHeight = (isCeiling ? ceilingTexture : floorTexture).height;
 
             auto tX = (int)std::abs(textureWidth + mapX * textureWidth) % textureWidth;
             auto tY = (int)std::abs(textureHeight + mapY * textureHeight) % textureHeight;
 
-            auto pixel = (y < visibleWallTop ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
-            buffer[x + y * c::renderWidth] = shade(pixel, std::hypot(transformedX, transformedZ));
+            auto pixel = (isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
+            buffer[x + y * c::renderWidth] = shade(pixel, std::hypot(transformedX, transformedZ, isCeiling ? ceilingY : floorY));
         }
 
         int textureX = (textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
