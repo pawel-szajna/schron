@@ -22,7 +22,7 @@ Game::Game() :
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
-    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, view));
+    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, renderer));
     modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");
@@ -71,18 +71,15 @@ void Game::mainLoop()
             // sdl::delay(c::frameLimit - frameTime);
         }
 
+        renderer.clear();
+
         auto stateChange = modes.at(mode)->frame(frameTime);
         if (stateChange.has_value())
         {
             switchMode(*stateChange);
         }
 
-        noise.render(view);
-        view.render(texture);
-        view.empty();
-
-        renderer.clear();
-        renderer.copy(texture);
+        noise.render();
         renderer.present();
 
         if (newTime - windowUpdateTime >= 1000)

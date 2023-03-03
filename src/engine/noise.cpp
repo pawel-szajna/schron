@@ -1,12 +1,18 @@
 #include "noise.hpp"
 
+#include "sdlwrapper/renderer.hpp"
+
 namespace engine
 {
-Noise::Noise(int& level) :
+Noise::Noise(sdl::Renderer& renderer, int& level) :
+    renderer(renderer),
+    noise(renderer.createTexture(sdl::Texture::Access::Streaming, noiseWidth, noiseHeight)),
     level(level)
-{}
+{
+    noise.setBlendMode(sdl::BlendMode::Blend);
+}
 
-void Noise::render(sdl::Surface& target)
+void Noise::render()
 {
     if (level > 12)
     {
@@ -17,26 +23,20 @@ void Noise::render(sdl::Surface& target)
         generate();
     }
 
-    noise.render(target);
+    noise.update(buffer.data());
+    renderer.copy(noise);
 }
 
 void Noise::fillWithNoise(const std::function<int()>& transparencyApplier)
 {
-    auto pixels = noise.pixels();
-    for (auto y = 0; y < 768; y += 8)
+    for (auto y = 0; y < noiseHeight; ++y)
     {
-        for (auto x = 0; x < 1024; x += 8)
+        for (auto x = 0; x < noiseWidth; ++x)
         {
             auto pixel = rand() % 256;
             pixel = (pixel << 16) + (pixel << 8) + pixel;
             pixel += transparencyApplier();
-            for (int i = 0; i < 8; ++i)
-            {
-                for (int j = 0; j < 8; ++j)
-                {
-                    pixels[(y + j) * 1024 + (x + i)] = pixel;
-                }
-            }
+            buffer[y * noiseWidth + x] = pixel;
         }
     }
 }

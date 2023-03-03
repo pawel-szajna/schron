@@ -1,7 +1,7 @@
 #pragma once
 
 #include "sdlwrapper/common_types.hpp"
-#include "sdlwrapper/surface.hpp"
+#include "sdlwrapper/texture.hpp"
 #include "util/constants.hpp"
 
 #include <array>
@@ -17,7 +17,7 @@ struct Position;
 
 namespace sdl
 {
-class Surface;
+class Renderer;
 }
 
 namespace world
@@ -44,10 +44,10 @@ class Engine
 
 public:
 
-    Engine(world::Level& level);
+    Engine(sdl::Renderer& renderer, world::Level& level);
 
     void frame(const game::Position& player);
-    void draw(sdl::Surface& target);
+    void draw();
 
 private:
 
@@ -58,9 +58,11 @@ private:
 
     std::unordered_map<int, std::array<uint32_t, TEXTURE_WIDTH * TEXTURE_HEIGHT>> textures;
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
+    std::array<sdl::Pixel, c::renderWidth * c::renderHeight> buffer{};
     std::queue<SectorRenderParams> renderQueue{};
 
-    sdl::Surface view{c::renderWidth, c::renderHeight, 0};
+    sdl::Renderer& renderer;
+    sdl::Texture view;
 
     world::Level& level;
 };

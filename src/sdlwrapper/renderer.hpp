@@ -1,8 +1,8 @@
 #pragma once
 
-#include "wrapped.hpp"
-
 #include "common_types.hpp"
+#include "texture.hpp"
+#include "wrapped.hpp"
 
 #include <optional>
 
@@ -10,7 +10,6 @@ struct SDL_Renderer;
 
 namespace sdl
 {
-class Texture;
 class Window;
 
 class Renderer : public Wrapped<SDL_Renderer>
@@ -25,5 +24,7 @@ public:
               std::optional<Rectangle> source = std::nullopt,
               std::optional<Rectangle> target = std::nullopt);
     void present() noexcept;
+
+    Texture createTexture(Texture::Access access, int width, int height);
 };
 }

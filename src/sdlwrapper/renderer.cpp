@@ -41,12 +41,17 @@ void Renderer::copy(Texture& texture, std::optional<Rectangle> source, std::opti
                                  target.has_value() ? reinterpret_cast<SDL_Rect*>(&(*target)) : nullptr);
     if (result != Success)
     {
-        throw std::runtime_error{std::format("could not copy texture: {}", SDL_GetError())};
+        throw std::runtime_error{std::format("could not copy mainTexture: {}", SDL_GetError())};
     }
 }
 
 void Renderer::present() noexcept
 {
     SDL_RenderPresent(wrapped);
+}
+
+Texture Renderer::createTexture(Texture::Access access, int width, int height)
+{
+    return Texture(*this, access, width, height);
 }
 }

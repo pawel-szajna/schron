@@ -12,7 +12,7 @@ class Engine;
 
 namespace sdl
 {
-class Surface;
+class Renderer;
 }
 
 namespace ui
@@ -36,7 +36,7 @@ class ModeInGame : public ModeExecutor
 {
 public:
 
-    ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& view);
+    ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer);
     virtual ~ModeInGame();
 
     void entry() override;
@@ -52,7 +52,6 @@ private:
 
     ui::UI& ui;
     world::World& world;
-
-    sdl::Surface& view;
+    sdl::Renderer& renderer;
 };
 }

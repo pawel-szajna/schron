@@ -1,5 +1,6 @@
 add_library(
         sdlwrapper
+        converters.cpp
         renderer.cpp
         sdlwrapper.cpp
         surface.cpp

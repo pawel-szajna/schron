@@ -1,10 +1,15 @@
 #pragma once
 
 #include "sdlwrapper/common_types.hpp"
-#include "sdlwrapper/surface.hpp"
+#include "sdlwrapper/texture.hpp"
 
 #include <array>
 #include <functional>
+
+namespace sdl
+{
+class Renderer;
+}
 
 namespace engine
 {
@@ -15,8 +20,8 @@ class Noise
 
 public:
 
-    Noise(int& level);
-    void render(sdl::Surface& target);
+    Noise(sdl::Renderer& renderer, int& level);
+    void render();
 
 private:
 
@@ -24,7 +29,10 @@ private:
     void generate();
     void generateLinear(int intensity);
 
+    sdl::Renderer& renderer;
+    sdl::Texture noise;
     int& level;
-    sdl::Surface noise{1024, 768};
+
+    std::array<sdl::Pixel, noiseWidth * noiseHeight> buffer{};
 };
 }

@@ -51,14 +51,12 @@ private:
 
     sdl::Window window{"Schron", 1024, 768, 0};
     sdl::Renderer renderer{window};
-    sdl::Texture texture{renderer, sdl::Texture::Access::Streaming, 1024, 768};
-    sdl::Surface view{1024, 768};
 
     std::unique_ptr<world::World> world;
     std::unique_ptr<ui::UI> ui;
     std::unique_ptr<scripting::Scripting> scripting;
 
     int noiseLevel{13};
-    engine::Noise noise{noiseLevel};
+    engine::Noise noise{renderer, noiseLevel};
 };
 }

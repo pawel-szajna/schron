@@ -1,5 +1,6 @@
 #include "texture.hpp"
 
+#include "converters.hpp"
 #include "renderer.hpp"
 #include "util/format.hpp"
 
@@ -38,6 +39,15 @@ Texture::~Texture()
     if (wrapped != nullptr)
     {
         SDL_DestroyTexture(wrapped);
+    }
+}
+
+void Texture::setBlendMode(BlendMode blendMode)
+{
+    auto result = SDL_SetTextureBlendMode(wrapped, convert::BlendMode_to_SDL_BlendMode(blendMode));
+    if (result != Success)
+    {
+        throw std::runtime_error{std::format("cannot set texture blend mode: {}", SDL_GetError())};
     }
 }
 

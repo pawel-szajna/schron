@@ -1,7 +1,7 @@
 #include "mode_in_game.hpp"
 
 #include "engine/engine.hpp"
-#include "sdlwrapper/surface.hpp"
+#include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/editor/editor.hpp"
 #include "ui/ui.hpp"
@@ -14,10 +14,10 @@
 
 namespace game
 {
-ModeInGame::ModeInGame(ui::UI& ui, world::World& world, sdl::Surface& view) :
+ModeInGame::ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     ui(ui),
     world(world),
-    view(view)
+    renderer(renderer)
 {}
 
 ModeInGame::~ModeInGame() = default;
@@ -26,7 +26,7 @@ void ModeInGame::entry()
 {
     auto& level = world.level(1);
 
-    engine = std::make_unique<engine::Engine>(level);
+    engine = std::make_unique<engine::Engine>(renderer, level);
     editor = std::make_unique<ui::editor::Editor>(level, player.getPosition().x, player.getPosition().y);
     ui.objects.push_back(std::move(editor));
 }
@@ -64,7 +64,7 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     player.handleMovement(walkDirection * frameTime, strafeDirection * frameTime, rotationDirection * frameTime, world.level(1));
 
     engine->frame(player.getPosition());
-    engine->draw(view);
+    engine->draw();
 
     return noChange;
 }

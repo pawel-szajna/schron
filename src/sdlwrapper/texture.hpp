@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common_types.hpp"
 #include "wrapped.hpp"
 
 #include <cstdint>
@@ -23,6 +24,8 @@ public:
 
     Texture(Renderer& renderer, Access access, int width, int height);
     ~Texture();
+
+    void setBlendMode(BlendMode blendMode);
 
     void update(uint32_t* pixels);
 

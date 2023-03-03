@@ -11,4 +11,12 @@ struct Rectangle
     int x, y;
     int width, height;
 };
+
+enum class BlendMode
+{
+    None,
+    Blend,
+    Add,
+    Mod,
+};
 }

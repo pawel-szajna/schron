@@ -25,10 +25,12 @@ constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, 
 };
 }
 
-Engine::Engine(world::Level& level) :
+Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
+    renderer(renderer),
+    view(renderer.createTexture(sdl::Texture::Access::Streaming, c::renderWidth, c::renderHeight)),
     level(level)
 {
-    spdlog::info("Initializing engine");
+    spdlog::info("Initialized engine");
 }
 
 void Engine::frame(const game::Position& player)
@@ -36,6 +38,8 @@ void Engine::frame(const game::Position& player)
     constexpr static auto renderStart = 0;
     constexpr static auto renderEnd = c::renderWidth - 1;
     constexpr static auto initialDepth = 4;
+
+    buffer.fill(0);
 
     limitTop.fill(0);
     limitBottom.fill(c::renderHeight - 1);
@@ -214,16 +218,17 @@ void Engine::line(int x, int yStart, int yEnd, int color)
     {
         return;
     }
-    view[yStart * c::renderWidth + x] = 0;
+    buffer[yStart * c::renderWidth + x] = 0;
     for (int y = yStart + 1; y < yEnd; ++y)
     {
-        view[y * c::renderWidth + x] = color;
+        buffer[y * c::renderWidth + x] = color;
     }
-    view[yEnd * c::renderWidth + x] = 0;
+    buffer[yEnd * c::renderWidth + x] = 0;
 }
 
-void Engine::draw(sdl::Surface& target)
+void Engine::draw()
 {
-    view.renderStretched(target);
+    view.update(buffer.data());
+    renderer.copy(view);
 }
 }
