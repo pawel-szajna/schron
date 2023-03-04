@@ -12,6 +12,11 @@ struct Rectangle
     int width, height;
 };
 
+struct Color
+{
+    uint8_t r, g, b, a;
+};
+
 struct Vertex
 {
     float x, y;

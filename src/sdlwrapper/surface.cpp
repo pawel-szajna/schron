@@ -24,6 +24,13 @@ Surface::Surface(const std::string& filename)
     height = wrapped->h;
 }
 
+Surface::Surface(SDL_Surface* surfacePtr)
+{
+    assign(surfacePtr, "surface from an externally provided pointer");
+    width = wrapped->w;
+    height = wrapped->h;
+}
+
 Surface::~Surface()
 {
     if (wrapped != nullptr)

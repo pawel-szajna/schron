@@ -14,10 +14,13 @@ class Texture;
 
 class Surface : public Wrapped<SDL_Surface>
 {
+    friend class Font;
+
 public:
 
     Surface(int width, int height, int alphaMask = 0xff000000);
     explicit Surface(const std::string& filename);
+    explicit Surface(SDL_Surface* surfacePtr);
     ~Surface();
 
     void empty();

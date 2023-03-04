@@ -2,6 +2,11 @@
 
 #include "sdlwrapper/renderer.hpp"
 
+namespace sdl
+{
+class Renderer;
+}
+
 namespace ui
 {
 class Object

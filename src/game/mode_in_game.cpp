@@ -4,6 +4,7 @@
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/mini_map.hpp"
+#include "ui/text.hpp"
 #include "ui/ui.hpp"
 #include "world/level.hpp"
 #include "world/world.hpp"
@@ -43,6 +44,20 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     if (keys[SDL_SCANCODE_Q] or keys[SDL_SCANCODE_ESCAPE])
     {
         return GameMode::Quit;
+    }
+
+    if (keys[SDL_SCANCODE_1])
+    {
+        auto text = std::make_unique<ui::Text>(renderer, ui.fonts, 1024 - 64, 192, 32, 768 - 192 - 32);
+        auto& textRef = *text;
+        ui.add(std::move(text));
+        textRef.writeAnimated("Cyprian Kamil Norwid: ", "RubikDirt", 16);
+        textRef.writeAnimated("Do kraju tego, gdzie kruszynę chleba podnoszą z ziemi przez uszanowanie "
+                              "dla darów nieba… tęskno mi, Panie! Do kraju tego, gdzie winą jest dużą "
+                              "popsować gniazdo na gruszy bocianie – bo wszystkim służą… tęskno mi, Panie! "
+                              "Do kraju tego, gdzie pierwsze ukłony są jak odwieczne Chrystusa wyznanie: "
+                              "b ą d ź p o c h w a l o n y! Tęskno mi, "
+                              "Panie! I tak być musi, choć się tak nie stanie.", "KellySlab", 32);
     }
 
     if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);

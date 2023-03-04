@@ -5,6 +5,7 @@ add_library(
         editor/editor.cpp
         key_handler.cpp
         mini_map.cpp
+        text.cpp
         ui.cpp
 )
 

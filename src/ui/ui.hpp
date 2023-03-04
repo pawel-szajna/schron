@@ -1,12 +1,14 @@
 #pragma once
 
 #include "key_handler.hpp"
+#include "fonts.hpp"
 
 #include <memory>
 #include <vector>
 
 namespace sdl
 {
+class Font;
 class Renderer;
 }
 
@@ -27,6 +29,7 @@ public:
     void render();
 
     KeyHandler keyHandler{};
+    Fonts fonts{};
 
 private:
 
