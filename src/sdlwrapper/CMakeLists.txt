@@ -2,6 +2,7 @@ add_library(
         sdlwrapper
         STATIC
         converters.cpp
+        font.cpp
         renderer.cpp
         sdlwrapper.cpp
         surface.cpp

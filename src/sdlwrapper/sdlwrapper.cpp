@@ -4,6 +4,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <spdlog/spdlog.h>
 
 namespace sdl
@@ -12,21 +13,29 @@ namespace sdl
 void initialize()
 {
     spdlog::info("SDL initialization");
+    spdlog::debug("SDL main init");
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL: {}", SDL_GetError())};
     }
+    spdlog::debug("SDL_image init");
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL_image: {}", IMG_GetError())};
     }
-    // TTF_Init();
+    spdlog::debug("SDL_ttf init");
+    if (TTF_Init() != 0)
+    {
+        throw std::runtime_error{std::format("could not initialize SDL_ttf: {}", TTF_GetError())};
+    }
+    spdlog::debug("SDL up and running!");
     SDL_ShowCursor(SDL_DISABLE);
 }
 
 void teardown()
 {
     spdlog::debug("Quitting SDL");
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }

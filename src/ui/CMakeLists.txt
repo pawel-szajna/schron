@@ -1,6 +1,7 @@
 add_library(
         ui
         STATIC
+        fonts.cpp
         editor/editor.cpp
         key_handler.cpp
         mini_map.cpp
