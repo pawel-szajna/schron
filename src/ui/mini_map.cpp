@@ -1,6 +1,7 @@
 #include "mini_map.hpp"
 
 #include "game/player.hpp"
+#include "sdlwrapper/font.hpp"
 #include "world/level.hpp"
 
 #include <algorithm>
@@ -162,7 +163,14 @@ void MiniMap::render(sdl::Renderer& renderer)
     };
     surfaceRenderer.renderGeometry(playerArrow);
 
+
     surfaceRenderer.present();
+
+    auto font = sdl::Font("res/font/KellySlab.ttf", 18);
+    auto text = font.render(std::format("x={:.2} y={:.2} z={:.2}", position.x, position.y, position.z),
+                            sdl::Color{255, 255, 255, 200});
+    text.render(surface, sdl::Rectangle{0, mapHeight - text.height});
+
     surface.render(texture);
     renderer.copy(texture, std::nullopt, sdl::Rectangle{mapLeft, mapTop, mapWidth, mapHeight});
 }

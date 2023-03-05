@@ -14,6 +14,9 @@ namespace engine
 {
 namespace
 {
+constexpr double fovH = c::renderHeight * 0.73;
+constexpr double fovV = c::renderWidth * 0.2;
+
 constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; };
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
 {
@@ -76,6 +79,8 @@ void Engine::frame(const game::Position& player)
         {
             renderWall(sector, wall, player);
         }
+
+        renderSprites(sector, player);
 
         renderQueue.pop();
     }
@@ -146,9 +151,6 @@ void Engine::renderWall(const world::Sector& sector,
             textureBoundaryRight = (transformedRightZ - oldLeftZ) * (t.width - 1) / (oldRightZ - oldLeftZ);
         }
     }
-
-    constexpr static double fovH = c::renderHeight * 0.73;
-    constexpr static double fovV = c::renderWidth * 0.2;
 
     double scaleX1 = fovH / transformedLeftZ;
     double scaleY1 = fovV / transformedLeftZ;
@@ -277,6 +279,92 @@ void Engine::renderWall(const world::Sector& sector,
                                             currentRenderDepth - 1,
                                             newOffsetX, newOffsetY, newOffsetZ,
                                             newOffsetAngle});
+    }
+}
+
+void Engine::renderSprites(const world::Sector& sector, const game::Position& player)
+{
+    std::vector<std::tuple<int, double>> spriteQueue{};
+    spriteQueue.reserve(sector.sprites.size());
+    std::transform(sector.sprites.begin(), sector.sprites.end(),
+                   std::back_inserter(spriteQueue),
+                   [&player](const auto& sprite)
+                   {
+                       return std::make_tuple(sprite.id, std::hypot(player.x - sprite.x, player.y - sprite.y));
+                   });
+    std::sort(spriteQueue.begin(), spriteQueue.end(),
+              [](const auto& a, const auto& b) { return std::get<1>(a) > std::get<1>(b); });
+
+    const auto& renderParameters = renderQueue.front();
+
+    for (const auto& [id, distance] : spriteQueue)
+    {
+        if (distance > 10)
+        {
+            continue;
+        }
+
+        const auto& sprite = sector.sprites[id];
+        if (not sprites.contains(sprite.texture))
+        {
+            spdlog::debug("Sprite {} not loaded yet", sprite.texture);
+            sprites.try_emplace(sprite.texture, sprite.texture);
+        }
+
+        const auto& texture = sprites.at(sprite.texture);
+
+        auto spriteCenterX = sprite.x - player.x - renderParameters.offsetX;
+        auto spriteCenterY = sprite.y - player.y - renderParameters.offsetY;
+
+        auto renderedAngle = player.angle - renderParameters.offsetAngle;
+
+        auto transformedX  = spriteCenterX * std::sin(renderedAngle) - spriteCenterY * std::cos(renderedAngle);
+        auto transformedZ  = spriteCenterX * std::cos(renderedAngle) + spriteCenterY * std::sin(renderedAngle);
+
+        if (transformedZ <= 0)
+        {
+            continue;
+        }
+
+        double scaleX = fovH / transformedZ;
+        double scaleY = fovV / transformedZ;
+
+        int leftX  = c::renderWidth / 2 - (int)((transformedX + sprite.w / 2) * scaleX);
+        int rightX = c::renderWidth / 2 - (int)((transformedX - sprite.w / 2) * scaleX);
+
+        if (leftX >= rightX or rightX < renderParameters.leftXBoundary or leftX > renderParameters.rightXBoundary)
+        {
+            continue;
+        }
+
+        int topY     = c::renderHeight / 2 - (int)((sprite.z - player.z - renderParameters.offsetZ + sprite.h / 2) * scaleY);
+        int bottomY  = c::renderHeight / 2 - (int)((sprite.z - player.z - renderParameters.offsetZ - sprite.h / 2) * scaleY);
+
+        if (topY >= bottomY or bottomY < 0 or topY >= c::renderHeight - 1)
+        {
+            continue;
+        }
+
+        const auto& texturePixels = texture.pixels();
+
+        auto startX = std::clamp(leftX,  renderParameters.leftXBoundary, renderParameters.rightXBoundary);
+        auto endX   = std::clamp(rightX, renderParameters.leftXBoundary, renderParameters.rightXBoundary);
+        auto startY = std::clamp(topY,    0, c::renderHeight - 1);
+        auto endY   = std::clamp(bottomY, 0, c::renderHeight - 1);
+
+        for (auto y = startY; y <= endY; ++y)
+        {
+            int texY = (texture.height - 1) * (y - topY) / (bottomY - topY);
+            for (auto x = startX; x <= endX; ++x)
+            {
+                int texX = (texture.width - 1) * (x - leftX) / (rightX - leftX);
+                const auto& pixel = texturePixels[texX + texY * texture.width];
+                if ((pixel & 0xff000000) >> 24 == 0xff)
+                {
+                    buffer[x + y * c::renderWidth] = pixel; // shade(pixel, distance);
+                }
+            }
+        }
     }
 }
 

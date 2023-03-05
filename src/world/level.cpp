@@ -17,48 +17,20 @@ Level::Level(int width,
     spdlog::debug("Creating level {}", this->name);
 
     // constexpr static auto deg90 = 90.0 * std::numbers::pi / 180.0;
-/*
-    put(PolygonalSectorBuilder(-2, -2)
-            .withId(1)
-            .withCeiling(1.5)
-            .withFloor(0.0)
-            .withWall(3, -2, "wall")
-            .withWall(3, -1, "wall")
-            .withWall(3, 2, "wall", Wall::Portal{2})
-            .withWall(-2, 2, "wall")
-            .withWall(-3, 1, "wall")
-            .withWall(-3, -1, "wall", Wall::Portal{3, Wall::Portal::Transformation{8, 3, -0.5, 0}})
-            .withWall(-2, -2, "wall")
-            .build());
-    put(RectangularSectorBuilder()
-            .withId(2)
-            .withDimensions(3, -1, 5, 2)
-            .withCeiling(1.0)
-            .withFloor(0.0)
-            .withWestNeighbour(1, 3, 2, 3, -1)
-            .withSouthNeighbour(3, 5, 2, 3, 2)
-            .build());
-    put(RectangularSectorBuilder()
-            .withId(3)
-            .withDimensions(3, 2, 5, 4)
-            .withCeiling(1.0)
-            .withFloor(-0.5)
-            .withNorthNeighbour(2, 3, 2, 5, 2)
-            .build());
-    map.at(3).walls.at(1).portal = Wall::Portal{1, Wall::Portal::Transformation{-8, -3, 0.5, 0}};
-*/
 
     put(RectangularSectorBuilder()
             .withId(1)
             .withDimensions(0, 0, 1, 3)
             .withSouthNeighbour(2, 1, 3, 0, 3)
             .build());
-    put(RectangularSectorBuilder()
+    auto s2 = RectangularSectorBuilder()
             .withId(2)
             .withDimensions(-1, 3, 2, 6)
             .withNorthNeighbour(1, 0, 3, 1, 3)
             .withSouthNeighbour(3, 1, 6, 0, 6)
-            .build());
+            .build();
+    s2.sprites.push_back({0, "res/gfx/sprites/lamp.png", 0.5, 4.5, 0.5, 1.0, 1.0});
+    put(std::move(s2));
     put(RectangularSectorBuilder()
             .withId(3)
             .withDimensions(0, 6, 1, 10) // y2 = 9 to miejsce, gdzie jest blokada w oryginalnej grze, ale korytarz istnieje dalej

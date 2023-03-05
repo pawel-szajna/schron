@@ -34,6 +34,7 @@ public:
     void renderStretched(Surface& target);
 
     uint32_t* pixels();
+    const uint32_t* pixels() const;
     uint32_t& operator[](int index);
 
     int width, height;

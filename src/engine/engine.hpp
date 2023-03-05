@@ -57,6 +57,8 @@ private:
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
                     const game::Position& player);
+    void renderSprites(const world::Sector& sector,
+                       const game::Position& player);
     void line(int x, int yStart, int yEnd, int color);
     void texturedLine(int x,
                       int wallStart, int wallEnd,
@@ -66,6 +68,7 @@ private:
                       double distance);
 
     std::map<std::string, sdl::Surface> textures{};
+    std::map<std::string, sdl::Surface> sprites{};
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
     std::array<sdl::Pixel, c::renderWidth * c::renderHeight> buffer{};
     std::queue<SectorRenderParams> renderQueue{};

@@ -75,6 +75,11 @@ uint32_t* Surface::pixels()
     return static_cast<uint32_t*>(wrapped->pixels);
 }
 
+const uint32_t* Surface::pixels() const
+{
+    return static_cast<const uint32_t*>(wrapped->pixels);
+}
+
 uint32_t& Surface::operator[](int index)
 {
     return (pixels()[index]);
