@@ -14,8 +14,8 @@ namespace engine
 {
 namespace
 {
-constexpr double fovH = c::renderHeight * 0.73;
-constexpr double fovV = c::renderWidth * 0.2;
+constexpr double fovH = c::renderHeight * 0.65;
+constexpr double fovV = c::renderWidth * 0.22;
 
 constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; };
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
