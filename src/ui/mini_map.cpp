@@ -2,6 +2,7 @@
 
 #include "game/player.hpp"
 #include "sdlwrapper/font.hpp"
+#include "util/constants.hpp"
 #include "world/level.hpp"
 
 #include <algorithm>
@@ -18,7 +19,7 @@ constexpr auto mapWidth = 300;
 constexpr auto mapHeight = 240;
 constexpr auto mapMargin = 32;
 constexpr auto mapTop = mapMargin;
-constexpr auto mapLeft = 1024 - mapWidth - mapMargin;
+constexpr auto mapLeft = c::windowWidth - mapWidth - mapMargin;
 constexpr auto mapScale = 32;
 
 constexpr sdl::Vertex grayVertex(float x, float y, uint8_t intensity, uint8_t alpha)

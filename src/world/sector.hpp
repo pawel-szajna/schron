@@ -36,8 +36,8 @@ public:
 
     int id;
     std::string texture;
-    double x, y, z;
-    double w, h;
+    double x, y, z{0.5};
+    double w{1.0}, h{1.0};
 };
 
 class Sector

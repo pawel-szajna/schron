@@ -3,6 +3,7 @@
 #include "object.hpp"
 #include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/texture.hpp"
+#include "util/constants.hpp"
 
 #include <queue>
 #include <string>
@@ -44,7 +45,10 @@ private:
 
     struct Typing
     {
-        explicit Typing(Request&& request, int x, int y) : request(request), x(x), y(y), flashed(1024, 768)
+        explicit Typing(Request&& request, int x, int y) :
+            request(request),
+            x(x), y(y),
+            flashed(c::windowWidth, c::windowHeight)
         {}
 
         Request request;

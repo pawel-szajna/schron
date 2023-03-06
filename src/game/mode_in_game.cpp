@@ -6,6 +6,7 @@
 #include "ui/mini_map.hpp"
 #include "ui/text.hpp"
 #include "ui/ui.hpp"
+#include "util/constants.hpp"
 #include "world/level.hpp"
 #include "world/world.hpp"
 
@@ -48,7 +49,7 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     if (keys[SDL_SCANCODE_1])
     {
-        auto text = std::make_unique<ui::Text>(renderer, ui.fonts, 1024 - 64, 192, 32, 768 - 192 - 32);
+        auto text = std::make_unique<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, 192, 32, c::windowHeight - 192 - 32);
         auto& textRef = *text;
         ui.add(std::move(text));
         textRef.writeAnimated("Cyprian Kamil Norwid: ", "RubikDirt", 16);

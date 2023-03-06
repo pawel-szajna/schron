@@ -64,6 +64,7 @@ void Engine::frame(const game::Position& player)
     constexpr static auto initialDepth = 4;
 
     buffer.fill(0);
+    zBuffer.fill(100);
 
     limitTop.fill(0);
     limitBottom.fill(c::renderHeight - 1);
@@ -205,36 +206,14 @@ void Engine::renderWall(const world::Sector& sector,
 
     for (int x = beginX; x <= endX; ++x)
     {
-        auto distance = (x - leftX) * (distanceRight - distanceLeft) / (rightX - leftX) + distanceLeft;
+        auto distance = (distanceRight - distanceLeft) * (x - leftX) / (rightX - leftX) + distanceLeft;
 
         auto wallTop    = (x - leftX) * (rightYTop - leftYTop) / (rightX - leftX) + leftYTop;
         auto wallBottom = (x - leftX) * (rightYBottom - leftYBottom) / (rightX - leftX) + leftYBottom;
         auto visibleWallTop    = std::clamp(wallTop, limitTop[x], limitBottom[x]);
         auto visibleWallBottom = std::clamp(wallBottom, limitTop[x], limitBottom[x]);
 
-        auto& floorTexture = texture(sector.floorTexture);
-        auto& ceilingTexture = texture(sector.ceilingTexture);
-
-        for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
-        {
-            if (y < visibleWallBottom and y > visibleWallTop) continue;
-            auto isCeiling = y < visibleWallTop;
-
-            auto transformedZ = (isCeiling ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
-            auto transformedX = transformedZ * (c::renderWidth / 2 - x) / fovH;
-
-            auto mapX = transformedZ * std::cos(player.angle) + transformedX * std::sin(player.angle) + player.x + renderParameters.offsetX;
-            auto mapY = transformedZ * std::sin(player.angle) - transformedX * std::cos(player.angle) + player.y + renderParameters.offsetY;
-
-            int textureWidth = (isCeiling ? ceilingTexture : floorTexture).width;
-            int textureHeight = (isCeiling ? ceilingTexture : floorTexture).height;
-
-            auto tX = (int)std::abs(textureWidth + mapX * textureWidth) % textureWidth;
-            auto tY = (int)std::abs(textureHeight + mapY * textureHeight) % textureHeight;
-
-            auto pixel = (isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
-            buffer[x + y * c::renderWidth] = shade(pixel, std::hypot(transformedX, transformedZ, isCeiling ? ceilingY : floorY));
-        }
+        renderCeilingAndFloor(sector, player, x, visibleWallTop, visibleWallBottom, distance, ceilingY, floorY);
 
         int textureX = (textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
 
@@ -279,6 +258,39 @@ void Engine::renderWall(const world::Sector& sector,
                                             currentRenderDepth - 1,
                                             newOffsetX, newOffsetY, newOffsetZ,
                                             newOffsetAngle});
+    }
+}
+
+void Engine::renderCeilingAndFloor(const world::Sector& sector,
+                                   const game::Position& player,
+                                   int x, int wallTop, int wallBottom,
+                                   double distance,
+                                   double ceilingY, double floorY)
+{
+    auto& floorTexture = texture(sector.floorTexture);
+    auto& ceilingTexture = texture(sector.ceilingTexture);
+
+    for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
+    {
+        if (y < wallBottom and y > wallTop) continue;
+        if (distance > zBuffer[x + y * c::renderWidth]) continue;
+
+        auto isCeiling = y < wallTop;
+
+        auto transformedZ = (isCeiling ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
+        auto transformedX = transformedZ * (c::renderWidth / 2 - x) / fovH;
+
+        auto mapX = transformedZ * std::cos(player.angle) + transformedX * std::sin(player.angle) + player.x + renderQueue.front().offsetX;
+        auto mapY = transformedZ * std::sin(player.angle) - transformedX * std::cos(player.angle) + player.y + renderQueue.front().offsetY;
+
+        int textureWidth = (isCeiling ? ceilingTexture : floorTexture).width;
+        int textureHeight = (isCeiling ? ceilingTexture : floorTexture).height;
+
+        auto tX = (int)std::abs(textureWidth + mapX * textureWidth) % textureWidth;
+        auto tY = (int)std::abs(textureHeight + mapY * textureHeight) % textureHeight;
+
+        auto pixel = (isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
+        buffer[x + y * c::renderWidth] = shade(pixel, std::hypot(transformedX, transformedZ, isCeiling ? ceilingY : floorY));
     }
 }
 
@@ -357,11 +369,13 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
             int texY = (texture.height - 1) * (y - topY) / (bottomY - topY);
             for (auto x = startX; x <= endX; ++x)
             {
+                if (distance > zBuffer[x + y * c::renderWidth]) continue;
                 int texX = (texture.width - 1) * (x - leftX) / (rightX - leftX);
                 const auto& pixel = texturePixels[texX + texY * texture.width];
                 if ((pixel & 0xff000000) >> 24 == 0xff)
                 {
-                    buffer[x + y * c::renderWidth] = pixel; // shade(pixel, distance);
+                    buffer[x + y * c::renderWidth] = shade(pixel, distance);
+                    zBuffer[x + y * c::renderWidth] = distance;
                 }
             }
         }
@@ -400,9 +414,11 @@ void Engine::texturedLine(int x,
     }
     for (int y = yStart; y <= yEnd; ++y)
     {
+        if (distance > zBuffer[x + y * c::renderWidth]) continue;
         int textureY = (t.height - 1) * (y - wallStart) / (wallEnd - wallStart);
         auto pixel = t.pixels()[textureX + textureY * t.width];
-        buffer[y * c::renderWidth + x] = shade(pixel, distance);
+        buffer[x + y * c::renderWidth] = shade(pixel, distance);
+        zBuffer[x + y * c::renderWidth] = distance;
     }
 }
 

@@ -7,6 +7,7 @@
 #include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/texture.hpp"
 #include "sdlwrapper/window.hpp"
+#include "util/constants.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -49,7 +50,7 @@ private:
 
     ModesMap modes{};
 
-    sdl::Window window{"Schron", 1024, 768, 0};
+    sdl::Window window{"Schron", c::windowWidth, c::windowHeight, 0};
     sdl::Renderer renderer{window};
 
     std::unique_ptr<world::World> world;

@@ -57,6 +57,11 @@ private:
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
                     const game::Position& player);
+    void renderCeilingAndFloor(const world::Sector& sector,
+                               const game::Position& player,
+                               int x, int wallTop, int wallBottom,
+                               double distance,
+                               double ceilingY, double floorY);
     void renderSprites(const world::Sector& sector,
                        const game::Position& player);
     void line(int x, int yStart, int yEnd, int color);
@@ -71,6 +76,7 @@ private:
     std::map<std::string, sdl::Surface> sprites{};
     std::array<int, c::renderWidth> limitTop{}, limitBottom{};
     std::array<sdl::Pixel, c::renderWidth * c::renderHeight> buffer{};
+    std::array<double, c::renderWidth * c::renderHeight> zBuffer{};
     std::queue<SectorRenderParams> renderQueue{};
 
     sdl::Renderer& renderer;

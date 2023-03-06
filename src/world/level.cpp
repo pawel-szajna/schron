@@ -29,14 +29,19 @@ Level::Level(int width,
             .withNorthNeighbour(1, 0, 3, 1, 3)
             .withSouthNeighbour(3, 1, 6, 0, 6)
             .build();
-    s2.sprites.push_back({0, "res/gfx/sprites/lamp.png", 0.5, 4.5, 0.5, 1.0, 1.0});
+    s2.sprites.push_back({0, "res/gfx/sprites/lamp.png", 0.5, 4.5});
+    s2.sprites.push_back({1, "res/gfx/sprites/metal_table.png", 1.5, 3.5});
     put(std::move(s2));
-    put(RectangularSectorBuilder()
+
+    auto s3 = RectangularSectorBuilder()
             .withId(3)
             .withDimensions(0, 6, 1, 10) // y2 = 9 to miejsce, gdzie jest blokada w oryginalnej grze, ale korytarz istnieje dalej
             .withNorthNeighbour(2, 0, 6, 1, 6)
             .withEastNeighbour(4, 1, 8, 1, 9)
-            .build());
+            .build();
+    s3.sprites.push_back({0, "res/gfx/sprites/pipe_with_steam_back.png", 0.5, 9.5});
+    put(std::move(s3));
+
     put(RectangularSectorBuilder()
             .withId(4)
             .withDimensions(1, 8, 7 /* 15 */, 9)
@@ -45,13 +50,15 @@ Level::Level(int width,
             .withNorthNeighbour(12, 4, 8, 5, 8) // do czyjegoś pokoju
             .withEastNeighbour(14, 7, 8, 7, 9)
             .build());
-    put(RectangularSectorBuilder()
+    auto s14 = RectangularSectorBuilder()
             .withId(14)
             .withDimensions(7, 8, 11, 9)
             .withWestNeighbour(4, 7, 9, 7, 8)
             .withNorthNeighbour(15, 8, 8, 9, 8) // do pokoju Oli
             .withSouthNeighbour(17, 8, 9, 7, 9) // do polybiusów
-            .build());
+            .build();
+    s14.sprites.push_back({0, "res/gfx/sprites/rocks.png", 10.5, 8.5});
+    put(std::move(s14));
 
     // Kibel
     put(RectangularSectorBuilder()
@@ -116,11 +123,14 @@ Level::Level(int width,
                 .withSouthNeighbour(14, 9, 8, 8, 8)
                 .withNorthNeighbour(16, 8, 7, 9, 7)
                 .build());
-    put(RectangularSectorBuilder()
+    auto s16 = RectangularSectorBuilder()
                 .withId(16)
                 .withDimensions(7, 4, 10, 7)
                 .withSouthNeighbour(15, 9, 7, 8, 7)
-                .build());
+                .build();
+    s16.sprites.push_back({0, "res/gfx/sprites/metal_table.png", 9.5, 4.5});
+    s16.sprites.push_back({1, "res/gfx/sprites/ola.png", 9.5, 5.5});
+    put(std::move(s16));
 
     // Pokój z polybiusem
     put(RectangularSectorBuilder()

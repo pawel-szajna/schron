@@ -3,6 +3,7 @@
 #include "fonts.hpp"
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "util/constants.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -13,8 +14,8 @@ namespace ui
 Text::Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x, int y) :
     width(width), height(height),
     x(x), y(y), lastX(x), lastY(y),
-    buffer(1024, 768),
-    texture(renderer.createTexture(sdl::Texture::Access::Streaming, 1024, 768)),
+    buffer(c::windowWidth, c::windowHeight),
+    texture(renderer.createTexture(sdl::Texture::Access::Streaming, c::windowWidth, c::windowHeight)),
     fonts(fonts)
 {
     texture.setBlendMode(sdl::BlendMode::Blend);
@@ -87,7 +88,7 @@ void Text::advance()
                 std::transform(current->flashes.begin(), current->flashes.end(), current->flashes.begin(),
                                [h = h](auto& flash) { flash.y -= h; return flash; });
                 current->y -= h;
-                sdl::Surface tempBuffer{1024, 768};
+                sdl::Surface tempBuffer{c::windowWidth, c::windowHeight};
                 current->flashed.render(tempBuffer, sdl::Rectangle{0, -(h + y + 2), 0, 0});
                 current->flashed.empty();
                 tempBuffer.render(current->flashed, sdl::Rectangle{0, (y + 2), 0, 0});
