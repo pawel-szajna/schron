@@ -42,6 +42,16 @@ void Text::render(sdl::Renderer& target)
     }
 }
 
+void Text::clear()
+{
+    while (not requests.empty())
+    {
+        requests.pop();
+    }
+    current = std::nullopt;
+    buffer.empty();
+}
+
 void Text::write(std::string text)
 {
     requests.push({std::move(text), "KellySlab", false, 0});

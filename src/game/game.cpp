@@ -18,11 +18,11 @@ namespace game
 Game::Game() :
     world(std::make_unique<world::World>()),
     ui(std::make_unique<ui::UI>(renderer)),
-    scripting(std::make_unique<scripting::Scripting>(*ui, *world))
+    scripting(std::make_unique<scripting::Scripting>(*ui, *world, renderer))
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
-    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, renderer));
+    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, renderer, *scripting));
     modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");

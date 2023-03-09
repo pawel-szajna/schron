@@ -8,13 +8,13 @@
 
 namespace scripting
 {
-Scripting::Scripting(ui::UI& ui, world::World& world) :
+Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     ui(ui),
     world(world)
 {
     lua.open_libraries(sol::lib::base);
 
-    uiBindings = std::make_unique<UiBindings>(lua, ui);
+    uiBindings = std::make_unique<UiBindings>(lua, ui, renderer);
 }
 
 Scripting::~Scripting() = default;

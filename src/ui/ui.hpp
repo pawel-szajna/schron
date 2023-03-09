@@ -23,7 +23,8 @@ public:
     explicit UI(sdl::Renderer& renderer);
     ~UI();
 
-    void add(std::unique_ptr<Object>&& object);
+    int add(std::unique_ptr<Object>&& object);
+    Object& get(int id);
     void clear();
 
     void render();
@@ -35,5 +36,6 @@ private:
 
     sdl::Renderer& renderer;
     std::vector<std::unique_ptr<Object>> objects;
+    int counter{0};
 };
 }

@@ -8,6 +8,11 @@ namespace ui
 class UI;
 }
 
+namespace sdl
+{
+class Renderer;
+}
+
 namespace world
 {
 class World;
@@ -21,7 +26,7 @@ class Scripting
 {
 public:
 
-    Scripting(ui::UI& ui, world::World& world);
+    Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer);
     ~Scripting();
 
     void run(const std::string& script);

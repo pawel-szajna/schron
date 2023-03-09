@@ -15,25 +15,33 @@ UI::UI(sdl::Renderer& renderer) :
 
 UI::~UI() = default;
 
-void UI::add(std::unique_ptr<Object>&& object)
+int UI::add(std::unique_ptr<Object>&& object)
 {
     objects.push_back(std::move(object));
+    return counter++;
+}
+
+Object& UI::get(int id)
+{
+    return *objects.at(id);
 }
 
 void UI::clear()
 {
     objects.clear();
+    counter = 0;
 }
 
 void UI::render()
 {
     keyHandler.check();
 
-    std::erase_if(objects, [](const auto& obj) { return obj == nullptr; });
-
     for (auto& object : objects)
     {
-        object->render(renderer);
+        if (object != nullptr)
+        {
+            object->render(renderer);
+        }
     }
 }
 }

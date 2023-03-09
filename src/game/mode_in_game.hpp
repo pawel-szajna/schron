@@ -10,6 +10,11 @@ namespace engine
 class Engine;
 }
 
+namespace scripting
+{
+class Scripting;
+}
+
 namespace sdl
 {
 class Renderer;
@@ -36,7 +41,7 @@ class ModeInGame : public ModeExecutor
 {
 public:
 
-    ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer);
+    ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting);
     virtual ~ModeInGame();
 
     void entry() override;
@@ -52,5 +57,6 @@ private:
     ui::UI& ui;
     world::World& world;
     sdl::Renderer& renderer;
+    scripting::Scripting& scripting;
 };
 }
