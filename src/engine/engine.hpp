@@ -56,14 +56,17 @@ private:
 
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
-                    const game::Position& player);
+                    const game::Position& player,
+                    double angleSin, double angleCos);
     void renderCeilingAndFloor(const world::Sector& sector,
                                const game::Position& player,
                                int x, int wallTop, int wallBottom,
                                double distance,
-                               double ceilingY, double floorY);
+                               double ceilingY, double floorY,
+                               double angleSin, double angleCos);
     void renderSprites(const world::Sector& sector,
-                       const game::Position& player);
+                       const game::Position& player,
+                       double angleSin, double angleCos);
     void line(int x, int yStart, int yEnd, int color);
     void texturedLine(int x,
                       int wallStart, int wallEnd,

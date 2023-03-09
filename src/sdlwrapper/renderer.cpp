@@ -19,6 +19,9 @@ Renderer::Renderer(Window& window, int index, uint32_t flags)
 {
     assign(SDL_CreateRenderer(*window, index, flags),
            "SDL renderer");
+    SDL_RendererInfo info;
+    SDL_GetRendererInfo(wrapped, &info);
+    spdlog::debug("Created renderer, type: {}, flags: {}", info.name, info.flags);
 }
 
 Renderer::Renderer(Surface& surface)

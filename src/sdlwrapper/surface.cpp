@@ -18,8 +18,19 @@ Surface::Surface(int width, int height, int alphaMask) :
 
 Surface::Surface(const std::string& filename)
 {
-    assign(IMG_Load(filename.c_str()),
-           std::format("SDL surface from image ({}): {}", filename, SDL_GetError()));
+    auto image = IMG_Load(filename.c_str());
+    if (image == nullptr)
+    {
+        throw std::runtime_error{std::format("image {} loading failed: {}", filename, IMG_GetError())};
+    }
+    auto format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
+
+    assign(SDL_ConvertSurface(image, format, 0),
+           std::format("SDL surface from loaded image: {}", SDL_GetError()));
+
+    SDL_FreeFormat(format);
+    SDL_FreeSurface(image);
+
     width = wrapped->w;
     height = wrapped->h;
 }

@@ -75,13 +75,17 @@ void Engine::frame(const game::Position& player)
     {
         auto id = renderQueue.front().id;
 
+        auto renderedAngle = player.angle - renderQueue.front().offsetAngle;
+        auto angleSin = std::sin(renderedAngle);
+        auto angleCos = std::cos(renderedAngle);
+
         const world::Sector& sector = level.sector(id);
         for (const auto& wall : sector.walls)
         {
-            renderWall(sector, wall, player);
+            renderWall(sector, wall, player, angleSin, angleCos);
         }
 
-        renderSprites(sector, player);
+        renderSprites(sector, player, angleSin, angleCos);
 
         renderQueue.pop();
     }
@@ -89,7 +93,8 @@ void Engine::frame(const game::Position& player)
 
 void Engine::renderWall(const world::Sector& sector,
                         const world::Wall& wall,
-                        const game::Position& player)
+                        const game::Position& player,
+                        double angleSin, double angleCos)
 {
     const auto& renderParameters = renderQueue.front();
 
@@ -98,12 +103,10 @@ void Engine::renderWall(const world::Sector& sector,
     auto wallEndX = wall.xEnd - player.x - renderParameters.offsetX;
     auto wallEndY = wall.yEnd - player.y - renderParameters.offsetY;
 
-    auto renderedAngle = player.angle - renderParameters.offsetAngle;
-
-    auto transformedLeftX  = wallStartX * std::sin(renderedAngle) - wallStartY * std::cos(renderedAngle);
-    auto transformedRightX =   wallEndX * std::sin(renderedAngle) -   wallEndY * std::cos(renderedAngle);
-    auto transformedLeftZ  = wallStartX * std::cos(renderedAngle) + wallStartY * std::sin(renderedAngle);
-    auto transformedRightZ =   wallEndX * std::cos(renderedAngle) +   wallEndY * std::sin(renderedAngle);
+    auto transformedLeftX  = wallStartX * angleSin - wallStartY * angleCos;
+    auto transformedRightX =   wallEndX * angleSin -   wallEndY * angleCos;
+    auto transformedLeftZ  = wallStartX * angleCos + wallStartY * angleSin;
+    auto transformedRightZ =   wallEndX * angleCos +   wallEndY * angleSin;
 
     auto& t = texture(wall.texture);
     int textureBoundaryLeft = 0;
@@ -213,7 +216,11 @@ void Engine::renderWall(const world::Sector& sector,
         auto visibleWallTop    = std::clamp(wallTop, limitTop[x], limitBottom[x]);
         auto visibleWallBottom = std::clamp(wallBottom, limitTop[x], limitBottom[x]);
 
-        renderCeilingAndFloor(sector, player, x, visibleWallTop, visibleWallBottom, distance, ceilingY, floorY);
+        renderCeilingAndFloor(sector, player, x,
+                              visibleWallTop, visibleWallBottom,
+                              distance,
+                              ceilingY, floorY,
+                              angleSin, angleCos);
 
         int textureX = (textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
 
@@ -265,10 +272,13 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
                                    const game::Position& player,
                                    int x, int wallTop, int wallBottom,
                                    double distance,
-                                   double ceilingY, double floorY)
+                                   double ceilingY, double floorY,
+                                   double angleSin, double angleCos)
 {
     auto& floorTexture = texture(sector.floorTexture);
     auto& ceilingTexture = texture(sector.ceilingTexture);
+
+    auto invFovH = (c::renderWidth / 2 - x) / fovH;
 
     for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
     {
@@ -278,10 +288,10 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
         auto isCeiling = y < wallTop;
 
         auto transformedZ = (isCeiling ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
-        auto transformedX = transformedZ * (c::renderWidth / 2 - x) / fovH;
+        auto transformedX = transformedZ * invFovH;
 
-        auto mapX = transformedZ * std::cos(player.angle) + transformedX * std::sin(player.angle) + player.x + renderQueue.front().offsetX;
-        auto mapY = transformedZ * std::sin(player.angle) - transformedX * std::cos(player.angle) + player.y + renderQueue.front().offsetY;
+        auto mapX = transformedZ * angleCos + transformedX * angleSin + player.x + renderQueue.front().offsetX;
+        auto mapY = transformedZ * angleSin - transformedX * angleCos + player.y + renderQueue.front().offsetY;
 
         int textureWidth = (isCeiling ? ceilingTexture : floorTexture).width;
         int textureHeight = (isCeiling ? ceilingTexture : floorTexture).height;
@@ -294,7 +304,7 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
     }
 }
 
-void Engine::renderSprites(const world::Sector& sector, const game::Position& player)
+void Engine::renderSprites(const world::Sector& sector, const game::Position& player, double angleSin, double angleCos)
 {
     std::vector<std::tuple<int, double>> spriteQueue{};
     spriteQueue.reserve(sector.sprites.size());
@@ -328,10 +338,8 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
         auto spriteCenterX = sprite.x - player.x - renderParameters.offsetX;
         auto spriteCenterY = sprite.y - player.y - renderParameters.offsetY;
 
-        auto renderedAngle = player.angle - renderParameters.offsetAngle;
-
-        auto transformedX  = spriteCenterX * std::sin(renderedAngle) - spriteCenterY * std::cos(renderedAngle);
-        auto transformedZ  = spriteCenterX * std::cos(renderedAngle) + spriteCenterY * std::sin(renderedAngle);
+        auto transformedX  = spriteCenterX * angleSin - spriteCenterY * angleCos;
+        auto transformedZ  = spriteCenterX * angleCos + spriteCenterY * angleSin;
 
         if (transformedZ <= 0)
         {
