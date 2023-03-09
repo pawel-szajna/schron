@@ -72,7 +72,7 @@ void Text::advance()
 
     if (lettersToAppend > 0)
     {
-        if (current->position + lettersToAppend > current->verified)
+        if (current->position + static_cast<int>(lettersToAppend) > current->verified)
         {
             auto nextSpace = text.find(' ', current->position);
             std::string nextWord = text.substr(current->position, nextSpace - current->position);
@@ -140,7 +140,7 @@ void Text::advance()
         flashingText.render(buffer, sdl::Rectangle{flash.x, flash.y, 0, 0});
     }
 
-    if (current->position >= current->request.text.size() and current->flashes.empty())
+    if (current->position >= static_cast<int>(current->request.text.size()) and current->flashes.empty())
     {
         lastX = current->x;
         lastY = current->y;
