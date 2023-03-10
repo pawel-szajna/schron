@@ -4,6 +4,11 @@
 
 #include <map>
 
+namespace scripting
+{
+class Scripting;
+}
+
 namespace world
 {
 class World
@@ -15,6 +20,7 @@ public:
     World();
 
     Level& level(int id);
+    void loadLevel(int id, scripting::Scripting& scripting);
 
 private:
     LevelsMap levels{};

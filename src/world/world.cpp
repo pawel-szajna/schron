@@ -1,9 +1,10 @@
 #include "world.hpp"
 
 #include "level.hpp"
-#include "util/constants.hpp"
+#include "scripting/scripting.hpp"
 
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 
 namespace world
 {
@@ -13,10 +14,16 @@ Level& World::level(int id)
 {
     if (not levels.contains(id))
     {
-        spdlog::info("Requested level {}, but it has not been created yet. Attempting to load.", id);
-        levels.emplace(id, Level(c::levelSize, c::levelSize, "Untitled level"));
+        throw std::invalid_argument{std::format("Requested non-existing level {}", id)};
     }
 
     return levels.at(id);
+}
+
+void World::loadLevel(int id, scripting::Scripting& scripting)
+{
+    levels.try_emplace(id, id, "Untitled level");
+    scripting.run(std::format("scripts/levels/{}/map.lua", id));
+    scripting.run(std::format("scripts/levels/{}/script.lua", id));
 }
 }

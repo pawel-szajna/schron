@@ -31,7 +31,7 @@ public:
     ~Scripting();
 
     void run(const std::string& script);
-    void sectorEntry(int x, int y);
+    void sectorEntry(int x, int y, int z);
 
 private:
 

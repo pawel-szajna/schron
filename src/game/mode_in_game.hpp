@@ -59,6 +59,6 @@ private:
     sdl::Renderer& renderer;
     scripting::Scripting& scripting;
 
-    int lastX, lastY;
+    int lastX, lastY, lastZ;
 };
 }

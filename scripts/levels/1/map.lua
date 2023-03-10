@@ -1,5 +1,3 @@
-local textWindow = ui_createText()
-
 world_put(RectangularSectorBuilder.new(1):withDimensions(0, 0, 1, 3):withSouthNeighbour(2, 1, 3, 0, 3))
 world_put(RectangularSectorBuilder.new(2):withDimensions(-1, 3, 2, 6):withNorthNeighbour(1, 0, 3, 1, 3):withSouthNeighbour(3, 1, 6, 0, 6))
 world_sprite(2, 0, "res/gfx/sprites/lamp.png", 0.5, 4.5)
@@ -30,7 +28,3 @@ world_sprite(16, 1, "res/gfx/sprites/ola.png", 9.5, 5.5)
 -- Pokój z polybiusem
 world_put(RectangularSectorBuilder.new(17):withDimensions(7, 9, 8, 10):withNorthNeighbour(14, 7, 9, 8, 9):withSouthNeighbour(18, 8, 10, 7, 10))
 world_put(RectangularSectorBuilder.new(18):withDimensions(6, 10, 9, 13):withNorthNeighbour(17, 7, 10, 8, 10))
-
-function sector_0_2()
-    ui_textWrite(textWindow, "Elo, witam w schronie", "KellySlab", 32)
-end

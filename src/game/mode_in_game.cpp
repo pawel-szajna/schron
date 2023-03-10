@@ -27,11 +27,11 @@ ModeInGame::~ModeInGame() = default;
 
 void ModeInGame::entry()
 {
+    world.loadLevel(1, scripting);
     auto& level = world.level(1);
 
     engine = std::make_unique<engine::Engine>(renderer, level);
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
-    scripting.run("scripts/levels/entry.lua");
 }
 
 void ModeInGame::exit()
@@ -65,11 +65,13 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     int playerX = static_cast<int>(player.getPosition().x);
     int playerY = static_cast<int>(player.getPosition().y);
-    if (playerX != lastX || playerY != lastY)
+    int playerZ = static_cast<int>(player.getPosition().z);
+    if (playerX != lastX or playerY != lastY or playerZ != lastZ)
     {
         lastX = playerX;
         lastY = playerY;
-        scripting.sectorEntry(playerX, playerY);
+        lastZ = playerZ;
+        scripting.sectorEntry(playerX, playerY, playerZ);
     }
 
     engine->frame(player.getPosition());

@@ -18,15 +18,13 @@ class Level
 
 public:
 
-    Level(int width, int height, std::string name);
+    Level(int id, std::string name);
 
     void put(Sector&& sector);
     const Sector& sector(int id) const { return map.at(id); }
     std::string toLua() const;
 
 private:
-    int width;
-    int height;
 
     std::string name{};
     std::unordered_map<int, Sector> map{};

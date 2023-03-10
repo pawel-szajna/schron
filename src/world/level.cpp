@@ -4,14 +4,11 @@
 
 namespace world
 {
-Level::Level(int width,
-             int height,
+Level::Level(int id,
              std::string name) :
-     width(width),
-     height(height),
      name(std::move(name))
 {
-    spdlog::debug("Creating level {}", this->name);
+    spdlog::info("Loading level #{}", id);
 }
 
 void Level::put(Sector&& sector)

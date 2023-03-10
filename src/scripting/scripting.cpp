@@ -32,9 +32,9 @@ catch (std::runtime_error& exception)
     spdlog::error("LUA error: {}", exception.what());
 }
 
-void Scripting::sectorEntry(int x, int y)
+void Scripting::sectorEntry(int x, int y, int z)
 {
-    auto sectorFunction = std::format("sector_{}_{}", x, y);
+    auto sectorFunction = std::format("enter_{}_{}_{}", x, y, z);
     if (lua[sectorFunction].valid())
     {
         spdlog::debug("Calling LUA function {} due to sector entry", sectorFunction);

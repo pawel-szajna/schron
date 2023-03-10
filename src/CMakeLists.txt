@@ -16,7 +16,7 @@ add_executable(
         main.cpp
 )
 
-target_link_libraries( # TODO: sort out dependencies
+target_link_libraries(
         schron
         PRIVATE
         game
