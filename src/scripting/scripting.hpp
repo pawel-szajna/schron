@@ -21,6 +21,7 @@ class World;
 namespace scripting
 {
 class UiBindings;
+class WorldBindings;
 
 class Scripting
 {
@@ -36,6 +37,7 @@ private:
     sol::state lua;
 
     [[maybe_unused]] std::unique_ptr<UiBindings> uiBindings;
+    [[maybe_unused]] std::unique_ptr<WorldBindings> worldBindings;
 
     [[maybe_unused]] ui::UI& ui;
     [[maybe_unused]] world::World& world;

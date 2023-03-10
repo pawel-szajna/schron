@@ -2,6 +2,7 @@
 
 #include "ui/ui.hpp"
 #include "ui_bindings.hpp"
+#include "world_bindings.hpp"
 #include "world/world.hpp"
 
 #include <spdlog/spdlog.h>
@@ -15,6 +16,7 @@ Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     lua.open_libraries(sol::lib::base);
 
     uiBindings = std::make_unique<UiBindings>(lua, ui, renderer);
+    worldBindings = std::make_unique<WorldBindings>(lua, world);
 }
 
 Scripting::~Scripting() = default;

@@ -3,6 +3,7 @@ add_library(
         STATIC
         scripting.cpp
         ui_bindings.cpp
+        world_bindings.cpp
 )
 
 target_include_directories(

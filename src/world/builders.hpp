@@ -6,7 +6,15 @@
 
 namespace world
 {
-class PolygonalSectorBuilder
+class SectorBuilder
+{
+public:
+
+    virtual ~SectorBuilder() = default;
+    virtual Sector build() = 0;
+};
+
+class PolygonalSectorBuilder : public SectorBuilder
 {
 public:
 
@@ -17,7 +25,7 @@ public:
     PolygonalSectorBuilder& withFloor(double floor);
     PolygonalSectorBuilder& withWall(double x, double y, std::string texture = "wall", std::optional<Wall::Portal> neighbour = std::nullopt);
 
-    Sector build();
+    Sector build() override;
 
 private:
 
@@ -27,7 +35,7 @@ private:
     double lastX, lastY;
 };
 
-class RectangularSectorBuilder
+class RectangularSectorBuilder : public SectorBuilder
 {
 public:
 
@@ -36,6 +44,8 @@ public:
         double x1, y1, x2, y2;
         Wall::Portal portal;
     };
+
+    explicit RectangularSectorBuilder(int id) { withId(id); }
 
     RectangularSectorBuilder& withId(int id);
     RectangularSectorBuilder& withDimensions(double x1, double y1, double x2, double y2);
@@ -46,7 +56,7 @@ public:
     RectangularSectorBuilder& withSouthNeighbour(int id, double x1, double y1, double x2, double y2);
     RectangularSectorBuilder& withWestNeighbour(int id, double x1, double y1, double x2, double y2);
 
-    Sector build();
+    Sector build() override;
 
 private:
 
