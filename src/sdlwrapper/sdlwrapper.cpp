@@ -2,9 +2,9 @@
 
 #include "util/format.hpp"
 
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_image.h>
+#include <SDL3/SDL_ttf.h>
 #include <spdlog/spdlog.h>
 
 namespace sdl
@@ -29,7 +29,7 @@ void initialize()
         throw std::runtime_error{std::format("could not initialize SDL_ttf: {}", TTF_GetError())};
     }
     spdlog::debug("SDL up and running!");
-    SDL_ShowCursor(SDL_DISABLE);
+    SDL_HideCursor();
 }
 
 void teardown()
@@ -59,7 +59,7 @@ double currentTime()
 
 bool keyPressed(int key)
 {
-    if (event.type == SDL_KEYDOWN and
+    if (event.type == SDL_EVENT_KEY_DOWN and
         event.key.keysym.sym == key)
     {
         event.type = 0;
@@ -76,6 +76,6 @@ const uint8_t* keyboard()
 
 bool quitEvent()
 {
-    return event.type == SDL_QUIT;
+    return event.type == SDL_EVENT_QUIT;
 }
 }

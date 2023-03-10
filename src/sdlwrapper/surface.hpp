@@ -18,7 +18,7 @@ class Surface : public Wrapped<SDL_Surface>
 
 public:
 
-    Surface(int width, int height, int alphaMask = 0xff000000);
+    Surface(int width, int height);
     explicit Surface(const std::string& filename);
     explicit Surface(SDL_Surface* surfacePtr);
     ~Surface();
@@ -28,10 +28,6 @@ public:
     void render(Texture& target);
     void render(Surface& target,
                 std::optional<Rectangle> where = std::nullopt);
-    void renderPart(Surface& target,
-                    Rectangle subset,
-                    std::optional<Rectangle> where = std::nullopt);
-    void renderStretched(Surface& target);
 
     uint32_t* pixels();
     [[nodiscard]] const uint32_t* pixels() const;

@@ -2,7 +2,7 @@
 
 #include "common_types.hpp"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace sdl::convert
 {

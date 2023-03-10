@@ -19,14 +19,14 @@ class Renderer : public Wrapped<SDL_Renderer>
 {
 public:
 
-    explicit Renderer(Window& window, int index = -1, uint32_t flags = 0);
+    explicit Renderer(Window& window, uint32_t flags = 0);
     explicit Renderer(Surface& surface);
     ~Renderer();
 
     void clear();
     void copy(Texture& texture,
-              std::optional<Rectangle> source = std::nullopt,
-              std::optional<Rectangle> target = std::nullopt);
+              std::optional<FRectangle> source = std::nullopt,
+              std::optional<FRectangle> target = std::nullopt);
     void present() noexcept;
 
     void renderGeometry(const std::vector<Vertex>& vertices);

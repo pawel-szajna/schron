@@ -8,7 +8,7 @@
 #include "ui/ui.hpp"
 #include "world/world.hpp"
 
-#include <SDL_scancode.h>
+#include <SDL3/SDL_scancode.h>
 #include <spdlog/spdlog.h>
 
 namespace game

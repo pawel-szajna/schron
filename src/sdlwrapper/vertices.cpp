@@ -1,7 +1,7 @@
 #include "vertices.hpp"
 
 #include <algorithm>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <stdexcept>
 
 namespace sdl

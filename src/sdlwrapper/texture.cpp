@@ -4,7 +4,7 @@
 #include "renderer.hpp"
 #include "util/format.hpp"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <stdexcept>
 
 namespace sdl

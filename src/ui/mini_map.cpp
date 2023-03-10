@@ -176,6 +176,6 @@ void MiniMap::render(sdl::Renderer& renderer)
     text.render(surface, sdl::Rectangle{0, mapHeight - text.height});
 
     surface.render(texture);
-    renderer.copy(texture, std::nullopt, sdl::Rectangle{mapLeft, mapTop, mapWidth, mapHeight});
+    renderer.copy(texture, std::nullopt, sdl::FRectangle{mapLeft, mapTop, mapWidth, mapHeight});
 }
 }

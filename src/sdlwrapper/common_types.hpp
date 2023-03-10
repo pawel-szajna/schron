@@ -12,6 +12,12 @@ struct Rectangle
     int width, height;
 };
 
+struct FRectangle
+{
+    float x, y;
+    float width, height;
+};
+
 struct Color
 {
     uint8_t r, g, b, a;

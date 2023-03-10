@@ -28,7 +28,7 @@ target_include_directories(
 target_link_libraries(
         sdlwrapper
         PUBLIC
-        SDL2
-        SDL2_ttf
-        SDL2_image
+        SDL3-shared
+        SDL3_ttf
+        SDL3_image
 )

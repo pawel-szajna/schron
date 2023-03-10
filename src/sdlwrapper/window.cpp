@@ -1,14 +1,12 @@
 #include "window.hpp"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace sdl
 {
 Window::Window(const std::string& title, int width, int height, uint32_t flags)
 {
     assign(SDL_CreateWindow(title.c_str(),
-                            SDL_WINDOWPOS_UNDEFINED,
-                            SDL_WINDOWPOS_UNDEFINED,
                             width,
                             height,
                             flags),

@@ -8,15 +8,15 @@
 #include "window.hpp"
 
 #include <optional>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <spdlog/spdlog.h>
 #include <vector>
 
 namespace sdl
 {
-Renderer::Renderer(Window& window, int index, uint32_t flags)
+Renderer::Renderer(Window& window, uint32_t flags)
 {
-    assign(SDL_CreateRenderer(*window, index, flags),
+    assign(SDL_CreateRenderer(*window, nullptr, flags),
            "SDL renderer");
     SDL_RendererInfo info;
     SDL_GetRendererInfo(wrapped, &info);
@@ -47,12 +47,12 @@ void Renderer::clear()
     }
 }
 
-void Renderer::copy(Texture& texture, std::optional<Rectangle> source, std::optional<Rectangle> target)
+void Renderer::copy(Texture& texture, std::optional<FRectangle> source, std::optional<FRectangle> target)
 {
-    auto result = SDL_RenderCopy(wrapped,
-                                 *texture,
-                                 source.has_value() ? reinterpret_cast<SDL_Rect*>(&(*source)) : nullptr,
-                                 target.has_value() ? reinterpret_cast<SDL_Rect*>(&(*target)) : nullptr);
+    auto result = SDL_RenderTexture(wrapped,
+                                    *texture,
+                                    source.has_value() ? reinterpret_cast<const SDL_FRect*>(&(*source)) : nullptr,
+                                    target.has_value() ? reinterpret_cast<const SDL_FRect*>(&(*target)) : nullptr);
     if (result != Success)
     {
         throw std::runtime_error{std::format("could not copy mainTexture: {}", SDL_GetError())};
@@ -72,7 +72,7 @@ Texture Renderer::createTexture(Texture::Access access, int width, int height)
 void Renderer::renderLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     SDL_SetRenderDrawColor(wrapped, r, g, b, a);
-    SDL_RenderDrawLine(wrapped, x1, y1, x2, y2);
+    SDL_RenderLine(wrapped, x1, y1, x2, y2);
 }
 
 void Renderer::renderGeometry(const std::vector<Vertex>& vertices)

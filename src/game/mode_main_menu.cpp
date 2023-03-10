@@ -4,7 +4,7 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 
-#include <SDL_keycode.h>
+#include <SDL3/SDL_scancode.h>
 
 namespace game
 {
@@ -20,7 +20,7 @@ void ModeMainMenu::entry()
 
 std::optional<GameMode> ModeMainMenu::frame(double frameTime)
 {
-    if (sdl::keyPressed(SDLK_ESCAPE))
+    if (sdl::keyPressed(SDL_SCANCODE_ESCAPE))
     {
         return GameMode::Quit;
     }
