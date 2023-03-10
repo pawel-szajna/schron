@@ -7,7 +7,7 @@ decaying.
 
 ## Prerequisites
 
-* lua 5.3 (as the only one which caused problems when bundled)
+* lua 5.3 (as the only dependency which caused problems when bundled)
 * C++23 compiler (tested with `g++` 13)
 * CMake
 
@@ -16,19 +16,14 @@ decaying.
 The compilation should be pretty straightforward. First of all (the
 hardest part), lua should be somehow obtained. This might include your
 package manager on Unix-like systems (apt, zypper, dnf, homebrew) or
-some Windows magic on Windows.
-
-Due to how different OSes install packages, you *might* have to update
-the `CMakeLists.txt` (the main one, in the root directory) to help the
-build system locate lua.
+something like vcpkg on Windows.
 
 Most of the dependencies are compiled along the project (as this
 helped resolve some conflicts with SDL versioning). To get those
 dependencies, use git submodules:
 
 ```console
-$ git submodule init
-$ git submodule update
+$ git submodule update --init --recursive
 ```
 
 Afterwards, the usual steps of:
@@ -36,7 +31,7 @@ Afterwards, the usual steps of:
 ```console
 $ mkdir build
 $ cd build
-$ cmake .. -GNinja
+$ cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release
 $ ninja schron
 ```
 
