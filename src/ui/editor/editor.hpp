@@ -7,9 +7,7 @@ namespace world
 class Level;
 }
 
-namespace ui
-{
-namespace editor
+namespace ui::editor
 {
 class Editor : public Object
 {
@@ -28,5 +26,4 @@ private:
 
     world::Level& level;
 };
-}
 }

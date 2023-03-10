@@ -1,5 +1,4 @@
 #include <spdlog/spdlog.h>
-#include <memory>
 
 #include "game/game.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"

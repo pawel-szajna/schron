@@ -1,7 +1,5 @@
 #pragma once
 
-#include "util/position.hpp"
-
 #include <map>
 #include <optional>
 #include <spdlog/spdlog.h>
@@ -29,7 +27,7 @@ public:
     std::optional<Portal> portal{std::nullopt};
     std::string texture{"wall"};
 
-    std::string toLua() const;
+    [[nodiscard]] std::string toLua() const;
 };
 
 class Sprite
@@ -41,7 +39,7 @@ public:
     double x, y, z{0.5};
     double w{1.0}, h{1.0};
 
-    std::string toLua(int sectorId) const;
+    [[nodiscard]] std::string toLua(int sectorId) const;
 };
 
 class Sector
@@ -56,6 +54,6 @@ public:
     std::string ceilingTexture{"ceiling"};
     std::string floorTexture{"floor"};
 
-    std::string toLua() const;
+    [[nodiscard]] std::string toLua() const;
 };
 }

@@ -61,10 +61,6 @@ public:
 
 private:
 
-    void buildWall(double wx1, double wy1, double wx2, double wy2,
-                   const std::optional<NeighbourParams>& neighbour,
-                   decltype(Sector::walls)& walls);
-
     int sid{};
     double sx1{}, sy1{}, sx2{}, sy2{}, sCeiling{1.0}, sFloor{0.0};
     std::optional<NeighbourParams> north{};

@@ -7,9 +7,7 @@
 
 namespace world
 {
-World::World()
-{
-}
+World::World() = default;
 
 Level& World::level(int id)
 {

@@ -22,8 +22,7 @@ public:
     void render(sdl::Renderer& renderer) override;
 
     void clear();
-    void write(std::string text);
-    void writeAnimated(std::string text, std::string font, int charsPerSecond, bool flashingLetters = true);
+    void write(std::string text, std::string font, int charsPerSecond, bool flashingLetters = true);
 
 private:
 

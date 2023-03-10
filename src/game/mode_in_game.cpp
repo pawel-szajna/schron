@@ -5,13 +5,9 @@
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/mini_map.hpp"
-#include "ui/text.hpp"
 #include "ui/ui.hpp"
-#include "util/constants.hpp"
-#include "world/level.hpp"
 #include "world/world.hpp"
 
-#include <cmath>
 #include <SDL_scancode.h>
 #include <spdlog/spdlog.h>
 

@@ -31,8 +31,7 @@ double side(double px, double py, double x1, double y1, double x2, double y2)
 }
 }
 
-Player::Player()
-{}
+Player::Player() = default;
 
 Player::~Player() = default;
 
@@ -63,7 +62,6 @@ void Player::move(Direction direction)
         moving = -1;
         break;
     case Direction::Left:
-        break;
     case Direction::Right:
         break;
     }

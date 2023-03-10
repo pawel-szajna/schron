@@ -30,9 +30,6 @@ class Wall;
 
 namespace engine
 {
-constexpr auto TEXTURE_WIDTH{120};
-constexpr auto TEXTURE_HEIGHT{120};
-
 class Engine
 {
     struct SectorRenderParams
@@ -67,7 +64,6 @@ private:
     void renderSprites(const world::Sector& sector,
                        const game::Position& player,
                        double angleSin, double angleCos);
-    void line(int x, int yStart, int yEnd, int color);
     void texturedLine(int x,
                       int wallStart, int wallEnd,
                       int yStart, int yEnd,

@@ -12,7 +12,7 @@ class Vertices
 {
 public:
 
-    explicit Vertices(const std::initializer_list<Vertex>& source);
+    Vertices(const std::initializer_list<Vertex>& source);
     ~Vertices();
 
     [[nodiscard]] int size() const;

@@ -1,9 +1,7 @@
 #include "editor.hpp"
 
 #include "sdlwrapper/common_types.hpp"
-#include "sdlwrapper/vertices.hpp"
 #include "world/level.hpp"
-#include "world/sector.hpp"
 
 #include <spdlog/spdlog.h>
 

@@ -6,7 +6,6 @@
 #include "util/constants.hpp"
 
 #include <algorithm>
-#include <cmath>
 #include <spdlog/spdlog.h>
 
 namespace ui
@@ -52,14 +51,9 @@ void Text::clear()
     buffer.empty();
 }
 
-void Text::write(std::string text)
+void Text::write(std::string text, std::string font, int charsPerSecond, bool flashingLetters)
 {
-    requests.push({std::move(text), "KellySlab", false, 0});
-}
-
-void Text::writeAnimated(std::string text, std::string font, int charsPerSecond, bool flashingLetters)
-{
-    requests.push({std::move(text), font, 200, charsPerSecond});
+    requests.push({std::move(text), std::move(font), 200, charsPerSecond});
 }
 
 void Text::advance()

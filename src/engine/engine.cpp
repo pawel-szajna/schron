@@ -17,14 +17,14 @@ namespace
 constexpr double fovH = c::renderHeight * 0.65;
 constexpr double fovV = c::renderWidth * 0.22;
 
-constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; };
+constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; }
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
 {
     auto c1 = cross(x1, y1, x2, y2);
     auto c2 = cross(x3, y3, x4, y4);
     auto m = cross(x1 - x2, y1 - y2, x3 - x4, y3 - y4);
     return std::make_pair(cross(c1, x1 - x2, c2, x3 - x4) / m, cross(c1, y1 - y2, c2, y3 - y4) / m);
-};
+}
 
 constexpr auto shade(uint32_t pixel, double distance)
 {
@@ -388,22 +388,6 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
             }
         }
     }
-}
-
-void Engine::line(int x, int yStart, int yEnd, int color)
-{
-    yStart = std::clamp(yStart, 0, c::renderHeight - 1);
-    yEnd   = std::clamp(yEnd, 0, c::renderHeight - 1);
-    if (yStart >= yEnd)
-    {
-        return;
-    }
-    buffer[yStart * c::renderWidth + x] = 0;
-    for (int y = yStart + 1; y < yEnd; ++y)
-    {
-        buffer[y * c::renderWidth + x] = color;
-    }
-    buffer[yEnd * c::renderWidth + x] = 0;
 }
 
 void Engine::texturedLine(int x,
