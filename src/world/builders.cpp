@@ -59,9 +59,17 @@ PolygonalSectorBuilder& PolygonalSectorBuilder::withFloor(double floor)
     return *this;
 }
 
-PolygonalSectorBuilder& PolygonalSectorBuilder::withWall(double x, double y, std::string texture, std::optional<Wall::Portal> neighbour)
+PolygonalSectorBuilder& PolygonalSectorBuilder::withWall(double x, double y, std::string texture)
 {
-    walls.push_back(Wall{lastX, lastY, x, y, neighbour, std::move(texture)});
+    walls.push_back(Wall{lastX, lastY, x, y, std::nullopt, std::move(texture)});
+    lastX = x;
+    lastY = y;
+    return *this;
+}
+
+PolygonalSectorBuilder& PolygonalSectorBuilder::withPortal(double x, double y, std::string texture, int neighbour)
+{
+    walls.push_back(Wall{lastX, lastY, x, y, Wall::Portal{neighbour, std::nullopt}, std::move(texture)});
     lastX = x;
     lastY = y;
     return *this;

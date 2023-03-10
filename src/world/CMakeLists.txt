@@ -3,6 +3,7 @@ add_library(
         STATIC
         builders.cpp
         level.cpp
+        sector.cpp
         world.cpp
 )
 

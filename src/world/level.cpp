@@ -25,4 +25,14 @@ void Level::put(Sector&& sector)
     }
     map.emplace(sector.id, std::move(sector));
 }
+
+std::string Level::toLua() const
+{
+    std::string output{};
+    for (const auto& [_, sector] : map)
+    {
+        output += sector.toLua();
+    }
+    return output;
+}
 }

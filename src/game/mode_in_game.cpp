@@ -53,6 +53,11 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         return GameMode::Quit;
     }
 
+    if (keys[SDL_SCANCODE_F1])
+    {
+        spdlog::info("Exporting level\n{}", world.level(1).toLua());
+    }
+
     if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);
     if (keys[SDL_SCANCODE_UP])    player.move(Player::Direction::Forward);
     if (keys[SDL_SCANCODE_X])     player.move(Player::Direction::Left);

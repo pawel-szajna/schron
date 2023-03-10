@@ -28,6 +28,8 @@ public:
     double xStart, yStart, xEnd, yEnd;
     std::optional<Portal> portal{std::nullopt};
     std::string texture{"wall"};
+
+    std::string toLua() const;
 };
 
 class Sprite
@@ -38,6 +40,8 @@ public:
     std::string texture;
     double x, y, z{0.5};
     double w{1.0}, h{1.0};
+
+    std::string toLua(int sectorId) const;
 };
 
 class Sector
@@ -51,5 +55,7 @@ public:
     double floor{0.0};
     std::string ceilingTexture{"ceiling"};
     std::string floorTexture{"floor"};
+
+    std::string toLua() const;
 };
 }

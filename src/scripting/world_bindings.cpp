@@ -23,6 +23,7 @@ WorldBindings::WorldBindings(sol::state&lua, world::World& world) :
     polygonalSectorBuilderType["withCeiling"] = &world::PolygonalSectorBuilder::withCeiling;
     polygonalSectorBuilderType["withFloor"] = &world::PolygonalSectorBuilder::withFloor;
     polygonalSectorBuilderType["withWall"] = &world::PolygonalSectorBuilder::withWall;
+    polygonalSectorBuilderType["withPortal"] = &world::PolygonalSectorBuilder::withPortal;
     polygonalSectorBuilderType["build"] = &world::PolygonalSectorBuilder::build;
 
     sol::usertype<world::RectangularSectorBuilder> rectangularSectorBuilderType =

@@ -22,6 +22,7 @@ public:
 
     void put(Sector&& sector);
     const Sector& sector(int id) const { return map.at(id); }
+    std::string toLua() const;
 
 private:
     int width;
