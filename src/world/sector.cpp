@@ -1,5 +1,7 @@
 #include "sector.hpp"
 
+#include "util/format.hpp"
+
 namespace world
 {
 std::string Sector::toLua() const

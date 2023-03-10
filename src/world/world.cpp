@@ -2,8 +2,8 @@
 
 #include "level.hpp"
 #include "scripting/scripting.hpp"
+#include "util/format.hpp"
 
-#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace world
