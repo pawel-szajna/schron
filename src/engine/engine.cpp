@@ -223,6 +223,7 @@ void Engine::renderWall(const world::Sector& sector,
                               angleSin, angleCos);
 
         int textureX = (textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
+        while (textureX < 0) textureX += t.width; // TODO proper fix for texture offset in negative cases
 
         if (wall.portal.has_value())
         {
@@ -407,7 +408,7 @@ void Engine::texturedLine(int x,
     for (int y = yStart; y <= yEnd; ++y)
     {
         if (distance > zBuffer[x + y * c::renderWidth]) continue;
-        int textureY = (t.height - 1) * (y - wallStart) / (wallEnd - wallStart);
+        int textureY = ((t.height - 1) * (y - wallStart) / (wallEnd - wallStart) + t.height) % t.height; // TODO: proper fix for negative texture offsets
         auto pixel = t.pixels()[textureX + textureY * t.width];
         buffer[x + y * c::renderWidth] = shade(pixel, distance);
         zBuffer[x + y * c::renderWidth] = distance;
