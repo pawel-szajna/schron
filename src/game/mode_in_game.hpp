@@ -47,7 +47,7 @@ private:
 
     Player player{};
 
-    std::unique_ptr<engine::Engine> engine{};
+    std::unique_ptr<engine::Engine> engine;
 
     ui::UI& ui;
     world::World& world;

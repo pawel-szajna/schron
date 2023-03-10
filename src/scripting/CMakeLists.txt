@@ -8,6 +8,7 @@ add_library(
 target_include_directories(
         scripting
         PUBLIC
+        ${LUA_INCLUDE_DIR}
 )
 
 target_link_directories(
@@ -27,6 +28,6 @@ target_link_libraries(
         scripting
         PRIVATE
         sol2
-        lua
+        ${LUA_LIBRARIES}
         ui
 )

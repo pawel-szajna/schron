@@ -11,6 +11,7 @@ target_include_directories(
         game
         PRIVATE
         ../../lib/sol2/include
+        ${LUA_INCLUDE_DIR}
 )
 
 if(NOT MSVC)
