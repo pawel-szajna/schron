@@ -63,6 +63,15 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     player.frame(world.level(1), frameTime);
 
+    int playerX = static_cast<int>(player.getPosition().x);
+    int playerY = static_cast<int>(player.getPosition().y);
+    if (playerX != lastX || playerY != lastY)
+    {
+        lastX = playerX;
+        lastY = playerY;
+        scripting.sectorEntry(playerX, playerY);
+    }
+
     engine->frame(player.getPosition());
     engine->draw();
 
