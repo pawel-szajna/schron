@@ -16,6 +16,7 @@ ModeMainMenu::ModeMainMenu(scripting::Scripting& scripting, ui::UI& ui) :
 void ModeMainMenu::entry()
 {
     scripting.run("scripts/menu/menu.lua");
+    ui.clear();
 }
 
 std::optional<GameMode> ModeMainMenu::frame(double frameTime)

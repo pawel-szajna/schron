@@ -3,6 +3,7 @@
 #include "common_types.hpp"
 #include "surface.hpp"
 #include "texture.hpp"
+#include "util/constants.hpp"
 #include "util/format.hpp"
 #include "vertices.hpp"
 #include "window.hpp"
@@ -21,6 +22,20 @@ Renderer::Renderer(Window& window, uint32_t flags)
     SDL_RendererInfo info;
     SDL_GetRendererInfo(wrapped, &info);
     spdlog::debug("Created renderer, type: {}, flags: {}", info.name, info.flags);
+    int renderWidth, renderHeight;
+    SDL_GetRenderOutputSize(wrapped, &renderWidth, &renderHeight);
+    if (renderWidth != c::windowWidth or renderHeight != c::windowHeight)
+    {
+        auto scaleWidth = static_cast<float>(renderWidth) / static_cast<float>(c::windowWidth);
+        auto scaleHeight = static_cast<float>(renderHeight) / static_cast<float>(c::windowHeight);
+        spdlog::debug("Requested resolution: {}x{}, actual resolution: {}x{}, applying {}x/{}x scaling factor",
+                      c::windowWidth, c::windowHeight, renderWidth, renderHeight, scaleWidth, scaleHeight);
+        if (SDL_SetRenderScale(wrapped, scaleWidth, scaleHeight) != Success)
+        {
+            spdlog::warn("Could not apply render scale factor of {}x/{}x, possible UI scaling issues: {}",
+                         scaleWidth, scaleHeight, SDL_GetError());
+        }
+    }
 }
 
 Renderer::Renderer(Surface& surface)
