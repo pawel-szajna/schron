@@ -20,6 +20,7 @@ public:
     virtual ~Text();
 
     void render(sdl::Renderer& renderer) override;
+    void event(const sdl::event::Event& event) override;
 
     void clear();
     void write(std::string text, std::string font, int charsPerSecond, bool flashingLetters = true);

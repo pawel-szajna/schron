@@ -5,6 +5,7 @@
 #include "mode_init.hpp"
 #include "mode_main_menu.hpp"
 #include "scripting/scripting.hpp"
+#include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/ui.hpp"
 #include "util/constants.hpp"
@@ -56,11 +57,17 @@ void Game::mainLoop()
 
     while (++framesCounter, mode != GameMode::Quit)
     {
-        sdl::pollEvents();
-
-        if (sdl::quitEvent())
+        sdl::event::Event event;
+        while ((event = sdl::pollEvent()), not std::holds_alternative<sdl::event::None>(event))
         {
-            switchMode(GameMode::Quit);
+            if (std::holds_alternative<sdl::event::Quit>(event))
+            {
+                switchMode(GameMode::Quit);
+                continue;
+            }
+
+            modes.at(mode)->event(event);
+            ui->event(event);
         }
 
         oldTime = newTime;

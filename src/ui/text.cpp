@@ -41,6 +41,9 @@ void Text::render(sdl::Renderer& target)
     }
 }
 
+void Text::event(const sdl::event::Event& event)
+{}
+
 void Text::clear()
 {
     while (not requests.empty())

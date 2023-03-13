@@ -9,8 +9,7 @@ void teardown();
 
 void delay(int ms);
 double currentTime();
-void pollEvents();
-bool keyPressed(int key);
 const uint8_t* keyboard();
-bool quitEvent();
+void showCursor();
+void hideCursor();
 }

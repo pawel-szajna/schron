@@ -14,8 +14,6 @@ UiBindings::UiBindings(sol::state& lua, ui::UI& ui, sdl::Renderer& renderer) :
     renderer(renderer)
 {
     lua.set_function("ui_createText", &UiBindings::createText, this);
-    lua.set_function("ui_keyHandler_map", &UiBindings::keyHandlerMap, this);
-    lua.set_function("ui_keyHandler_unmap", &UiBindings::keyHandlerUnmap, this);
     lua.set_function("ui_textClear", &UiBindings::textClear, this);
     lua.set_function("ui_textWrite", &UiBindings::textWrite, this);
 }
@@ -39,27 +37,5 @@ void UiBindings::textWrite(int id, std::string message, std::string font, int sp
     spdlog::debug("UiBindings::textWrite(id={}, message={}, font={}, speed={})", id, message, font, speed);
     auto& text = dynamic_cast<ui::Text&>(ui.get(id));
     text.write(std::move(message), std::move(font), speed, true);
-}
-
-void UiBindings::keyHandlerMap(int keycode, std::string callback)
-{
-    spdlog::debug("UiBindings::keyHandlerMap({}, {})", keycode, callback);
-    ui.keyHandler.map(keycode, [callback = std::move(callback), &lua = this->lua]()
-                               {
-                                   spdlog::debug("Callback function {}", callback);
-                                   try
-                                   {
-                                       lua[callback]();
-                                   }
-                                   catch (std::runtime_error& error)
-                                   {
-                                       spdlog::error("LUA error: {}", error.what());
-                                   }
-                               });
-}
-
-void UiBindings::keyHandlerUnmap(int keycode)
-{
-    ui.keyHandler.unmap(keycode);
 }
 }

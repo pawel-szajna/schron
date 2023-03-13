@@ -1,7 +1,7 @@
 #pragma once
 
-#include "key_handler.hpp"
 #include "fonts.hpp"
+#include "sdlwrapper/event.hpp"
 
 #include <memory>
 #include <vector>
@@ -27,9 +27,9 @@ public:
     Object& get(int id);
     void clear();
 
+    void event(const sdl::event::Event& event);
     void render();
 
-    KeyHandler keyHandler{};
     Fonts fonts{};
 
 private:

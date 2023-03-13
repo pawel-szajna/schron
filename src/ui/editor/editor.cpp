@@ -1,6 +1,7 @@
 #include "editor.hpp"
 
 #include "sdlwrapper/common_types.hpp"
+#include "sdlwrapper/sdlwrapper.hpp"
 #include "util/constants.hpp"
 #include "world/level.hpp"
 
@@ -12,9 +13,17 @@ Editor::Editor(world::Level& level, const double& playerX, const double& playerY
     playerX(playerX),
     playerY(playerY),
     level(level)
-{}
+{
+    sdl::showCursor();
+}
 
-Editor::~Editor() = default;
+Editor::~Editor()
+{
+    sdl::hideCursor();
+}
+
+void Editor::event(const sdl::event::Event& event)
+{}
 
 void Editor::render(sdl::Renderer& renderer)
 {

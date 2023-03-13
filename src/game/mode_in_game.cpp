@@ -41,6 +41,9 @@ void ModeInGame::exit()
     ui.clear();
 }
 
+void ModeInGame::event(const sdl::event::Event& event)
+{}
+
 std::optional<GameMode> ModeInGame::frame(double frameTime)
 {
     const uint8_t* keys = sdl::keyboard();

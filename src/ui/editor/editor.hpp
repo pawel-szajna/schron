@@ -17,6 +17,7 @@ public:
     virtual ~Editor();
 
     void render(sdl::Renderer& target) override;
+    void event(const sdl::event::Event& event) override;
 
 private:
 

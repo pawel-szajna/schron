@@ -49,6 +49,9 @@ MiniMap::MiniMap(sdl::Renderer& renderer, const world::Level& level, const game:
 
 MiniMap::~MiniMap() = default;
 
+void MiniMap::event(const sdl::event::Event& event)
+{}
+
 void MiniMap::render(sdl::Renderer& renderer)
 {
     const auto& position = player.getPosition();

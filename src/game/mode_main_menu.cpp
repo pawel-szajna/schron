@@ -20,17 +20,13 @@ void ModeMainMenu::entry()
 
 std::optional<GameMode> ModeMainMenu::frame(double frameTime)
 {
-    if (sdl::keyPressed(SDL_SCANCODE_ESCAPE))
-    {
-        return GameMode::Quit;
-    }
-
     return noChange;
 }
 
+void ModeMainMenu::event(const sdl::event::Event& event)
+{}
+
 void ModeMainMenu::exit()
-{
-    ui.keyHandler.reset();
-}
+{}
 
 }

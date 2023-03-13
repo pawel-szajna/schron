@@ -34,13 +34,22 @@ void UI::clear()
 
 void UI::render()
 {
-    keyHandler.check();
-
     for (auto& object : objects)
     {
         if (object != nullptr)
         {
             object->render(renderer);
+        }
+    }
+}
+
+void UI::event(const sdl::event::Event& event)
+{
+    for (auto& object : objects)
+    {
+        if (object != nullptr)
+        {
+            object->event(event);
         }
     }
 }

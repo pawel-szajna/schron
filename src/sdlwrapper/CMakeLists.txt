@@ -2,6 +2,7 @@ add_library(
         sdlwrapper
         STATIC
         converters.cpp
+        event.cpp
         font.cpp
         renderer.cpp
         sdlwrapper.cpp

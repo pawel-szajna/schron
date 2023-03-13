@@ -23,6 +23,7 @@ public:
 
     void entry() override;
     std::optional<GameMode> frame(double frameTime) override;
+    void event(const sdl::event::Event& event) override;
     void exit() override;
 
 private:
