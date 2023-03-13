@@ -21,9 +21,13 @@ public:
 
 private:
 
-    [[maybe_unused]] double mapX{-256}, mapY{-192};
+    double mapX, mapY, mapScale{32};
     [[maybe_unused]] const double& playerX;
     [[maybe_unused]] const double& playerY;
+
+    int mouseX, mouseY;
+    int btnX, btnY;
+    bool dragging{false};
 
     world::Level& level;
 };

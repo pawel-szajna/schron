@@ -1,6 +1,7 @@
 #include "editor.hpp"
 
 #include "sdlwrapper/common_types.hpp"
+#include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "util/constants.hpp"
 #include "world/level.hpp"
@@ -23,29 +24,76 @@ Editor::~Editor()
 }
 
 void Editor::event(const sdl::event::Event& event)
-{}
+{
+    if (std::holds_alternative<sdl::event::Mouse>(event))
+    {
+        auto mouse = std::get<sdl::event::Mouse>(event);
+        mouseX = mouse.x;
+        mouseY = mouse.y;
+        if (not dragging and mouse.button.has_value() and *mouse.button == 1)
+        {
+            btnX = mouseX;
+            btnY = mouseY;
+            dragging = true;
+        }
+        if (mouse.button.has_value() and *mouse.button == -1)
+        {
+            dragging = false;
+        }
+        if (mouse.scroll.has_value())
+        {
+            mapScale -= *mouse.scroll;
+        }
+    }
+}
 
 void Editor::render(sdl::Renderer& renderer)
 {
-    constexpr auto x = c::windowWidth - 300;
-    constexpr auto y = 300;
-    constexpr auto mapScale = 32;
-
     std::vector<sdl::Vertex> vertices{};
+
+    if (dragging)
+    {
+        mapX = mapX - (mouseX - btnX);
+        mapY = mapY - (mouseY - btnY);
+        btnX = mouseX;
+        btnY = mouseY;
+    }
 
     for (auto& [_, sector] : level.map)
     {
         vertices.clear();
+        bool mouseInSector{true};
+        int sideSign{};
+        for (const auto& wall : sector.walls)
+        {
+            double mapMouseX = (double)(mouseX + mapX) / mapScale;
+            double mapMouseY = (double)(mouseY + mapY) / mapScale;
+
+            auto side = (mapMouseX - wall.xStart) * (wall.yEnd - wall.yStart) - (mapMouseY - wall.yStart) * (wall.xEnd - wall.xStart);
+            if (sideSign == 0)
+            {
+                sideSign = side < 0 ? -1 : 1;
+            }
+            else
+            {
+                if ((side < 0 and sideSign > 0) or (side > 0 and sideSign < 0))
+                {
+                    mouseInSector = false;
+                    break;
+                }
+            }
+        }
         std::transform(sector.walls.begin(),
                        sector.walls.end(),
                        std::back_inserter(vertices),
                        [&](const auto& wall)
                        {
-                           float vertexX = x + (wall.xStart - playerX) * mapScale;
-                           float vertexY = y + (wall.yStart - playerY) * mapScale;
-                           return sdl::Vertex{vertexX, vertexY, 100, 100, 100, 255};
+                           float vertexX = wall.xStart * mapScale - mapX;
+                           float vertexY = wall.yStart * mapScale - mapY;
+                           uint8_t color = mouseInSector ? 150 : 100;
+                           return sdl::Vertex{vertexX, vertexY, color, color, color, 220};
                        });
-        renderer.setColor(255, 255, 255, 130);
+
         renderer.renderGeometry(vertices);
     }
 }

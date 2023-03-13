@@ -28,7 +28,7 @@ Event createMouseEvent(const SDL_Event &event)
         case SDL_EVENT_MOUSE_BUTTON_UP:
             mouseEvent.x = event.button.x;
             mouseEvent.y = event.button.y;
-            mouseEvent.button = event.button.button;
+            mouseEvent.button = event.button.button * event.type == SDL_EVENT_MOUSE_BUTTON_UP ? -1 : 1;
             break;
         case SDL_EVENT_MOUSE_WHEEL:
             mouseEvent.x = event.wheel.mouseX;
