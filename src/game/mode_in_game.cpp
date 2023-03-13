@@ -4,6 +4,7 @@
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "ui/editor/editor.hpp"
 #include "ui/mini_map.hpp"
 #include "ui/ui.hpp"
 #include "world/world.hpp"
@@ -52,6 +53,13 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     if (keys[SDL_SCANCODE_F1])
     {
         spdlog::info("Exporting level\n{}", world.level(1).toLua());
+    }
+
+    if (keys[SDL_SCANCODE_F2])
+    {
+        spdlog::info("Activating map editor");
+        ui.clear();
+        ui.add(std::make_unique<ui::editor::Editor>(world.level(1), player.getPosition().x, player.getPosition().y));
     }
 
     if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);

@@ -1,6 +1,7 @@
 #include "editor.hpp"
 
 #include "sdlwrapper/common_types.hpp"
+#include "util/constants.hpp"
 #include "world/level.hpp"
 
 #include <spdlog/spdlog.h>
@@ -17,7 +18,7 @@ Editor::~Editor() = default;
 
 void Editor::render(sdl::Renderer& renderer)
 {
-    constexpr auto x = 1024 - 300;
+    constexpr auto x = c::windowWidth - 300;
     constexpr auto y = 300;
     constexpr auto mapScale = 32;
 
@@ -33,9 +34,9 @@ void Editor::render(sdl::Renderer& renderer)
                        {
                            float vertexX = x + (wall.xStart - playerX) * mapScale;
                            float vertexY = y + (wall.yStart - playerY) * mapScale;
-                           spdlog::debug("vX = {} vY = {}", vertexX, vertexY);
                            return sdl::Vertex{vertexX, vertexY, 100, 100, 100, 255};
                        });
+        renderer.setColor(255, 255, 255, 130);
         renderer.renderGeometry(vertices);
     }
 }

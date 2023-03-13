@@ -71,8 +71,13 @@ Texture Renderer::createTexture(Texture::Access access, int width, int height)
 
 void Renderer::renderLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    SDL_SetRenderDrawColor(wrapped, r, g, b, a);
+    setColor(r, g, b, a);
     SDL_RenderLine(wrapped, x1, y1, x2, y2);
+}
+
+void Renderer::setColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    SDL_SetRenderDrawColor(wrapped, r, g, b, a);
 }
 
 void Renderer::renderGeometry(const std::vector<Vertex>& vertices)

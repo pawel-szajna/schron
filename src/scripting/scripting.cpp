@@ -38,7 +38,14 @@ void Scripting::sectorEntry(int x, int y, int z)
     if (lua[sectorFunction].valid())
     {
         spdlog::debug("Calling LUA function {} due to sector entry", sectorFunction);
-        lua[sectorFunction]();
+        try
+        {
+            lua[sectorFunction]();
+        }
+        catch (std::exception& e)
+        {
+            spdlog::warn("Failed script execution: {}", e.what());
+        }
     }
 }
 }
