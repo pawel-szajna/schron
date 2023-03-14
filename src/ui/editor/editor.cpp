@@ -2,7 +2,9 @@
 
 #include "sdlwrapper/common_types.hpp"
 #include "sdlwrapper/event_types.hpp"
+#include "sdlwrapper/font.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "sdlwrapper/surface.hpp"
 #include "util/constants.hpp"
 #include "world/level.hpp"
 
@@ -11,10 +13,9 @@
 
 namespace ui::editor
 {
-Editor::Editor(world::Level& level, const double& playerX, const double& playerY) :
-    playerX(playerX),
-    playerY(playerY),
-    level(level)
+Editor::Editor(world::Level& level, sdl::Font& font) :
+    level(level),
+    font(font)
 {
     sdl::showCursor();
 }
@@ -33,13 +34,17 @@ void Editor::event(const sdl::event::Event& event)
         mouseY = mouse.y;
         if (not dragging and mouse.button.has_value() and *mouse.button == 1)
         {
-            btnX = mouseX;
-            btnY = mouseY;
+            dragX = btnX = mouseX;
+            dragY = btnY = mouseY;
             dragging = true;
         }
         if (mouse.button.has_value() and *mouse.button == -1)
         {
             dragging = false;
+            if (dragX == btnX and dragY == btnY)
+            {
+                clicked = true;
+            }
         }
         if (mouse.scroll.has_value())
         {
@@ -96,10 +101,10 @@ void Editor::updateMouse()
 {
     if (dragging)
     {
-        mapX = mapX - (mouseX - btnX);
-        mapY = mapY - (mouseY - btnY);
-        btnX = mouseX;
-        btnY = mouseY;
+        mapX = mapX - (mouseX - dragX);
+        mapY = mapY - (mouseY - dragY);
+        dragX = mouseX;
+        dragY = mouseY;
     }
 
     for (const auto& [id, sector] : level.map)
@@ -120,8 +125,34 @@ void Editor::updateMouse()
                                }))
         {
             sectorUnderMouse = id;
+            if (clicked)
+            {
+                selectedSector = id;
+                enqueue(1200, 0, 1199,
+                        [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture](double time)
+                        {
+                            auto& s = level.map.at(id);
+                            if ((int)(time) % 400 < 200)
+                            {
+                                s.ceilingTexture = "highlight";
+                                s.floorTexture = "highlight";
+                            }
+                            else
+                            {
+                                s.ceilingTexture = originalCeiling;
+                                s.floorTexture = originalFloor;
+                            }
+                        });
+                clicked = false;
+            }
             break;
         }
+    }
+
+    if (clicked)
+    {
+        selectedSector = std::nullopt;
+        clicked = false;
     }
 }
 
@@ -131,6 +162,7 @@ void Editor::processMapUpdates()
 
     while (not diffs.empty() and diffs.front().targetTime <= now)
     {
+        diffs.front().applier(diffs.front().targetValue);
         diffs.pop_front();
     }
 
@@ -153,8 +185,12 @@ void Editor::drawMap(sdl::Renderer& renderer)
                        {
                            float vertexX = wall.xStart * mapScale - mapX;
                            float vertexY = wall.yStart * mapScale - mapY;
-                           uint8_t color = sectorUnderMouse == id ? 150 : 100;
-                           return sdl::Vertex{vertexX, vertexY, color, color, color, 220};
+                           uint8_t color = 100;
+                           if (sectorUnderMouse == id) color = 150;
+                           if (selectedSector == id) color = 170;
+                           return sdl::Vertex{vertexX, vertexY,
+                                              color, color, color,
+                                              selectedSector == id ? (uint8_t)255 : (uint8_t)220};
                        });
         renderer.renderGeometry(vertices);
 
@@ -175,6 +211,10 @@ void Editor::drawMap(sdl::Renderer& renderer)
                     b = 135;
                 }
             }
+            if (selectedSector == id)
+            {
+                a = 255;
+            }
             renderer.renderLine(mapScale * wall.xStart - mapX, mapScale * wall.yStart - mapY,
                                 mapScale * wall.xEnd - mapX, mapScale * wall.yEnd - mapY,
                                 r, g, b, a);
@@ -191,10 +231,78 @@ void Editor::drawMap(sdl::Renderer& renderer)
     }
 }
 
+void Editor::drawSelectedSector(sdl::Renderer& renderer)
+{
+    if (not selectedSector.has_value())
+    {
+        return;
+    }
+
+    auto& sector = level.map.at(*selectedSector);
+    auto rightX = *std::max_element(sector.walls.begin(), sector.walls.end(),
+                                    [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
+    auto topY = *std::min_element(sector.walls.begin(), sector.walls.end(),
+                                  [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+
+    int windowX = rightX.xEnd * mapScale - mapX + 16;
+    int windowY = topY.yStart * mapScale - mapY;
+    int windowW = 260;
+    int windowH = 200;
+    renderer.renderRectangle(windowX, windowY, windowW, windowH, 200, 200, 200, 220);
+    auto window = sdl::Surface(windowW, windowH);
+
+    auto text = [&](const std::string& what, int x, int y)
+    {
+        font.render(what, sdl::Color{0, 0, 0, 255}).render(window, sdl::Rectangle{x, y, 0, 0});
+    };
+
+    auto button = [&](const std::string& caption, int x, int y, int w, int h, std::function<void(void)> onClick)
+    {
+        renderer.renderRectangle(windowX + x, windowY + y, w, h, 220, 220, 220, 240);
+        renderer.renderLine(windowX + x, windowY + y, windowX + x + w, windowY + y, 100, 100, 100, 200);
+        renderer.renderLine(windowX + x, windowY + y + h, windowX + x + w, windowY + y + h, 80, 80, 80, 200);
+        renderer.renderLine(windowX + x, windowY + y, windowX + x, windowY + y + h, 100, 100, 100, 200);
+        renderer.renderLine(windowX + x + w, windowY + y, windowX + x + w, windowY + y + h, 80, 80, 80, 200);
+        auto captionW = font.size(caption).first;
+        text(caption, x + (w / 2 - captionW / 2), y - 4);
+
+        if (clicked and btnX > windowX + x and btnX < windowX + x + w and btnY > windowY + y and btnY < windowY + y + h)
+        {
+            onClick();
+            clicked = false;
+        }
+    };
+
+    text(std::format("Selected sector: {}", *selectedSector), 10, 10);
+    text(std::format("Ceiling Z: {:.1f}", sector.ceiling), 10, 30);
+    text(std::format("Floor Z: {:.1f}", sector.floor), 10, 50);
+
+    auto sectorFieldAnimator = [&](double diff, double& field)
+    {
+        return [&, diff](){ enqueue(500, field, field + diff, [&](auto v) { field = v; }); };
+    };
+
+    button("+1", windowW - 40, 33, 30, 16, sectorFieldAnimator(1, sector.ceiling));
+    button("+0.1", windowW - 75, 33, 30, 16, sectorFieldAnimator(0.1, sector.ceiling));
+    button("-0.1", windowW - 110, 33, 30, 16, sectorFieldAnimator(-0.1, sector.ceiling));
+    button("-1", windowW - 145, 33, 30, 16, sectorFieldAnimator(-1, sector.ceiling));
+
+    button("+1", windowW - 40, 53, 30, 16, sectorFieldAnimator(1, sector.floor));
+    button("+0.1", windowW - 75, 53, 30, 16, sectorFieldAnimator(0.1, sector.floor));
+    button("-0.1", windowW - 110, 53, 30, 16, sectorFieldAnimator(-0.1, sector.floor));
+    button("-1", windowW - 145, 53, 30, 16, sectorFieldAnimator(-1, sector.floor));
+
+    auto texture = sdl::Texture(renderer, sdl::Texture::Access::Streaming, windowW, windowH);
+    texture.setBlendMode(sdl::BlendMode::Blend);
+    window.render(texture);
+    renderer.copy(texture, std::nullopt, sdl::FRectangle{(float)windowX, (float)windowY, (float)windowW, (float)windowH});
+}
+
 void Editor::render(sdl::Renderer& renderer)
 {
     processMapUpdates();
-    updateMouse();
     drawMap(renderer);
+    drawSelectedSector(renderer);
+    updateMouse();
 }
 }

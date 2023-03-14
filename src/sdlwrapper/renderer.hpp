@@ -33,6 +33,7 @@ public:
 
     void renderGeometry(const std::vector<Vertex>& vertices);
     void renderLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    void renderRectangle(int x, int y, int width, int height, uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
     Texture createTexture(Texture::Access access, int width, int height);
 };

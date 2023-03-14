@@ -5,6 +5,11 @@
 #include <deque>
 #include <functional>
 
+namespace sdl
+{
+class Font;
+}
+
 namespace world
 {
 class Level;
@@ -16,7 +21,7 @@ class Editor : public Object
 {
 public:
 
-    Editor(world::Level& level, const double& playerX, const double& playerY);
+    Editor(world::Level& level, sdl::Font& font);
     virtual ~Editor();
 
     void render(sdl::Renderer& target) override;
@@ -32,6 +37,8 @@ private:
     void updateMouse();
     void processMapUpdates();
     void drawMap(sdl::Renderer& renderer);
+    void drawSelectedSector(sdl::Renderer& renderer);
+    void processMapClicks();
 
     struct Diff
     {
@@ -41,15 +48,18 @@ private:
     };
 
     double mapX{-380}, mapY{-120}, mapScale{32};
-    [[maybe_unused]] const double& playerX;
-    [[maybe_unused]] const double& playerY;
 
     int mouseX, mouseY;
     int btnX, btnY;
+    int dragX, dragY;
     bool dragging{false};
+    bool clicked{false};
 
     world::Level& level;
     std::deque<Diff> diffs;
     std::optional<int> sectorUnderMouse;
+    std::optional<int> selectedSector;
+
+    sdl::Font& font;
 };
 }

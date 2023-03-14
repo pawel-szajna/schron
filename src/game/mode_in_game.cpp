@@ -62,7 +62,7 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     {
         spdlog::info("Activating map editor");
         ui.clear();
-        ui.add(std::make_unique<ui::editor::Editor>(world.level(1), player.getPosition().x, player.getPosition().y));
+        ui.add(std::make_unique<ui::editor::Editor>(world.level(1), ui.fonts.get("TitilliumWeb", 14)));
     }
 
     if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);
