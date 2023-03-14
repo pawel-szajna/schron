@@ -2,6 +2,8 @@
 
 #include "../object.hpp"
 
+#include <deque>
+
 namespace world
 {
 class Level;
@@ -21,6 +23,17 @@ public:
 
 private:
 
+    using DiffApplier = std::function<void(double)>;
+
+    void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
+
+    struct Diff
+    {
+        uint64_t startTime, targetTime;
+        double startValue, targetValue;
+        DiffApplier applier;
+    };
+
     double mapX, mapY, mapScale{32};
     [[maybe_unused]] const double& playerX;
     [[maybe_unused]] const double& playerY;
@@ -30,5 +43,6 @@ private:
     bool dragging{false};
 
     world::Level& level;
+    std::deque<Diff> diffs;
 };
 }

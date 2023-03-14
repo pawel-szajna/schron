@@ -40,7 +40,7 @@ private:
     struct Flash
     {
         std::string part;
-        double finishTime;
+        uint64_t finishTime;
         int x, y;
     };
 

@@ -47,9 +47,26 @@ void Editor::event(const sdl::event::Event& event)
     }
 }
 
+void Editor::enqueue(int length, double startValue, double targetValue, std::function<void(double)> applier)
+{
+    auto now = sdl::currentTime();
+    diffs.emplace_back(Diff{now, now + length, startValue, targetValue, std::move(applier)});
+}
+
 void Editor::render(sdl::Renderer& renderer)
 {
     std::vector<sdl::Vertex> vertices{};
+    auto now = sdl::currentTime();
+
+    while (not diffs.empty() and diffs.front().targetTime <= now)
+    {
+        diffs.pop_front();
+    }
+
+    for (const auto& diff : diffs)
+    {
+        diff.applier(diff.startValue + (now - diff.startTime) * (diff.targetValue - diff.startValue) / (diff.targetTime - diff.startTime));
+    }
 
     if (dragging)
     {
@@ -95,6 +112,37 @@ void Editor::render(sdl::Renderer& renderer)
                        });
 
         renderer.renderGeometry(vertices);
+
+        for (const auto& wall : sector.walls)
+        {
+            uint8_t r = 50, g = 50, b = 50, a = 240;
+            if (wall.portal.has_value())
+            {
+                a = 220;
+                if (wall.portal->transform.has_value())
+                {
+                    r = 200;
+                }
+                else
+                {
+                    r = 90;
+                    g = 100;
+                    b = 135;
+                }
+            }
+            renderer.renderLine(mapScale * wall.xStart - mapX, mapScale * wall.yStart - mapY,
+                                mapScale * wall.xEnd - mapX, mapScale * wall.yEnd - mapY,
+                                r, g, b, a);
+        }
+        for (const auto& sprite : sector.sprites)
+        {
+            uint8_t r = 140, g = 170, b = 190, a = 200;
+            vertices = {{(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
+                        {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2)), r, g, b, a},
+                        {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
+                        {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY + (mapScale / 2)), r, g, b, a}};
+            renderer.renderGeometry(vertices);
+        }
     }
 }
 }

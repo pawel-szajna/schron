@@ -45,7 +45,7 @@ void delay(int ms)
     SDL_Delay(ms);
 }
 
-double currentTime()
+uint64_t currentTime()
 {
     return SDL_GetTicks();
 }

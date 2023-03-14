@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
-project(schron C CXX OBJC)
+if(APPLE)
+    project(schron C CXX OBJC)
+else()
+    project(schron C CXX)
+endif()
 
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
@@ -8,7 +12,6 @@ find_package(Lua REQUIRED)
 
 if(APPLE)
 	add_compile_definitions(FMT_HEADER_ONLY)
-
 else()
     add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 endif()
