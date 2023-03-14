@@ -66,6 +66,7 @@ private:
     int mouseX, mouseY;
     int btnX, btnY;
     int dragX, dragY;
+    bool modShift{false};
     bool dragging{false};
     bool clicked{false};
     bool dragged{false};

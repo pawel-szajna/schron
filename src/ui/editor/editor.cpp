@@ -50,9 +50,14 @@ void Editor::event(const sdl::event::Event& event)
         {
             mapScale -= *mouse.scroll;
         }
-    } else if (std::holds_alternative<sdl::event::Key>(event))
+    }
+    else if (std::holds_alternative<sdl::event::Key>(event))
     {
         auto& key = std::get<sdl::event::Key>(event);
+        if (key.scancode == 225 /* SDL_SCANCODE_LSHIFT */)
+        {
+            modShift = key.direction == sdl::event::Key::Direction::Down;
+        }
         if (key.scancode == 60 /*SDL_SCANCODE_F3*/) // TODO: unwrapped SDL
         {
             auto& sectorCeiling = level.map.at(2).ceiling;
@@ -428,25 +433,27 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             auto right = wallRightX.xEnd;
             auto top = wallTopY.yStart;
             auto bottom = wallBottomY.yEnd;
+            auto step = 1.0;
+            if (modShift) step /= 10;
             if (draggedWall == Direction::Top)
             {
-                if (mouseY < topY - mapScale / 2) resizeSector(*selectedSector, left, right, top - 1, bottom);
-                else if (mouseY > topY + mapScale / 2) resizeSector(*selectedSector, left, right, top + 1, bottom);
+                if (mouseY < topY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top - step, bottom);
+                else if (mouseY > topY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top + step, bottom);
             }
             else if (draggedWall == Direction::Bottom)
             {
-                if (mouseY < bottomY - mapScale / 2) resizeSector(*selectedSector, left, right, top, bottom - 1);
-                else if (mouseY > bottomY + mapScale / 2) resizeSector(*selectedSector, left, right, top, bottom + 1);
+                if (mouseY < bottomY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom - step);
+                else if (mouseY > bottomY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom + step);
             }
             else if (draggedWall == Direction::Left)
             {
-                if (mouseX < leftX - mapScale / 2) resizeSector(*selectedSector, left - 1, right, top, bottom);
-                else if (mouseX > leftX + mapScale / 2) resizeSector(*selectedSector, left + 1, right, top, bottom);
+                if (mouseX < leftX - mapScale * step / 2) resizeSector(*selectedSector, left - step, right, top, bottom);
+                else if (mouseX > leftX + mapScale * step / 2) resizeSector(*selectedSector, left + step, right, top, bottom);
             }
             else if (draggedWall == Direction::Right)
             {
-                if (mouseX < rightX - mapScale / 2) resizeSector(*selectedSector, left, right - 1, top, bottom);
-                else if (mouseX > rightX + mapScale / 2) resizeSector(*selectedSector, left, right + 1, top, bottom);
+                if (mouseX < rightX - mapScale * step / 2) resizeSector(*selectedSector, left, right - step, top, bottom);
+                else if (mouseX > rightX + mapScale * step / 2) resizeSector(*selectedSector, left, right + step, top, bottom);
             }
             dragged = false;
         }
