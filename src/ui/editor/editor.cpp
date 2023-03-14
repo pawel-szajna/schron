@@ -99,7 +99,7 @@ bool Editor::mouseWithin(const T& vertices, VertexGetter<T> vg) const
 
 void Editor::updateMouse()
 {
-    if (dragging)
+    if (dragged)
     {
         mapX = mapX - (mouseX - dragX);
         mapY = mapY - (mouseY - dragY);
@@ -231,6 +231,122 @@ void Editor::drawMap(sdl::Renderer& renderer)
     }
 }
 
+void Editor::resizeSector(int id, double left, double right, double top, double bottom)
+{
+    resizeSingleSector(id, left, right, top, bottom, true);
+}
+
+void Editor::resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse)
+{
+    spdlog::debug("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})", id, left, right, top, bottom, recurse);
+    auto& sector = level.map.at(id);
+    using Intersection = std::tuple<int, double, double>;
+    std::vector<Intersection> xsTop, xsRight, xsBottom, xsLeft;
+    std::vector<std::tuple<int, double, double, double, double>> toResize{};
+    for (auto& [otherId, other] : level.map)
+    {
+        if (otherId == id or
+            other.ceiling < sector.floor or
+            other.floor > sector.ceiling)
+        {
+            continue;
+        }
+        auto wallLeftX =   *std::min_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
+        auto wallRightX =  *std::max_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
+        auto wallTopY =    *std::min_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+        auto wallBottomY = *std::max_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
+        auto otherLeft = wallLeftX.xStart;
+        auto otherRight = wallRightX.xEnd;
+        auto otherTop = wallTopY.yStart;
+        auto otherBottom = wallBottomY.yEnd;
+
+        auto enqueue = [&, otherId = otherId]()
+        {
+            if (not resized.contains(otherId) and recurse)
+            {
+                toResize.emplace_back(otherId, otherLeft, otherRight, otherTop, otherBottom);
+            }
+        };
+
+        if (otherBottom == top and otherLeft < right and otherRight > left)
+        {
+            xsTop.emplace_back(otherId, otherLeft, otherRight);
+            enqueue();
+        }
+        else if (otherLeft == right and otherTop < bottom and otherBottom > top)
+        {
+            xsRight.emplace_back(otherId, otherTop, otherBottom);
+            enqueue();
+        }
+        else if (otherTop == bottom and otherLeft < right and otherRight > left)
+        {
+            xsBottom.emplace_back(otherId, otherRight, otherLeft);
+            enqueue();
+        }
+        else if (otherRight == left and otherTop < bottom and otherBottom > top)
+        {
+            xsLeft.emplace_back(otherId, otherBottom, otherTop);
+            enqueue();
+        }
+        else if (std::any_of(other.walls.begin(), other.walls.end(),
+                             [id](const auto& wall) { return wall.portal and wall.portal->sector == id; }))
+        {
+            enqueue();
+        }
+    }
+    std::sort(xsTop.begin(), xsTop.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
+    std::sort(xsRight.begin(), xsRight.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
+    std::sort(xsBottom.begin(), xsBottom.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
+    std::sort(xsLeft.begin(), xsLeft.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
+
+    sector.walls.clear();
+    auto addHWall = [&](double x1, double x2, double y, std::optional<world::Wall::Portal> portal)
+    {
+        sector.walls.emplace_back(world::Wall{x1, y, x2, y, portal, "wall"});
+    };
+    auto addVWall = [&](double y1, double y2, double x, std::optional<world::Wall::Portal> portal)
+    {
+        sector.walls.emplace_back(world::Wall{x, y1, x, y2, portal, "wall"});
+    };
+    auto segmentize = [](const std::vector<Intersection>& intersections,
+                         double init, double limit, double constant,
+                         std::function<void(double, double, double, std::optional<world::Wall::Portal>)> builder,
+                         auto comparator = std::less<>())
+    {
+        double x = init;
+        for (const auto& xs : intersections)
+        {
+            int neighbourId = std::get<0>(xs);
+            double neighbourStart = std::max(std::get<1>(xs), x, comparator);
+            double neighbourEnd = std::min(std::get<2>(xs), limit, comparator);
+            if (comparator(x, neighbourStart))
+            {
+                builder(x, neighbourStart, constant, std::nullopt);
+            }
+            if (comparator(neighbourStart, neighbourEnd))
+            {
+                builder(neighbourStart, neighbourEnd, constant, world::Wall::Portal{neighbourId});
+            }
+            x = neighbourEnd;
+        }
+        if (comparator(x, limit))
+        {
+            builder(x, limit, constant, std::nullopt);
+        }
+    };
+
+    segmentize(xsTop, left, right, top, addHWall, std::less<>());
+    segmentize(xsRight, top, bottom, right, addVWall, std::less<>());
+    segmentize(xsBottom, right, left, bottom, addHWall, std::greater<>());
+    segmentize(xsLeft, bottom, top, left, addVWall, std::greater<>());
+
+    for (auto args : toResize)
+    {
+        std::apply(&Editor::resizeSingleSector,
+                   std::tuple_cat(std::forward_as_tuple(this), args, std::forward_as_tuple(false)));
+    }
+}
+
 void Editor::drawSelectedSector(sdl::Renderer& renderer)
 {
     if (not selectedSector.has_value())
@@ -239,15 +355,107 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     }
 
     auto& sector = level.map.at(*selectedSector);
-    auto rightX = *std::max_element(sector.walls.begin(), sector.walls.end(),
-                                    [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
-    auto topY = *std::min_element(sector.walls.begin(), sector.walls.end(),
-                                  [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+    auto wallLeftX =   *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
+    auto wallRightX =  *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
+    auto wallTopY =    *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+    auto wallBottomY = *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
 
-    int windowX = rightX.xEnd * mapScale - mapX + 16;
-    int windowY = topY.yStart * mapScale - mapY;
-    int windowW = 260;
-    int windowH = 200;
+    double leftX = wallLeftX.xStart * mapScale - mapX;
+    double rightX = wallRightX.xEnd * mapScale - mapX;
+    double topY = wallTopY.yStart * mapScale - mapY;
+    double bottomY = wallBottomY.yEnd * mapScale - mapY;
+
+    auto mouseInBox = [&](double x1, double y1, double x2, double y2)
+    {
+        return mouseX >= x1 and mouseX <= x2 and mouseY >= y1 and mouseY <= y2;
+    };
+
+    if (not draggedWall)
+    {
+        bool draggingStarted = dragged and mouseX == dragX and mouseY == dragY;
+        if (mouseInBox(leftX - 5, topY - 5, rightX + 5, topY + 5))
+        {
+            vertical.activate();
+            if (draggingStarted)
+            {
+                draggedWall = Direction::Top;
+                dragged = false;
+            }
+        }
+        else if (mouseInBox(leftX - 5, bottomY - 5, rightX + 5, bottomY + 5))
+        {
+            vertical.activate();
+            if (draggingStarted)
+            {
+                draggedWall = Direction::Bottom;
+                dragged = false;
+            }
+        }
+        else if (mouseInBox(leftX - 5, topY - 5, leftX + 5, bottomY + 5))
+        {
+            horizontal.activate();
+            if (draggingStarted)
+            {
+                draggedWall = Direction::Left;
+                dragged = false;
+            }
+        }
+        else if (mouseInBox(rightX - 5, topY - 5, rightX + 5, bottomY + 5))
+        {
+            horizontal.activate();
+            if (draggingStarted)
+            {
+                draggedWall = Direction::Right;
+                dragged = false;
+            }
+        }
+        else
+        {
+            sdl::changeCursor(0);
+        }
+    }
+
+    if (draggedWall)
+    {
+        if (not dragging)
+        {
+            draggedWall = std::nullopt;
+            sdl::changeCursor(0);
+        }
+        else
+        {
+            auto left = wallLeftX.xStart;
+            auto right = wallRightX.xEnd;
+            auto top = wallTopY.yStart;
+            auto bottom = wallBottomY.yEnd;
+            if (draggedWall == Direction::Top)
+            {
+                if (mouseY < topY - mapScale / 2) resizeSector(*selectedSector, left, right, top - 1, bottom);
+                else if (mouseY > topY + mapScale / 2) resizeSector(*selectedSector, left, right, top + 1, bottom);
+            }
+            else if (draggedWall == Direction::Bottom)
+            {
+                if (mouseY < bottomY - mapScale / 2) resizeSector(*selectedSector, left, right, top, bottom - 1);
+                else if (mouseY > bottomY + mapScale / 2) resizeSector(*selectedSector, left, right, top, bottom + 1);
+            }
+            else if (draggedWall == Direction::Left)
+            {
+                if (mouseX < leftX - mapScale / 2) resizeSector(*selectedSector, left - 1, right, top, bottom);
+                else if (mouseX > leftX + mapScale / 2) resizeSector(*selectedSector, left + 1, right, top, bottom);
+            }
+            else if (draggedWall == Direction::Right)
+            {
+                if (mouseX < rightX - mapScale / 2) resizeSector(*selectedSector, left, right - 1, top, bottom);
+                else if (mouseX > rightX + mapScale / 2) resizeSector(*selectedSector, left, right + 1, top, bottom);
+            }
+            dragged = false;
+        }
+    }
+
+    int windowX = rightX + 16;
+    int windowY = topY;
+    int windowW = 280;
+    int windowH = 170 + sector.walls.size() * 20;
     renderer.renderRectangle(windowX, windowY, windowW, windowH, 200, 200, 200, 220);
     auto window = sdl::Surface(windowW, windowH);
 
@@ -273,7 +481,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
     };
 
-    text(std::format("Selected sector: {}", *selectedSector), 10, 10);
+    text(std::format("Selected sector: {}", *selectedSector), 10, 5);
     text(std::format("Ceiling Z: {:.1f}", sector.ceiling), 10, 30);
     text(std::format("Floor Z: {:.1f}", sector.floor), 10, 50);
 
@@ -292,6 +500,25 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     button("-0.1", windowW - 110, 53, 30, 16, sectorFieldAnimator(-0.1, sector.floor));
     button("-1", windowW - 145, 53, 30, 16, sectorFieldAnimator(-1, sector.floor));
 
+    text(std::format("Ceiling texture: {}", sector.ceilingTexture), 10, 80);
+    text(std::format("Floor texture: {}", sector.floorTexture), 10, 100);
+
+    button("Change", windowW - 80, 83, 70, 16, []{});
+    button("Change", windowW - 80, 103, 70, 16, []{});
+
+    text("Walls:", 10, 130);
+    int wallDescY = 155;
+    int wallId = 0;
+    for (const auto& wall : sector.walls)
+    {
+        text(std::format("#{}: {} [{:.1f},{:.1f}]–[{:.1f},{:.1f}]",
+                         wallId, wall.portal ? std::format("Portal ({})", wall.portal->sector) : "Wall",
+                         wall.xStart, wall.yStart, wall.xEnd, wall.yEnd), 10, wallDescY);
+        button("Edit", windowW - 65, wallDescY + 3, 55, 16, []{});
+        wallDescY += 20;
+        wallId++;
+    }
+
     auto texture = sdl::Texture(renderer, sdl::Texture::Access::Streaming, windowW, windowH);
     texture.setBlendMode(sdl::BlendMode::Blend);
     window.render(texture);
@@ -300,6 +527,8 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
 
 void Editor::render(sdl::Renderer& renderer)
 {
+    dragged = dragging;
+
     processMapUpdates();
     drawMap(renderer);
     drawSelectedSector(renderer);
