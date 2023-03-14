@@ -78,7 +78,7 @@ bool Editor::mouseWithin(const T& vertices, VertexGetter<T> vg) const
 
         if (sideSign == 0)
         {
-            sideSign = std::signbit(side) ? -1 : 1;
+            sideSign = side < 0 ? -1 : 1;
         }
         else
         {
@@ -92,9 +92,41 @@ bool Editor::mouseWithin(const T& vertices, VertexGetter<T> vg) const
     return true;
 }
 
-void Editor::render(sdl::Renderer& renderer)
+void Editor::updateMouse()
 {
-    std::vector<sdl::Vertex> vertices{};
+    if (dragging)
+    {
+        mapX = mapX - (mouseX - btnX);
+        mapY = mapY - (mouseY - btnY);
+        btnX = mouseX;
+        btnY = mouseY;
+    }
+
+    for (const auto& [id, sector] : level.map)
+    {
+        using Walls = decltype(sector.walls);
+        if (mouseWithin<Walls>(sector.walls,
+                               [&, n = (size_t)0](const Walls& walls) mutable -> VertexGetter<Walls>::result_type
+                               {
+                                   if (n >= walls.size())
+                                   {
+                                       return std::nullopt;
+                                   }
+                                   const auto& wall = walls.at(n++);
+                                   return std::make_tuple(wall.xStart * mapScale - mapX,
+                                                          wall.yStart * mapScale - mapY,
+                                                          wall.xEnd * mapScale - mapX,
+                                                          wall.yEnd * mapScale - mapY);
+                               }))
+        {
+            sectorUnderMouse = id;
+            break;
+        }
+    }
+}
+
+void Editor::processMapUpdates()
+{
     auto now = sdl::currentTime();
 
     while (not diffs.empty() and diffs.front().targetTime <= now)
@@ -106,38 +138,22 @@ void Editor::render(sdl::Renderer& renderer)
     {
         diff.applier(diff.startValue + (now - diff.startTime) * (diff.targetValue - diff.startValue) / (diff.targetTime - diff.startTime));
     }
+}
 
-    if (dragging)
-    {
-        mapX = mapX - (mouseX - btnX);
-        mapY = mapY - (mouseY - btnY);
-        btnX = mouseX;
-        btnY = mouseY;
-    }
-
-    for (auto& [_, sector] : level.map)
+void Editor::drawMap(sdl::Renderer& renderer)
+{
+    std::vector<sdl::Vertex> vertices{};
+    for (auto& [id, sector] : level.map)
     {
         vertices.clear();
-        using Walls = decltype(sector.walls);
-        bool mouseInSector = mouseWithin<Walls>(
-                sector.walls,
-                [n = (size_t)0](const Walls& walls) mutable -> VertexGetter<Walls>::result_type
-                {
-                    if (n >= walls.size())
-                    {
-                        return std::nullopt;
-                    }
-                    const auto& wall = walls.at(n++);
-                    return std::make_tuple(wall.xStart, wall.yStart, wall.xEnd, wall.yEnd);
-                });
         std::transform(sector.walls.begin(),
                        sector.walls.end(),
                        std::back_inserter(vertices),
-                       [&](const auto& wall)
+                       [&, id = id](const auto& wall)
                        {
                            float vertexX = wall.xStart * mapScale - mapX;
                            float vertexY = wall.yStart * mapScale - mapY;
-                           uint8_t color = mouseInSector ? 150 : 100;
+                           uint8_t color = sectorUnderMouse == id ? 150 : 100;
                            return sdl::Vertex{vertexX, vertexY, color, color, color, 220};
                        });
         renderer.renderGeometry(vertices);
@@ -173,5 +189,12 @@ void Editor::render(sdl::Renderer& renderer)
             renderer.renderGeometry(vertices);
         }
     }
+}
+
+void Editor::render(sdl::Renderer& renderer)
+{
+    processMapUpdates();
+    updateMouse();
+    drawMap(renderer);
 }
 }

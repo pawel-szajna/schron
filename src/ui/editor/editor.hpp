@@ -26,9 +26,12 @@ private:
 
     using DiffApplier = std::function<void(double)>;
     template<typename T> using VertexGetter = std::function<std::optional<std::tuple<double, double, double, double>>(const T&)>;
+    template<typename T> bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
 
     void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
-    template<typename T> bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
+    void updateMouse();
+    void processMapUpdates();
+    void drawMap(sdl::Renderer& renderer);
 
     struct Diff
     {
@@ -47,5 +50,6 @@ private:
 
     world::Level& level;
     std::deque<Diff> diffs;
+    std::optional<int> sectorUnderMouse;
 };
 }
