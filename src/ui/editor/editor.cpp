@@ -6,6 +6,7 @@
 #include "util/constants.hpp"
 #include "world/level.hpp"
 
+#include <cmath>
 #include <spdlog/spdlog.h>
 
 namespace ui::editor
@@ -27,7 +28,7 @@ void Editor::event(const sdl::event::Event& event)
 {
     if (std::holds_alternative<sdl::event::Mouse>(event))
     {
-        auto mouse = std::get<sdl::event::Mouse>(event);
+        auto& mouse = std::get<sdl::event::Mouse>(event);
         mouseX = mouse.x;
         mouseY = mouse.y;
         if (not dragging and mouse.button.has_value() and *mouse.button == 1)
@@ -44,6 +45,14 @@ void Editor::event(const sdl::event::Event& event)
         {
             mapScale -= *mouse.scroll;
         }
+    } else if (std::holds_alternative<sdl::event::Key>(event))
+    {
+        auto& key = std::get<sdl::event::Key>(event);
+        if (key.scancode == 60 /*SDL_SCANCODE_F3*/) // TODO: unwrapped SDL
+        {
+            auto& sectorCeiling = level.map.at(2).ceiling;
+            enqueue(500, sectorCeiling, sectorCeiling + 0.5, [&sectorCeiling](const auto ceiling) { sectorCeiling = ceiling; });
+        }
     }
 }
 
@@ -51,6 +60,36 @@ void Editor::enqueue(int length, double startValue, double targetValue, std::fun
 {
     auto now = sdl::currentTime();
     diffs.emplace_back(Diff{now, now + length, startValue, targetValue, std::move(applier)});
+}
+
+template<typename T>
+bool Editor::mouseWithin(const T& vertices, VertexGetter<T> vg) const
+{
+    int sideSign{};
+
+    while (auto line = vg(vertices))
+    {
+        auto x1 = std::get<0>(*line);
+        auto y1 = std::get<1>(*line);
+        auto x2 = std::get<2>(*line);
+        auto y2 = std::get<3>(*line);
+
+        auto side = (mouseX - x1) * (y2 - y1) - (mouseY - y1) * (x2 - x1);
+
+        if (sideSign == 0)
+        {
+            sideSign = std::signbit(side) ? -1 : 1;
+        }
+        else
+        {
+            if ((side < 0 and sideSign > 0) or (side > 0 and sideSign < 0))
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void Editor::render(sdl::Renderer& renderer)
@@ -79,27 +118,18 @@ void Editor::render(sdl::Renderer& renderer)
     for (auto& [_, sector] : level.map)
     {
         vertices.clear();
-        bool mouseInSector{true};
-        int sideSign{};
-        for (const auto& wall : sector.walls)
-        {
-            double mapMouseX = (double)(mouseX + mapX) / mapScale;
-            double mapMouseY = (double)(mouseY + mapY) / mapScale;
-
-            auto side = (mapMouseX - wall.xStart) * (wall.yEnd - wall.yStart) - (mapMouseY - wall.yStart) * (wall.xEnd - wall.xStart);
-            if (sideSign == 0)
-            {
-                sideSign = side < 0 ? -1 : 1;
-            }
-            else
-            {
-                if ((side < 0 and sideSign > 0) or (side > 0 and sideSign < 0))
+        using Walls = decltype(sector.walls);
+        bool mouseInSector = mouseWithin<Walls>(
+                sector.walls,
+                [n = (size_t)0](const Walls& walls) mutable -> VertexGetter<Walls>::result_type
                 {
-                    mouseInSector = false;
-                    break;
-                }
-            }
-        }
+                    if (n >= walls.size())
+                    {
+                        return std::nullopt;
+                    }
+                    const auto& wall = walls.at(n++);
+                    return std::make_tuple(wall.xStart, wall.yStart, wall.xEnd, wall.yEnd);
+                });
         std::transform(sector.walls.begin(),
                        sector.walls.end(),
                        std::back_inserter(vertices),
@@ -110,7 +140,6 @@ void Editor::render(sdl::Renderer& renderer)
                            uint8_t color = mouseInSector ? 150 : 100;
                            return sdl::Vertex{vertexX, vertexY, color, color, color, 220};
                        });
-
         renderer.renderGeometry(vertices);
 
         for (const auto& wall : sector.walls)

@@ -3,6 +3,7 @@
 #include "../object.hpp"
 
 #include <deque>
+#include <functional>
 
 namespace world
 {
@@ -24,8 +25,10 @@ public:
 private:
 
     using DiffApplier = std::function<void(double)>;
+    template<typename T> using VertexGetter = std::function<std::optional<std::tuple<double, double, double, double>>(const T&)>;
 
     void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
+    template<typename T> bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
 
     struct Diff
     {
@@ -34,7 +37,7 @@ private:
         DiffApplier applier;
     };
 
-    double mapX, mapY, mapScale{32};
+    double mapX{-380}, mapY{-120}, mapScale{32};
     [[maybe_unused]] const double& playerX;
     [[maybe_unused]] const double& playerY;
 
