@@ -41,6 +41,7 @@ private:
     void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
     void updateMouse();
     void processMapUpdates();
+    void drawGrid(sdl::Renderer& renderer) const;
     void drawMap(sdl::Renderer& renderer);
     void drawSelectedSector(sdl::Renderer& renderer);
     void resizeSector(int id, double left, double right, double top, double bottom);

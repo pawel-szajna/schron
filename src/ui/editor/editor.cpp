@@ -532,11 +532,24 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     renderer.copy(texture, std::nullopt, sdl::FRectangle{(float)windowX, (float)windowY, (float)windowW, (float)windowH});
 }
 
+void Editor::drawGrid(sdl::Renderer& renderer) const
+{
+    for (int x = (int)mapScale - (int)mapX % (int)mapScale; x < c::windowWidth; x += mapScale)
+    {
+        renderer.renderLine(x, 0, x, c::windowHeight - 1, 255, 255, 255, 64);
+    }
+    for (int y = (int)mapScale - (int)mapY % (int)mapScale; y < c::windowHeight; y += mapScale)
+    {
+        renderer.renderLine(0, y, c::windowWidth - 1, y, 255, 255, 255, 64);
+    }
+}
+
 void Editor::render(sdl::Renderer& renderer)
 {
     dragged = dragging;
 
     processMapUpdates();
+    drawGrid(renderer);
     drawMap(renderer);
     drawSelectedSector(renderer);
     updateMouse();
