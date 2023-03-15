@@ -73,6 +73,7 @@ private:
     int btnX, btnY;
     int dragX, dragY;
     bool modShift{false};
+    bool modCtrl{false};
     bool dragging{false};
     bool clicked{false};
     bool dragged{false};

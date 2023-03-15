@@ -1,12 +1,10 @@
 #include "editor.hpp"
 
-#include "sdlwrapper/common_types.hpp"
 #include "sdlwrapper/event_types.hpp"
-#include "sdlwrapper/font.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
-#include "sdlwrapper/surface.hpp"
 #include "util/constants.hpp"
 #include "widgets.hpp"
+#include "world/builders.hpp"
 #include "world/level.hpp"
 
 #include <cmath>
@@ -55,14 +53,13 @@ void Editor::event(const sdl::event::Event& event)
     else if (std::holds_alternative<sdl::event::Key>(event))
     {
         auto& key = std::get<sdl::event::Key>(event);
-        if (key.scancode == 225 /* SDL_SCANCODE_LSHIFT */)
+        if (key.scancode == 224 /* LCTRL */)
+        {
+            modCtrl = key.direction == sdl::event::Key::Direction::Down;
+        }
+        else if (key.scancode == 225 /* SDL_SCANCODE_LSHIFT */)
         {
             modShift = key.direction == sdl::event::Key::Direction::Down;
-        }
-        if (key.scancode == 60 /*SDL_SCANCODE_F3*/) // TODO: unwrapped SDL
-        {
-            auto& sectorCeiling = level.map.at(2).ceiling;
-            enqueue(500, sectorCeiling, sectorCeiling + 0.5, [&sectorCeiling](const auto ceiling) { sectorCeiling = ceiling; });
         }
     }
 }
@@ -159,6 +156,20 @@ void Editor::updateMouse()
     if (clicked)
     {
         selectedSector = std::nullopt;
+        if (modCtrl)
+        {
+            int newId = 1;
+            double newX = std::floor((mouseX + mapX) / mapScale);
+            double newY = std::floor((mouseY + mapY) / mapScale);
+            while (level.map.contains(newId)) ++newId;
+            level.put(world::RectangularSectorBuilder(newId)
+                        .withCeiling(1.0)
+                        .withFloor(0.0)
+                        .build());
+            resizeSector(newId, newX, newX + 1, newY, newY + 1);
+            selectedSector = newId;
+            selectedSectorWindow = std::nullopt;
+        }
         clicked = false;
     }
 }
