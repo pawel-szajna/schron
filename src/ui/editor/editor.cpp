@@ -238,6 +238,16 @@ void Editor::drawMap(sdl::Renderer& renderer)
     }
 }
 
+void Editor::moveSectorSprites(int id, double diffX, double diffY)
+{
+    auto& sprites = level.map.at(id).sprites;
+    for (auto& sprite : sprites)
+    {
+        sprite.x += diffX;
+        sprite.y += diffY;
+    }
+}
+
 void Editor::resizeSector(int id, double left, double right, double top, double bottom)
 {
     resizeSingleSector(id,
@@ -383,42 +393,51 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         return mouseX >= x1 and mouseX <= x2 and mouseY >= y1 and mouseY <= y2;
     };
 
-    if (not draggedWall)
+    if (not drag)
     {
         bool draggingStarted = dragged and mouseX == dragX and mouseY == dragY;
         if (mouseInBox(leftX - 5, topY - 5, rightX + 5, topY + 5))
         {
-            vertical.activate();
+            cursorVertical.activate();
             if (draggingStarted)
             {
-                draggedWall = Direction::Top;
+                drag = DragOperation::WallTop;
                 dragged = false;
             }
         }
         else if (mouseInBox(leftX - 5, bottomY - 5, rightX + 5, bottomY + 5))
         {
-            vertical.activate();
+            cursorVertical.activate();
             if (draggingStarted)
             {
-                draggedWall = Direction::Bottom;
+                drag = DragOperation::WallBottom;
                 dragged = false;
             }
         }
         else if (mouseInBox(leftX - 5, topY - 5, leftX + 5, bottomY + 5))
         {
-            horizontal.activate();
+            cursorHorizontal.activate();
             if (draggingStarted)
             {
-                draggedWall = Direction::Left;
+                drag = DragOperation::WallLeft;
                 dragged = false;
             }
         }
         else if (mouseInBox(rightX - 5, topY - 5, rightX + 5, bottomY + 5))
         {
-            horizontal.activate();
+            cursorHorizontal.activate();
             if (draggingStarted)
             {
-                draggedWall = Direction::Right;
+                drag = DragOperation::WallRight;
+                dragged = false;
+            }
+        }
+        else if (mouseInBox(leftX, topY, rightX, bottomY))
+        {
+            cursorMove.activate();
+            if (draggingStarted)
+            {
+                drag = DragOperation::Sector;
                 dragged = false;
             }
         }
@@ -428,11 +447,11 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
     }
 
-    if (draggedWall)
+    if (drag)
     {
         if (not dragging)
         {
-            draggedWall = std::nullopt;
+            drag = std::nullopt;
             sdl::resetCursor();
         }
         else
@@ -443,22 +462,49 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             auto bottom = wallBottomY.yEnd;
             auto step = 1.0;
             if (modShift) step /= 10;
-            if (draggedWall == Direction::Top)
+            if (drag == DragOperation::Sector)
+            {
+                if (mouseX < dragX - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left - step, right - step, top, bottom);
+                    moveSectorSprites(*selectedSector, -step, 0);
+                    dragX = mouseX;
+                }
+                else if (mouseX > dragX + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left + step, right + step, top, bottom);
+                    moveSectorSprites(*selectedSector, step, 0);
+                    dragX = mouseX;
+                }
+                if (mouseY < dragY - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top - step, bottom - step);
+                    moveSectorSprites(*selectedSector, 0, -step);
+                    dragY = mouseY;
+                }
+                else if (mouseY > dragY + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top + step, bottom + step);
+                    moveSectorSprites(*selectedSector, 0, step);
+                    dragY = mouseY;
+                }
+            }
+            if (drag == DragOperation::WallTop)
             {
                 if (mouseY < topY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top - step, bottom);
                 else if (mouseY > topY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top + step, bottom);
             }
-            else if (draggedWall == Direction::Bottom)
+            else if (drag == DragOperation::WallBottom)
             {
                 if (mouseY < bottomY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom - step);
                 else if (mouseY > bottomY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom + step);
             }
-            else if (draggedWall == Direction::Left)
+            else if (drag == DragOperation::WallLeft)
             {
                 if (mouseX < leftX - mapScale * step / 2) resizeSector(*selectedSector, left - step, right, top, bottom);
                 else if (mouseX > leftX + mapScale * step / 2) resizeSector(*selectedSector, left + step, right, top, bottom);
             }
-            else if (draggedWall == Direction::Right)
+            else if (drag == DragOperation::WallRight)
             {
                 if (mouseX < rightX - mapScale * step / 2) resizeSector(*selectedSector, left, right - step, top, bottom);
                 else if (mouseX > rightX + mapScale * step / 2) resizeSector(*selectedSector, left, right + step, top, bottom);

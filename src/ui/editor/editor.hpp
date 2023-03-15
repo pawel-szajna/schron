@@ -39,11 +39,15 @@ private:
     template<typename T> bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
 
     void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
+
     void updateMouse();
     void processMapUpdates();
+
     void drawGrid(sdl::Renderer& renderer) const;
     void drawMap(sdl::Renderer& renderer);
     void drawSelectedSector(sdl::Renderer& renderer);
+
+    void moveSectorSprites(int id, double diffX, double diffY);
     void resizeSector(int id, double left, double right, double top, double bottom);
     void resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse);
 
@@ -56,12 +60,13 @@ private:
 
     double mapX{-380}, mapY{-120}, mapScale{32};
 
-    enum class Direction
+    enum class DragOperation
     {
-        Top,
-        Bottom,
-        Left,
-        Right,
+        WallTop,
+        WallBottom,
+        WallLeft,
+        WallRight,
+        Sector,
     };
 
     int mouseX, mouseY;
@@ -71,7 +76,7 @@ private:
     bool dragging{false};
     bool clicked{false};
     bool dragged{false};
-    std::optional<Direction> draggedWall;
+    std::optional<DragOperation> drag;
 
     world::Level& level;
     std::deque<Diff> diffs;
@@ -81,7 +86,9 @@ private:
     std::set<int> resized;
 
     sdl::Font& font;
-    sdl::Cursor horizontal{7};
-    sdl::Cursor vertical{8};
+    [[maybe_unused]] sdl::Cursor cursorCrosshair{3};
+    sdl::Cursor cursorHorizontal{7};
+    sdl::Cursor cursorVertical{8};
+    sdl::Cursor cursorMove{9};
 };
 }
