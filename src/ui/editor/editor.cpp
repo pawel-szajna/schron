@@ -240,7 +240,12 @@ void Editor::drawMap(sdl::Renderer& renderer)
 
 void Editor::resizeSector(int id, double left, double right, double top, double bottom)
 {
-    resizeSingleSector(id, left, right, top, bottom, true);
+    resizeSingleSector(id,
+                       std::round(left * 10) / 10,
+                       std::round(right * 10) / 10,
+                       std::round(top * 10) / 10,
+                       std::round(bottom * 10) / 10,
+                       true);
 }
 
 void Editor::resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse)
