@@ -134,6 +134,7 @@ void Editor::updateMouse()
             if (clicked)
             {
                 selectedSector = id;
+                selectedSectorWindow = std::nullopt;
                 enqueue(1200, 0, 1199,
                         [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture](double time)
                         {
@@ -469,6 +470,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     }
 
     clicked = selectedSectorWindow->consumeClick(clicked, mouseX, mouseY);
+    selectedSectorWindow->move(rightX + 16, topY);
     selectedSectorWindow->render(renderer);
 }
 
