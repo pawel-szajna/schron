@@ -61,7 +61,7 @@ void Engine::frame(const game::Position& player)
 {
     constexpr static auto renderStart = 0;
     constexpr static auto renderEnd = c::renderWidth - 1;
-    constexpr static auto initialDepth = 4;
+    constexpr static auto initialDepth = 32;
 
     buffer.fill(0);
     zBuffer.fill(100);
