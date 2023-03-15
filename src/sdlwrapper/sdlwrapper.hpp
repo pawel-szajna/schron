@@ -8,7 +8,7 @@ void initialize();
 void teardown();
 
 void delay(int ms);
-void changeCursor(int cursor);
+void resetCursor();
 uint64_t currentTime();
 const uint8_t* keyboard();
 void showCursor();

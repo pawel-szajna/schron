@@ -40,9 +40,7 @@ Surface Font::renderOutlined(const std::string& text, Color color, Color outline
     textBg.render(target, Rectangle{2, 2, 0, 0});
     textFg.render(target, Rectangle{1, 1, 0, 0});
 
-    SDL_Surface* s = *target;
-    target.wrapped = nullptr;
-    return Surface(s);
+    return target;
 }
 
 void Font::render(Surface& target, const std::string& text)

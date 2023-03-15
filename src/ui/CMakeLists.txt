@@ -3,6 +3,7 @@ add_library(
         STATIC
         fonts.cpp
         editor/editor.cpp
+        editor/widgets.cpp
         mini_map.cpp
         text.cpp
         ui.cpp

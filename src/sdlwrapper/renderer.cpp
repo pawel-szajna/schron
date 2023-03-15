@@ -119,4 +119,11 @@ void Renderer::renderRectangle(int x, int y, int width, int height, uint8_t r, u
     SDL_FRect fRect{(float)x, (float)y, (float)width, (float)height};
     SDL_RenderFillRect(wrapped, &fRect);
 }
+
+void Renderer::renderBox(int x, int y, int width, int height, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    setColor(r, g, b, a);
+    SDL_FRect fRect{(float)x, (float)y, (float)width, (float)height};
+    SDL_RenderRect(wrapped, &fRect);
+}
 }

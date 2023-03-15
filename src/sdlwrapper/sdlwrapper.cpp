@@ -50,11 +50,9 @@ uint64_t currentTime()
     return SDL_GetTicks();
 }
 
-void changeCursor(int id)
+void resetCursor()
 {
-    auto cursor = SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(id));
-    SDL_SetCursor(cursor);
-    SDL_DestroyCursor(cursor);
+    SDL_SetCursor(SDL_GetDefaultCursor());
 }
 
 const uint8_t* keyboard()

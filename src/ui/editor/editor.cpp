@@ -6,6 +6,7 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "sdlwrapper/surface.hpp"
 #include "util/constants.hpp"
+#include "widgets.hpp"
 #include "world/level.hpp"
 
 #include <cmath>
@@ -416,7 +417,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
         else
         {
-            sdl::changeCursor(0);
+            sdl::resetCursor();
         }
     }
 
@@ -425,7 +426,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         if (not dragging)
         {
             draggedWall = std::nullopt;
-            sdl::changeCursor(0);
+            sdl::resetCursor();
         }
         else
         {
@@ -459,77 +460,51 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
     }
 
-    int windowX = rightX + 16;
-    int windowY = topY;
     int windowW = 280;
     int windowH = 170 + sector.walls.size() * 20;
-    renderer.renderRectangle(windowX, windowY, windowW, windowH, 200, 200, 200, 220);
-    auto window = sdl::Surface(windowW, windowH);
 
-    auto text = [&](const std::string& what, int x, int y)
-    {
-        font.render(what, sdl::Color{0, 0, 0, 255}).render(window, sdl::Rectangle{x, y, 0, 0});
-    };
+    auto sectorWindow = Window(rightX + 16, topY, windowW, windowH);
 
-    auto button = [&](const std::string& caption, int x, int y, int w, int h, std::function<void(void)> onClick)
-    {
-        renderer.renderRectangle(windowX + x, windowY + y, w, h, 220, 220, 220, 240);
-        renderer.renderLine(windowX + x, windowY + y, windowX + x + w, windowY + y, 100, 100, 100, 200);
-        renderer.renderLine(windowX + x, windowY + y + h, windowX + x + w, windowY + y + h, 80, 80, 80, 200);
-        renderer.renderLine(windowX + x, windowY + y, windowX + x, windowY + y + h, 100, 100, 100, 200);
-        renderer.renderLine(windowX + x + w, windowY + y, windowX + x + w, windowY + y + h, 80, 80, 80, 200);
-        auto captionW = font.size(caption).first;
-        text(caption, x + (w / 2 - captionW / 2), y - 4);
-
-        if (clicked and btnX > windowX + x and btnX < windowX + x + w and btnY > windowY + y and btnY < windowY + y + h)
-        {
-            onClick();
-            clicked = false;
-        }
-    };
-
-    text(std::format("Selected sector: {}", *selectedSector), 10, 5);
-    text(std::format("Ceiling Z: {:.1f}", sector.ceiling), 10, 30);
-    text(std::format("Floor Z: {:.1f}", sector.floor), 10, 50);
+    sectorWindow.add<Text>(10,  5, font, std::format("Selected sector: {}", *selectedSector));
+    sectorWindow.add<Text>(10, 30, font, std::format("Ceiling Z: {:.1f}", sector.ceiling));
+    sectorWindow.add<Text>(10, 50, font, std::format("Floor Z: {:.1f}", sector.floor));
 
     auto sectorFieldAnimator = [&](double diff, double& field)
     {
         return [&, diff](){ enqueue(500, field, field + diff, [&](auto v) { field = v; }); };
     };
 
-    button("+1", windowW - 40, 33, 30, 16, sectorFieldAnimator(1, sector.ceiling));
-    button("+0.1", windowW - 75, 33, 30, 16, sectorFieldAnimator(0.1, sector.ceiling));
-    button("-0.1", windowW - 110, 33, 30, 16, sectorFieldAnimator(-0.1, sector.ceiling));
-    button("-1", windowW - 145, 33, 30, 16, sectorFieldAnimator(-1, sector.ceiling));
+    sectorWindow.add<Button>(windowW - 40, 33, 30, 16, font, "+1", sectorFieldAnimator(1, sector.ceiling));
+    sectorWindow.add<Button>(windowW - 75, 33, 30, 16, font, "+0.1", sectorFieldAnimator(0.1, sector.ceiling));
+    sectorWindow.add<Button>(windowW - 110, 33, 30, 16, font, "–0.1", sectorFieldAnimator(-0.1, sector.ceiling));
+    sectorWindow.add<Button>(windowW - 145, 33, 30, 16, font, "–1", sectorFieldAnimator(-1, sector.ceiling));
 
-    button("+1", windowW - 40, 53, 30, 16, sectorFieldAnimator(1, sector.floor));
-    button("+0.1", windowW - 75, 53, 30, 16, sectorFieldAnimator(0.1, sector.floor));
-    button("-0.1", windowW - 110, 53, 30, 16, sectorFieldAnimator(-0.1, sector.floor));
-    button("-1", windowW - 145, 53, 30, 16, sectorFieldAnimator(-1, sector.floor));
+    sectorWindow.add<Button>(windowW - 40, 53, 30, 16, font, "+1", sectorFieldAnimator(1, sector.floor));
+    sectorWindow.add<Button>(windowW - 75, 53, 30, 16, font, "+0.1", sectorFieldAnimator(0.1, sector.floor));
+    sectorWindow.add<Button>(windowW - 110, 53, 30, 16, font, "–0.1", sectorFieldAnimator(-0.1, sector.floor));
+    sectorWindow.add<Button>(windowW - 145, 53, 30, 16, font, "–1", sectorFieldAnimator(-1, sector.floor));
 
-    text(std::format("Ceiling texture: {}", sector.ceilingTexture), 10, 80);
-    text(std::format("Floor texture: {}", sector.floorTexture), 10, 100);
+    sectorWindow.add<Text>(10, 80, font, std::format("Ceiling texture: {}", sector.ceilingTexture));
+    sectorWindow.add<Text>(10, 100, font, std::format("Floor texture: {}", sector.floorTexture));
 
-    button("Change", windowW - 80, 83, 70, 16, []{});
-    button("Change", windowW - 80, 103, 70, 16, []{});
+    sectorWindow.add<Button>(windowW - 80, 83, 70, 16, font, "Change", []{});
+    sectorWindow.add<Button>(windowW - 80, 103, 70, 16, font, "Change", []{});
 
-    text("Walls:", 10, 130);
-    int wallDescY = 155;
-    int wallId = 0;
+    sectorWindow.add<Text>(10, 130, font, "Walls:");
+    int wallDescY{155}, wallId{0};
     for (const auto& wall : sector.walls)
     {
-        text(std::format("#{}: {} [{:.1f},{:.1f}]–[{:.1f},{:.1f}]",
-                         wallId, wall.portal ? std::format("Portal ({})", wall.portal->sector) : "Wall",
-                         wall.xStart, wall.yStart, wall.xEnd, wall.yEnd), 10, wallDescY);
-        button("Edit", windowW - 65, wallDescY + 3, 55, 16, []{});
+        sectorWindow.add<Text>(10, wallDescY, font,
+                               std::format("#{}: {} [{:.1f},{:.1f}]–[{:.1f},{:.1f}]",
+                                           wallId, wall.portal ? std::format("Portal ({})", wall.portal->sector) : "Wall",
+                                           wall.xStart, wall.yStart, wall.xEnd, wall.yEnd));
+        sectorWindow.add<Button>(windowW - 65, wallDescY + 3, 55, 16, font, "Edit", []{});
         wallDescY += 20;
-        wallId++;
+        wallId += 1;
     }
 
-    auto texture = sdl::Texture(renderer, sdl::Texture::Access::Streaming, windowW, windowH);
-    texture.setBlendMode(sdl::BlendMode::Blend);
-    window.render(texture);
-    renderer.copy(texture, std::nullopt, sdl::FRectangle{(float)windowX, (float)windowY, (float)windowW, (float)windowH});
+    clicked = clicked and sectorWindow.consumeClick(mouseX, mouseY);
+    sectorWindow.render(renderer);
 }
 
 void Editor::drawGrid(sdl::Renderer& renderer) const
@@ -537,10 +512,26 @@ void Editor::drawGrid(sdl::Renderer& renderer) const
     for (int x = (int)mapScale - (int)mapX % (int)mapScale; x < c::windowWidth; x += mapScale)
     {
         renderer.renderLine(x, 0, x, c::windowHeight - 1, 255, 255, 255, 64);
+        if (modShift)
+        {
+            auto step = mapScale / 10;
+            for (int i = 1; i < 10; ++i)
+            {
+                renderer.renderLine(x + (int)(step * i), 0, x + (int)(step * i), c::windowHeight - 1, 255, 255, 255, 32);
+            }
+        }
     }
     for (int y = (int)mapScale - (int)mapY % (int)mapScale; y < c::windowHeight; y += mapScale)
     {
         renderer.renderLine(0, y, c::windowWidth - 1, y, 255, 255, 255, 64);
+        if (modShift)
+        {
+            auto step = mapScale / 10;
+            for (int i = 1; i < 10; ++i)
+            {
+                renderer.renderLine(0, y + (int)(step * i), c::windowWidth - 1, y + (int)(step * i), 255, 255, 255, 32);
+            }
+        }
     }
 }
 

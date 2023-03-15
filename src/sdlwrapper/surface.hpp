@@ -21,6 +21,8 @@ public:
     Surface(int width, int height);
     explicit Surface(const std::string& filename);
     explicit Surface(SDL_Surface* surfacePtr);
+    Surface(Surface&& other) noexcept;
+    Surface& operator=(Surface&& other) noexcept;
     ~Surface();
 
     void empty();

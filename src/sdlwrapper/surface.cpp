@@ -50,6 +50,19 @@ Surface::~Surface()
     }
 }
 
+Surface::Surface(Surface &&other) noexcept
+{
+    operator=(std::move(other));
+}
+
+Surface &Surface::operator=(Surface&& other) noexcept
+{
+    std::swap(wrapped, other.wrapped);
+    std::swap(width, other.width);
+    std::swap(height, other.height);
+    return *this;
+}
+
 void Surface::empty()
 {
     SDL_FillSurfaceRect(wrapped, nullptr, 0);
