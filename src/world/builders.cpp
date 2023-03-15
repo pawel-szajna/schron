@@ -77,7 +77,7 @@ PolygonalSectorBuilder& PolygonalSectorBuilder::withPortal(double x, double y, s
 
 Sector PolygonalSectorBuilder::build()
 {
-    return Sector{sId, std::move(walls), {}, sCeiling, sFloor, "ceiling", "floor"};
+    return Sector{sId, std::move(walls), {}, {}, sCeiling, sFloor, "ceiling", "floor"};
 }
 
 RectangularSectorBuilder& RectangularSectorBuilder::withId(int id)
@@ -146,6 +146,6 @@ Sector RectangularSectorBuilder::build()
     addWall(sx2, sy1, sx2, sy2, east, walls);
     addWall(sx2, sy2, sx1, sy2, south, walls);
     addWall(sx1, sy2, sx1, sy1, west, walls);
-    return Sector{sid, std::move(walls), {}, sCeiling, sFloor, "ceiling", "floor"};
+    return Sector{sid, std::move(walls), {}, {}, sCeiling, sFloor, "ceiling", "floor"};
 }
 }

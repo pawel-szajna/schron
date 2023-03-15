@@ -36,6 +36,17 @@ constexpr auto shade(uint32_t pixel, double distance)
     pB = std::clamp((int)((int)pB * (1 - distance / 5)), 0, (int)pB);
     return (pR << 16) | (pG << 8) | (pB << 0);
 }
+
+[[maybe_unused]] constexpr auto shadeRgb(uint32_t pixel, double r, double g, double b)
+{
+    auto pR = (pixel & 0x00ff0000) >> 16;
+    auto pG = (pixel & 0x0000ff00) >> 8;
+    auto pB = (pixel & 0x000000ff) >> 0;
+    pR = std::clamp((int)((double)pR * r), 0, (int)pR);
+    pG = std::clamp((int)((double)pG * g), 0, (int)pG);
+    pB = std::clamp((int)((double)pB * b), 0, (int)pB);
+    return (pR << 16) | (pG << 8) | (pB << 0);
+}
 }
 
 Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
@@ -97,6 +108,41 @@ void Engine::renderWall(const world::Sector& sector,
                         double angleSin, double angleCos)
 {
     const auto& renderParameters = renderQueue.front();
+
+    std::vector<std::tuple<double, double, double, double, double, double>> lightPoints;
+    constexpr auto lightPointsCount = 5;
+    constexpr double stepSize = 1.0 / (double)lightPointsCount;
+    double stepX = (wall.xEnd - wall.xStart) * stepSize;
+    double stepY = (wall.yEnd - wall.yStart) * stepSize;
+    lightPoints.reserve(lightPointsCount);
+    for (int i = 0; i < lightPointsCount; ++i)
+    {
+        double x = stepX * i + wall.xStart;
+        double y = stepY * i + wall.yStart;
+        double r1{}, g1{}, b1{}, r2{}, g2{}, b2{};
+
+        for (const auto& light : sector.lights)
+        {
+            double deltaX = x - light.x;
+            double deltaY = y - light.y;
+            double deltaZTop = sector.ceiling - light.z;
+            double deltaZBottom = sector.floor - light.z;
+
+            double distancePart = deltaX * deltaX + deltaY * deltaY;
+
+            double distanceFactorTop    = 1 / (distancePart + deltaZTop * deltaZTop);
+            double distanceFactorBottom = 1 / (distancePart + deltaZBottom * deltaZBottom);
+
+            r1 += light.r * distanceFactorTop;
+            g1 += light.g * distanceFactorTop;
+            b1 += light.b * distanceFactorTop;
+            r2 += light.r * distanceFactorBottom;
+            g2 += light.g * distanceFactorBottom;
+            b2 += light.b * distanceFactorBottom;
+        }
+
+        lightPoints.emplace_back(r1, g1, b1, r2, g2, b2);
+    }
 
     auto wallStartX = wall.xStart - player.x - renderParameters.offsetX;
     auto wallStartY = wall.yStart - player.y - renderParameters.offsetY;
@@ -240,7 +286,38 @@ void Engine::renderWall(const world::Sector& sector,
         }
         else
         {
-            texturedLine(x, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance);
+            textureX %= t.width;
+            if (visibleWallTop >= visibleWallBottom)
+            {
+                continue;
+            }
+            for (int y = visibleWallTop; y <= visibleWallBottom; ++y)
+            {
+                if (distance > zBuffer[x + y * c::renderWidth]) continue;
+                int textureY = ((t.height - 1) * (y - wallTop) / (wallBottom - wallTop) + t.height) % t.height;
+                auto pixel = t.pixels()[textureX + textureY * t.width];
+
+                double xProgress = (double)(x - beginX) / (double)(endX - beginX) * (lightPointsCount - 1);
+//                double yProgress = (double)(y - wallTop) / (double)(wallBottom - wallTop);
+
+                int lightPoint = (int)std::floor(xProgress);
+                double factor1 = xProgress - lightPoint;
+                double factor2 = 1 - factor1;
+
+                auto [r1t, g1t, b1t, r1b, g1b, b1b] = lightPoints[lightPoint];
+                auto [r2t, g2t, b2t, r2b, g2b, b2b] = lightPoints[lightPoint + 1];
+
+                double rt = r1t * factor1 + r2t * factor2;
+                double gt = g1t * factor1 + g2t * factor2;
+                double bt = b1t * factor1 + b2t * factor2;
+//                double rb = r1b * factor1 + r2b * factor2;
+//                double gb = g2b * factor1 + g2b * factor2;
+//                double bb = b1b * factor1 + b2b * factor2;
+
+                buffer[x + y * c::renderWidth] = shadeRgb(pixel, rt, gt, bt);
+                zBuffer[x + y * c::renderWidth] = distance;
+            }
+            // texturedLine(x, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance);
         }
     }
 

@@ -21,12 +21,21 @@ std::string Sector::toLua() const
     {
         output += sprite.toLua(id);
     }
+    for (const auto& light : lights)
+    {
+        output += light.toLua(id);
+    }
     return output;
 }
 
 std::string Sprite::toLua(int sectorId) const
 {
     return std::format("world_sprite({},{},\"{}\",{},{})\n", sectorId, id, texture, x, y);
+}
+
+std::string Light::toLua(int sectorId) const
+{
+    return std::format("world_light({},{},{},{},{},{},{})\n", sectorId, x, y, z, r, g, b);
 }
 
 std::string Wall::toLua() const

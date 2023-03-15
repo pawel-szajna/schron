@@ -42,6 +42,15 @@ public:
     [[nodiscard]] std::string toLua(int sectorId) const;
 };
 
+class Light
+{
+public:
+    double x, y, z;
+    double r, g, b;
+
+    [[nodiscard]] std::string toLua(int sectorId) const;
+};
+
 class Sector
 {
 public:
@@ -49,6 +58,7 @@ public:
     int id{};
     std::vector<Wall> walls{};
     std::vector<Sprite> sprites{};
+    std::vector<Light> lights{};
     double ceiling{1.0};
     double floor{0.0};
     std::string ceilingTexture{"ceiling"};
