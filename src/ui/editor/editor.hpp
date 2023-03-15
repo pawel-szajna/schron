@@ -3,6 +3,7 @@
 #include "../object.hpp"
 #include "sdlwrapper/cursor.hpp"
 #include "window_sector.hpp"
+#include "window_texture.hpp"
 
 #include <deque>
 #include <functional>
@@ -84,6 +85,7 @@ private:
     std::optional<int> sectorUnderMouse;
     std::optional<int> selectedSector;
     std::optional<WindowSector> selectedSectorWindow;
+    std::optional<WindowTexture> textureWindow;
     std::set<int> resized;
 
     sdl::Font& font;

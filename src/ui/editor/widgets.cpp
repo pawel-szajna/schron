@@ -144,4 +144,21 @@ void Window::move(int x, int y)
     this->x = x;
     this->y = y;
 }
+
+Image::Image(int width, int height, const std::string& filename) :
+    width(width), height(height),
+    buffer(filename)
+{}
+
+Image::~Image() = default;
+
+bool Image::consumeClick(int mouseX, int mouseY)
+{
+    return true;
+}
+
+void Image::render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY)
+{
+    buffer.renderScaled(target, sdl::Rectangle{offsetX, offsetY, width, height});
+}
 }

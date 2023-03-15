@@ -30,6 +30,7 @@ public:
     void render(Texture& target);
     void render(Surface& target,
                 std::optional<Rectangle> where = std::nullopt);
+    void renderScaled(Surface& target, Rectangle where);
 
     uint32_t* pixels();
     [[nodiscard]] const uint32_t* pixels() const;

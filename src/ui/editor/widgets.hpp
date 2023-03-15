@@ -51,6 +51,22 @@ protected:
     std::vector<std::tuple<int, int, std::unique_ptr<Widget>>> children;
 };
 
+class Image : public Widget
+{
+public:
+
+    Image(int width, int height, const std::string& filename);
+    ~Image();
+
+    void render(sdl::Renderer &renderer, sdl::Surface &target, int absX, int absY, int offsetX, int offsetY) override;
+    bool consumeClick(int mouseX, int mouseY) override;
+
+private:
+
+    int width, height;
+    sdl::Surface buffer;
+};
+
 class Text : public Widget
 {
 public:

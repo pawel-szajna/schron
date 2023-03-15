@@ -47,7 +47,14 @@ void Editor::event(const sdl::event::Event& event)
         }
         if (mouse.scroll.has_value())
         {
-            mapScale -= *mouse.scroll;
+            if (textureWindow.has_value())
+            {
+                textureWindow->scroll(*mouse.scroll);
+            }
+            else
+            {
+                mapScale -= *mouse.scroll;
+            }
         }
     }
     else if (std::holds_alternative<sdl::event::Key>(event))
@@ -384,8 +391,8 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
 {
     if (not selectedSector.has_value())
     {
-        return;
         selectedSectorWindow = std::nullopt;
+        return;
     }
 
     auto& sector = level.map.at(*selectedSector);
@@ -528,6 +535,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     {
         selectedSectorWindow.emplace(sector, font,
                                      [&](double diff, double& field) { enqueue(500, field, field + diff, [&](auto v) { field = v; }); },
+                                     textureWindow,
                                      rightX + 16, topY);
     }
 
@@ -571,7 +579,17 @@ void Editor::render(sdl::Renderer& renderer)
     processMapUpdates();
     drawGrid(renderer);
     drawMap(renderer);
+    if (textureWindow)
+    {
+        textureWindow->consumeClick(clicked, mouseX, mouseY);
+        clicked = false;
+        dragged = false;
+    }
     drawSelectedSector(renderer);
+    if (textureWindow)
+    {
+        textureWindow->render(renderer);
+    }
     updateMouse();
 }
 }

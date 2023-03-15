@@ -81,6 +81,11 @@ void Surface::render(Surface& target, std::optional<Rectangle> where)
                     where.has_value() ? reinterpret_cast<SDL_Rect*>(&(*where)) : nullptr);
 }
 
+void Surface::renderScaled(Surface& target, Rectangle where)
+{
+    SDL_BlitSurfaceScaled(wrapped, nullptr, *target, reinterpret_cast<SDL_Rect*>(&where));
+}
+
 uint32_t* Surface::pixels()
 {
     return static_cast<uint32_t*>(wrapped->pixels);
