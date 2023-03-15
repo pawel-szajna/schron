@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../object.hpp"
-
 #include "sdlwrapper/cursor.hpp"
+#include "window_sector.hpp"
 
 #include <deque>
 #include <functional>
@@ -77,6 +77,7 @@ private:
     std::deque<Diff> diffs;
     std::optional<int> sectorUnderMouse;
     std::optional<int> selectedSector;
+    std::optional<WindowSector> selectedSectorWindow;
     std::set<int> resized;
 
     sdl::Font& font;

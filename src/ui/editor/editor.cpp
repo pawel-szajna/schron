@@ -358,6 +358,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     if (not selectedSector.has_value())
     {
         return;
+        selectedSectorWindow = std::nullopt;
     }
 
     auto& sector = level.map.at(*selectedSector);
@@ -460,51 +461,15 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
     }
 
-    int windowW = 280;
-    int windowH = 170 + sector.walls.size() * 20;
-
-    auto sectorWindow = Window(rightX + 16, topY, windowW, windowH);
-
-    sectorWindow.add<Text>(10,  5, font, std::format("Selected sector: {}", *selectedSector));
-    sectorWindow.add<Text>(10, 30, font, std::format("Ceiling Z: {:.1f}", sector.ceiling));
-    sectorWindow.add<Text>(10, 50, font, std::format("Floor Z: {:.1f}", sector.floor));
-
-    auto sectorFieldAnimator = [&](double diff, double& field)
+    if (not selectedSectorWindow)
     {
-        return [&, diff](){ enqueue(500, field, field + diff, [&](auto v) { field = v; }); };
-    };
-
-    sectorWindow.add<Button>(windowW - 40, 33, 30, 16, font, "+1", sectorFieldAnimator(1, sector.ceiling));
-    sectorWindow.add<Button>(windowW - 75, 33, 30, 16, font, "+0.1", sectorFieldAnimator(0.1, sector.ceiling));
-    sectorWindow.add<Button>(windowW - 110, 33, 30, 16, font, "–0.1", sectorFieldAnimator(-0.1, sector.ceiling));
-    sectorWindow.add<Button>(windowW - 145, 33, 30, 16, font, "–1", sectorFieldAnimator(-1, sector.ceiling));
-
-    sectorWindow.add<Button>(windowW - 40, 53, 30, 16, font, "+1", sectorFieldAnimator(1, sector.floor));
-    sectorWindow.add<Button>(windowW - 75, 53, 30, 16, font, "+0.1", sectorFieldAnimator(0.1, sector.floor));
-    sectorWindow.add<Button>(windowW - 110, 53, 30, 16, font, "–0.1", sectorFieldAnimator(-0.1, sector.floor));
-    sectorWindow.add<Button>(windowW - 145, 53, 30, 16, font, "–1", sectorFieldAnimator(-1, sector.floor));
-
-    sectorWindow.add<Text>(10, 80, font, std::format("Ceiling texture: {}", sector.ceilingTexture));
-    sectorWindow.add<Text>(10, 100, font, std::format("Floor texture: {}", sector.floorTexture));
-
-    sectorWindow.add<Button>(windowW - 80, 83, 70, 16, font, "Change", []{});
-    sectorWindow.add<Button>(windowW - 80, 103, 70, 16, font, "Change", []{});
-
-    sectorWindow.add<Text>(10, 130, font, "Walls:");
-    int wallDescY{155}, wallId{0};
-    for (const auto& wall : sector.walls)
-    {
-        sectorWindow.add<Text>(10, wallDescY, font,
-                               std::format("#{}: {} [{:.1f},{:.1f}]–[{:.1f},{:.1f}]",
-                                           wallId, wall.portal ? std::format("Portal ({})", wall.portal->sector) : "Wall",
-                                           wall.xStart, wall.yStart, wall.xEnd, wall.yEnd));
-        sectorWindow.add<Button>(windowW - 65, wallDescY + 3, 55, 16, font, "Edit", []{});
-        wallDescY += 20;
-        wallId += 1;
+        selectedSectorWindow.emplace(sector, font,
+                                     [&](double diff, double& field) { enqueue(500, field, field + diff, [&](auto v) { field = v; }); },
+                                     rightX + 16, topY);
     }
 
-    clicked = clicked and sectorWindow.consumeClick(mouseX, mouseY);
-    sectorWindow.render(renderer);
+    clicked = selectedSectorWindow->consumeClick(clicked, mouseX, mouseY);
+    selectedSectorWindow->render(renderer);
 }
 
 void Editor::drawGrid(sdl::Renderer& renderer) const

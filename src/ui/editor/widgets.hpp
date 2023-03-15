@@ -27,6 +27,30 @@ public:
     virtual bool consumeClick(int mouseX, int mouseY) = 0;
 };
 
+class Group : public Widget
+{
+public:
+
+    Group();
+    virtual ~Group();
+
+    void render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) override;
+    bool consumeClick(int mouseX, int mouseY) override;
+    void clear();
+
+    template<typename T, typename... Args>
+    requires std::derived_from<T, Widget>
+    T& add(int widgetX, int widgetY, Args&&... args)
+    {
+        children.emplace_back(widgetX, widgetY, std::make_unique<T>(std::forward<Args>(args)...));
+        return dynamic_cast<T&>(*std::get<std::unique_ptr<Widget>>(children.back()));
+    }
+
+protected:
+
+    std::vector<std::tuple<int, int, std::unique_ptr<Widget>>> children;
+};
+
 class Text : public Widget
 {
 public:
@@ -42,6 +66,7 @@ public:
 
 private:
 
+    std::string caption;
     sdl::Font& font;
     sdl::Surface buffer;
 };
@@ -63,7 +88,7 @@ private:
     std::function<void(void)> onClick;
 };
 
-class Window : public Widget
+class Window : public Group
 {
 public:
 
@@ -71,16 +96,9 @@ public:
     ~Window();
 
     bool consumeClick(int mouseX, int mouseY) override;
+    void move(int x, int y);
     void render(sdl::Renderer& renderer);
     void render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) override;
-
-    template<typename T, typename... Args>
-    requires std::derived_from<T, Widget>
-    T& add(int widgetX, int widgetY, Args&&... args)
-    {
-        widgets.emplace_back(widgetX, widgetY, std::make_unique<T>(std::forward<Args>(args)...));
-        return dynamic_cast<T&>(*std::get<std::unique_ptr<Widget>>(widgets.back()));
-    }
 
 private:
 
@@ -88,7 +106,6 @@ private:
     int width, height;
 
     sdl::Surface buffer;
-    std::vector<std::tuple<int, int, std::unique_ptr<Widget>>> widgets;
 };
 
 }

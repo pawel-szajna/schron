@@ -4,6 +4,39 @@
 
 namespace ui::editor
 {
+Group::Group() = default;
+
+Group::~Group() = default;
+
+void Group::render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY)
+{
+    for (auto& [widgetX, widgetY, widget] : children)
+    {
+        if (widget != nullptr)
+        {
+            widget->render(renderer, target, absX + widgetX, absY + widgetY, widgetX, widgetY);
+        }
+    }
+}
+
+bool Group::consumeClick(int mouseX, int mouseY)
+{
+    for (auto& [widgetX, widgetY, widget] : children)
+    {
+        if (not widget->consumeClick(mouseX - widgetX, mouseY - widgetY))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Group::clear()
+{
+    children.clear();
+}
+
 Text::Text(sdl::Font& font,
            const std::string& text) :
     font(font),
@@ -16,7 +49,11 @@ Text::~Text() = default;
 
 void Text::setCaption(const std::string& text)
 {
-    buffer = font.render(text, sdl::Color{0, 0, 0, 255});
+    if (text != caption)
+    {
+        buffer = font.render(text, sdl::Color{0, 0, 0, 255});
+        caption = text;
+    }
 }
 
 std::pair<int, int> Text::getSize() const
@@ -81,14 +118,7 @@ bool Window::consumeClick(int mouseX, int mouseY)
         return true;
     }
 
-    for (auto& [widgetX, widgetY, widget] : widgets)
-    {
-        if (not widget->consumeClick(mouseX - widgetX, mouseY - widgetY))
-        {
-            break;
-        }
-    }
-
+    Group::consumeClick(mouseX, mouseY);
     return false;
 }
 
@@ -106,12 +136,12 @@ void Window::render(sdl::Renderer& renderer)
 
 void Window::render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY)
 {
-    for (auto& [widgetX, widgetY, widget] : widgets)
-    {
-        if (widget != nullptr)
-        {
-            widget->render(renderer, target, absX + widgetX, absY + widgetY, widgetX, widgetY);
-        }
-    }
+    Group::render(renderer, target, absX, absY, offsetX, offsetY);
+}
+
+void Window::move(int x, int y)
+{
+    this->x = x;
+    this->y = y;
 }
 }

@@ -4,6 +4,7 @@ add_library(
         fonts.cpp
         editor/editor.cpp
         editor/widgets.cpp
+        editor/window_sector.cpp
         mini_map.cpp
         text.cpp
         ui.cpp
