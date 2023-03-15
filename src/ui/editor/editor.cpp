@@ -268,6 +268,11 @@ void Editor::moveSectorSprites(int id, double diffX, double diffY)
 
 void Editor::resizeSector(int id, double left, double right, double top, double bottom)
 {
+    if (left >= right or top >= bottom)
+    {
+        return;
+    }
+
     resizeSingleSector(id,
                        std::round(left * 10) / 10,
                        std::round(right * 10) / 10,
