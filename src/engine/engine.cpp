@@ -18,6 +18,7 @@ namespace
 {
 constexpr double fovH = c::renderHeight * 0.65;
 constexpr double fovV = c::renderWidth * 0.22;
+constexpr double mapRes = 0.25;
 
 constexpr auto cross(double x1, double y1, double x2, double y2) { return x1 * y2 - x2 * y1; }
 constexpr auto intersect(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
@@ -104,29 +105,35 @@ void Engine::frame(const game::Position& player)
         auto wallTopY =    *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
         auto wallBottomY = *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
 
-        auto leftX = (int)std::floor(wallLeftX.xStart) - 1;
-        auto rightX = (int)std::ceil(wallRightX.xEnd) + 1;
-        auto topY = (int)std::floor(wallTopY.yStart) - 1;
-        auto bottomY = (int)std::ceil(wallBottomY.yEnd) + 1;
+        auto leftX = wallLeftX.xStart - mapRes;
+        auto rightX = wallRightX.xEnd + mapRes;
+        auto topY = wallTopY.yStart - mapRes;
+        auto bottomY = wallBottomY.yEnd + mapRes;
+
+        int width = (int)((rightX - leftX) / mapRes) + 1;
+        int height = (int)((bottomY - topY) / mapRes) + 1;
 
         HorizontalLightMap fcmap{.x = leftX,
                                  .y = topY,
-                                 .width = rightX - leftX + 1,
-                                 .height = bottomY - topY + 1};
+                                 .width = width,
+                                 .height = height};
         fcmap.map.reserve(fcmap.width * fcmap.height);
-        for (int y = topY; y <= bottomY; ++y)
+        for (int y = 0; y < height; ++y)
         {
-            for (int x = leftX; x <= rightX; ++x)
+            for (int x = 0; x < width; ++x)
             {
                 LightPoint top{0.0, 0.0, 0.0};
                 LightPoint bottom{0.0, 0.0, 0.0};
 
-                for (const auto& light : sector.lights)
+                auto mapX = leftX + mapRes * x;
+                auto mapY = topY + mapRes * y;
+
+                auto addLight = [mapX, mapY, ceiling = sector.ceiling, floor = sector.floor, &top, &bottom](const auto& light)
                 {
-                    double deltaX = x - light.x;
-                    double deltaY = y - light.y;
-                    double deltaZTop = sector.ceiling - light.z;
-                    double deltaZBottom = sector.floor - light.z;
+                    double deltaX = mapX - light.x;
+                    double deltaY = mapY - light.y;
+                    double deltaZTop = ceiling - light.z;
+                    double deltaZBottom = floor - light.z;
 
                     double distancePart = deltaX * deltaX + deltaY * deltaY;
 
@@ -135,6 +142,40 @@ void Engine::frame(const game::Position& player)
 
                     top += distanceFactorTop * LightPoint{light.r, light.g, light.b};
                     bottom += distanceFactorBottom * LightPoint{light.r, light.g, light.b};
+                };
+
+                for (const auto& light : sector.lights)
+                {
+                    addLight(light);
+                }
+
+                for (const auto& wall : sector.walls)
+                {
+                    if (not wall.portal)
+                    {
+                        continue;
+                    }
+
+                    const auto& neighbour = level.sector(wall.portal->sector);
+                    double nx1 = wall.xStart, nx2 = wall.xEnd, ny1 = wall.yStart, ny2 = wall.yEnd;
+                    for (const auto& light : neighbour.lights)
+                    {
+                        if (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2)
+                        {
+                            if ((nx1 == mapX and nx2 == mapX) or (ny1 == mapY and ny2 == mapY))
+                            {
+                                addLight(light);
+                                continue;
+                            }
+                        }
+                        // TODO: floor/ceiling collision
+                        auto side1 = (nx1 - mapX) * (light.y - mapY) - (ny1 - mapY) * (light.x - mapX);
+                        auto side2 = (mapX - nx2) * (light.y - ny2) - (mapY - ny2) * (light.x - nx2);
+                        if (side1 > 0 and side2 > 0)
+                        {
+                            addLight(light);
+                        }
+                    }
                 }
 
                 fcmap.map.emplace_back(top, bottom);
@@ -160,9 +201,9 @@ void Engine::renderWall(const world::Sector& sector,
 {
     const auto& renderParameters = renderQueue.front();
 
-    std::vector<std::tuple<double, double, double, double, double, double>> lightPoints;
-    constexpr auto lightPointsCount = 5;
-    constexpr double stepSize = 1.0 / (double)lightPointsCount;
+    std::vector<std::pair<LightPoint, LightPoint>> lightPoints;
+    auto lightPointsCount = (int)(std::hypot(wall.xEnd - wall.xStart, wall.yEnd - wall.yStart) * 2) + 1;
+    double stepSize = 1.0 / (double)lightPointsCount;
     double stepX = (wall.xEnd - wall.xStart) * stepSize;
     double stepY = (wall.yEnd - wall.yStart) * stepSize;
     lightPoints.reserve(lightPointsCount);
@@ -170,29 +211,55 @@ void Engine::renderWall(const world::Sector& sector,
     {
         double x = stepX * i + wall.xStart;
         double y = stepY * i + wall.yStart;
-        double r1{}, g1{}, b1{}, r2{}, g2{}, b2{};
+        LightPoint light1{}, light2{};
 
-        for (const auto& light : sector.lights)
+        auto addLight = [x, y, ceiling = sector.ceiling, floor = sector.floor, &light1, &light2](const auto& light)
         {
             double deltaX = x - light.x;
             double deltaY = y - light.y;
-            double deltaZTop = sector.ceiling - light.z;
-            double deltaZBottom = sector.floor - light.z;
+            double deltaZTop = ceiling - light.z;
+            double deltaZBottom = floor - light.z;
 
             double distancePart = deltaX * deltaX + deltaY * deltaY;
 
             double distanceFactorTop    = 1 / (distancePart + deltaZTop * deltaZTop);
             double distanceFactorBottom = 1 / (distancePart + deltaZBottom * deltaZBottom);
 
-            r1 += light.r * distanceFactorTop;
-            g1 += light.g * distanceFactorTop;
-            b1 += light.b * distanceFactorTop;
-            r2 += light.r * distanceFactorBottom;
-            g2 += light.g * distanceFactorBottom;
-            b2 += light.b * distanceFactorBottom;
+            light1 += distanceFactorTop * LightPoint{light.r, light.g, light.b};
+            light2 += distanceFactorBottom * LightPoint{light.r, light.g, light.b};
+        };
+
+        for (const auto& light : sector.lights)
+        {
+            addLight(light);
         }
 
-        lightPoints.emplace_back(r1, g1, b1, r2, g2, b2);
+        for (const auto& w : sector.walls)
+        {
+            if (not w.portal)
+            {
+                continue;
+            }
+
+            double nx1 = w.xStart, nx2 = w.xEnd, ny1 = w.yStart, ny2 = w.yEnd;
+            for (const auto& light : level.sector(w.portal->sector).lights)
+            {
+                // TODO: floor/ceiling collision
+                if ((x == nx1 or x == nx2) and (y == nx1 or y == ny2))
+                {
+                    addLight(light);
+                    continue;
+                }
+                auto side1 = (nx1 - x) * (light.y - y) - (ny1 - y) * (light.x - x);
+                auto side2 = (x - nx2) * (light.y - ny2) - (y - ny2) * (light.x - nx2);
+                if (side1 > 0 and side2 > 0)
+                {
+                    addLight(light);
+                }
+            }
+        }
+
+        lightPoints.emplace_back(light1, light2);
     }
 
     auto wallStartX = wall.xStart - player.x - renderParameters.offsetX;
@@ -355,16 +422,13 @@ void Engine::renderWall(const world::Sector& sector,
             double factor2 = std::clamp(xProgress - lightPoint, 0.0, 1.0);
             double factor1 = 1.0 - factor2;
 
-            auto [r1t, g1t, b1t, r1b, g1b, b1b] = lightPoints[lightPoint];
-            auto [r2t, g2t, b2t, r2b, g2b, b2b] = lightPoints[lightPoint + 1];
+            LightPoint top1 = lightPoints[lightPoint].first;
+            LightPoint top2 = lightPoints[lightPoint + 1].first;
+            LightPoint bottom1 = lightPoints[lightPoint].second;
+            LightPoint bottom2 = lightPoints[lightPoint + 1].second;
 
-            double rt = r1t * factor1 + r2t * factor2;
-            double gt = g1t * factor1 + g2t * factor2;
-            double bt = b1t * factor1 + b2t * factor2;
-
-            double rb = r1b * factor1 + r2b * factor2;
-            double gb = g2b * factor1 + g2b * factor2;
-            double bb = b1b * factor1 + b2b * factor2;
+            LightPoint top = factor1 * top1 + factor2 * top2;
+            LightPoint bottom = factor1 * bottom1 + factor2 * bottom2;
 
             double yStep = 1 / (double)(visibleWallBottom - visibleWallTop + 1);
             double factorT = 0;
@@ -376,21 +440,24 @@ void Engine::renderWall(const world::Sector& sector,
                 auto pixel = t.pixels()[textureX + textureY * t.width];
 
                 double factorB = 1 - factorT;
-                double r = rt * factorB + rb * factorT;
-                double g = gt * factorB + gb * factorT;
-                double b = bt * factorB * bb * factorT;
+                buffer[x + y * c::renderWidth] = shadeRgb(pixel, top * factorT + bottom * factorB);
                 factorT += yStep;
 
                 auto keys = sdl::keyboard();
-                buffer[x + y * c::renderWidth] = shadeRgb(pixel, r, g, b);
                 if (keys[225])
                 {
-                    buffer[x + y * c::renderWidth] = shadeRgb(pixel, r1t, g1t, b1t);
+                    if (y < (visibleWallTop + visibleWallBottom) / 2)
+                    {
+                        buffer[x + y * c::renderWidth] = shadeRgb(pixel, top1);
+                    }
+                    else
+                    {
+                        buffer[x + y * c::renderWidth] = shadeRgb(pixel, bottom1);
+                    }
                 }
 
                 zBuffer[x + y * c::renderWidth] = distance;
             }
-            // texturedLine(x, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance);
         }
     }
 
@@ -453,11 +520,16 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
 
         auto pixel = (isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth];
 
-        auto lightMapX = (int)std::floor(mapX) - lightMap.x;
-        auto lightMapY = (int)std::floor(mapY) - lightMap.y;
+        double invMapRes = 1 / mapRes;
 
-        auto stepX = mapX - std::floor(mapX);
-        auto stepY = mapY - std::floor(mapY);
+        double nearestX = std::floor(mapX * invMapRes) * mapRes;
+        double nearestY = std::floor(mapY * invMapRes) * mapRes;
+
+        auto lightMapX = (int)((nearestX - lightMap.x) * invMapRes);
+        auto lightMapY = (int)((nearestY - lightMap.y) * invMapRes);
+
+        auto stepX = (mapX - nearestX) * invMapRes;
+        auto stepY = (mapY - nearestY) * invMapRes;
         auto invStepX = 1.0 - stepX;
         auto invStepY = 1.0 - stepY;
 

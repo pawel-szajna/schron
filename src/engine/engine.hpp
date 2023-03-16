@@ -46,7 +46,7 @@ class Engine
 {
     struct HorizontalLightMap
     {
-        int x, y;
+        double x, y;
         int width, height;
         std::vector<std::pair<LightPoint, LightPoint>> map;
     };
