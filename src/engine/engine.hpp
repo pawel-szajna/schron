@@ -30,8 +30,27 @@ class Wall;
 
 namespace engine
 {
+struct LightPoint
+{
+    double r, g, b;
+
+    LightPoint& operator+=(const LightPoint& other) { r += other.r; g += other.g; b += other.b; return *this; }
+    LightPoint& operator*=(double scalar) { r *= scalar; g *= scalar; b *= scalar; return *this; }
+
+    friend LightPoint operator+(LightPoint lhs, const LightPoint& rhs) { lhs += rhs; return lhs; }
+    friend LightPoint operator*(LightPoint lhs, double rhs) { lhs *= rhs; return lhs; }
+    friend LightPoint operator*(double lhs, LightPoint rhs) { rhs *= lhs; return rhs; }
+};
+
 class Engine
 {
+    struct HorizontalLightMap
+    {
+        int x, y;
+        int width, height;
+        std::vector<std::pair<LightPoint, LightPoint>> map;
+    };
+
     struct SectorRenderParams
     {
         int id;
@@ -54,13 +73,15 @@ private:
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
                     const game::Position& player,
-                    double angleSin, double angleCos);
+                    double angleSin, double angleCos,
+                    const HorizontalLightMap& lightMap);
     void renderCeilingAndFloor(const world::Sector& sector,
                                const game::Position& player,
                                int x, int wallTop, int wallBottom,
                                double distance,
                                double ceilingY, double floorY,
-                               double angleSin, double angleCos);
+                               double angleSin, double angleCos,
+                               const HorizontalLightMap& lightMap);
     void renderSprites(const world::Sector& sector,
                        const game::Position& player,
                        double angleSin, double angleCos);
