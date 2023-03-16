@@ -91,6 +91,7 @@ void Engine::frame(const game::Position& player)
         auto angleCos = std::cos(renderedAngle);
 
         const world::Sector& sector = level.sector(id);
+
         for (const auto& wall : sector.walls)
         {
             renderWall(sector, wall, player, angleSin, angleCos);
@@ -246,6 +247,11 @@ void Engine::renderWall(const world::Sector& sector,
     int beginX = std::max(leftX, renderParameters.leftXBoundary);
     int endX   = std::min(rightX, renderParameters.rightXBoundary);
 
+    if (beginX > endX)
+    {
+        return;
+    }
+
     auto wallLength = std::hypot(wallStartX - wallEndX, wallStartY - wallEndY);
 
     auto distanceLeft = std::hypot(transformedLeftX, transformedLeftZ, ceilingY - floorY);
@@ -291,30 +297,40 @@ void Engine::renderWall(const world::Sector& sector,
             {
                 continue;
             }
+            double xProgress = (double)(x - leftX) / (double)(rightX - leftX + 1) * (lightPointsCount - 1);
+
+            int lightPoint = (int)std::floor(xProgress);
+
+            double factor2 = std::clamp(xProgress - lightPoint, 0.0, 1.0);
+            double factor1 = 1.0 - factor2;
+
+            auto [r1t, g1t, b1t, r1b, g1b, b1b] = lightPoints[lightPoint];
+            auto [r2t, g2t, b2t, r2b, g2b, b2b] = lightPoints[lightPoint + 1];
+
+            double rt = r1t * factor1 + r2t * factor2;
+            double gt = g1t * factor1 + g2t * factor2;
+            double bt = b1t * factor1 + b2t * factor2;
+
+            double rb = r1b * factor1 + r2b * factor2;
+            double gb = g2b * factor1 + g2b * factor2;
+            double bb = b1b * factor1 + b2b * factor2;
+
+            double yStep = 1 / (double)(visibleWallBottom - visibleWallTop + 1);
+            double factorT = 0;
+
             for (int y = visibleWallTop; y <= visibleWallBottom; ++y)
             {
                 if (distance > zBuffer[x + y * c::renderWidth]) continue;
                 int textureY = ((t.height - 1) * (y - wallTop) / (wallBottom - wallTop) + t.height) % t.height;
                 auto pixel = t.pixels()[textureX + textureY * t.width];
 
-                double xProgress = (double)(x - beginX) / (double)(endX - beginX) * (lightPointsCount - 1);
-//                double yProgress = (double)(y - wallTop) / (double)(wallBottom - wallTop);
+                double factorB = 1 - factorT;
+                double r = rt * factorB + rb * factorT;
+                double g = gt * factorB + gb * factorT;
+                double b = bt * factorB * bb * factorT;
+                factorT += yStep;
 
-                int lightPoint = (int)std::floor(xProgress);
-                double factor1 = xProgress - lightPoint;
-                double factor2 = 1 - factor1;
-
-                auto [r1t, g1t, b1t, r1b, g1b, b1b] = lightPoints[lightPoint];
-                auto [r2t, g2t, b2t, r2b, g2b, b2b] = lightPoints[lightPoint + 1];
-
-                double rt = r1t * factor1 + r2t * factor2;
-                double gt = g1t * factor1 + g2t * factor2;
-                double bt = b1t * factor1 + b2t * factor2;
-//                double rb = r1b * factor1 + r2b * factor2;
-//                double gb = g2b * factor1 + g2b * factor2;
-//                double bb = b1b * factor1 + b2b * factor2;
-
-                buffer[x + y * c::renderWidth] = shadeRgb(pixel, rt, gt, bt);
+                buffer[x + y * c::renderWidth] = shadeRgb(pixel, r, g, b);
                 zBuffer[x + y * c::renderWidth] = distance;
             }
             // texturedLine(x, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance);
