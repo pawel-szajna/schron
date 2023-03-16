@@ -68,7 +68,7 @@ public:
 
 private:
 
-    sdl::Surface& texture(const std::string& name);
+    sdl::Surface& getTexture(const std::string& name);
 
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
@@ -85,12 +85,18 @@ private:
     void renderSprites(const world::Sector& sector,
                        const game::Position& player,
                        double angleSin, double angleCos);
-    void texturedLine(int x,
-                      int wallStart, int wallEnd,
-                      int yStart, int yEnd,
-                      sdl::Surface& t,
-                      int textureX,
-                      double distance);
+    void lightedLine(int x,
+                     int wallTop, int wallBottom,
+                     int visibleWallTop, int visibleWallBottom,
+                     sdl::Surface& texture, int textureX,
+                     double distance,
+                     const LightPoint& lightTop,
+                     const LightPoint& lightBottom);
+
+    HorizontalLightMap prepareSurfaceMap(const world::Sector& sector);
+    LightPoint calculateSurfaceLighting(double mapX, double mapY,
+                                        bool isCeiling,
+                                        const HorizontalLightMap& lightMap);
 
     std::map<std::string, sdl::Surface> textures{};
     std::map<std::string, sdl::Surface> sprites{};

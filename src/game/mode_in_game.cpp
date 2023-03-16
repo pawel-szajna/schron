@@ -44,9 +44,18 @@ void ModeInGame::exit()
 void ModeInGame::event(const sdl::event::Event& event)
 {}
 
+double direction = -1;
+
 std::optional<GameMode> ModeInGame::frame(double frameTime)
 {
     const uint8_t* keys = sdl::keyboard();
+
+    auto& lamp = const_cast<world::Sprite&>(world.level(1).sector(2).sprites[0]);
+    auto& light = const_cast<world::Light&>(world.level(1).sector(2).lights[0]);
+    lamp.x += direction * frameTime;
+    light.x += direction * frameTime;
+    if (lamp.x < -1.5) direction = 1;
+    if (lamp.x > 1.5) direction = -1;
 
     if (keys[SDL_SCANCODE_Q] or keys[SDL_SCANCODE_ESCAPE])
     {
