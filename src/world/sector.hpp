@@ -38,6 +38,7 @@ public:
     std::string texture;
     double x, y, z{0.5};
     double w{1.0}, h{1.0};
+    double offset{0};
     bool shadows{true};
 
     [[nodiscard]] std::string toLua(int sectorId) const;

@@ -11,7 +11,7 @@
 
 namespace
 {
-constexpr double invMapRes = 16;
+constexpr double invMapRes = 8;
 constexpr double mapRes = 1 / invMapRes;
 
 struct P { double x, y; };

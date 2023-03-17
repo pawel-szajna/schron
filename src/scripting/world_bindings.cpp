@@ -47,7 +47,11 @@ void WorldBindings::put(world::SectorBuilder& builder)
     world.level(1).put(std::move(sector));
 }
 
-void WorldBindings::sprite(int sectorId, int id, std::string texture, double x, double y, bool shadows)
+void WorldBindings::sprite(int sectorId, int id,
+                           std::string texture,
+                           double x, double y, double z,
+                           double offset,
+                           bool shadows)
 {
     spdlog::debug("WorldBindings::sprite(sectorId={}, id={}, texture={}, ...)", sectorId, id, texture);
     auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
@@ -55,9 +59,10 @@ void WorldBindings::sprite(int sectorId, int id, std::string texture, double x, 
                                            .texture = std::move(texture),
                                            .x = x,
                                            .y = y,
-                                           .z = 0.5,
+                                           .z = z,
                                            .w = 1.0,
                                            .h = 1.0,
+                                           .offset = offset,
                                            .shadows = shadows});
 }
 

@@ -392,8 +392,8 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
             continue;
         }
 
-        int topY     = c::renderHeight / 2 - (int)((sprite.z - player.z - renderParameters.offsetZ + sprite.h / 2) * scaleY);
-        int bottomY  = c::renderHeight / 2 - (int)((sprite.z - player.z - renderParameters.offsetZ - sprite.h / 2) * scaleY);
+        int topY     = c::renderHeight / 2 - (int)((sprite.z + sprite.offset - player.z - renderParameters.offsetZ + sprite.h / 2) * scaleY);
+        int bottomY  = c::renderHeight / 2 - (int)((sprite.z + sprite.offset - player.z - renderParameters.offsetZ - sprite.h / 2) * scaleY);
 
         if (topY >= bottomY or bottomY < 0 or topY >= c::renderHeight - 1)
         {
