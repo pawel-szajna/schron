@@ -117,6 +117,8 @@ void Editor::updateMouse()
         dragY = mouseY;
     }
 
+    sectorUnderMouse = std::nullopt;
+
     for (const auto& [id, sector] : level.map)
     {
         using Walls = decltype(sector.walls);
@@ -137,24 +139,61 @@ void Editor::updateMouse()
             sectorUnderMouse = id;
             if (clicked)
             {
-                selectedSector = id;
-                selectedSectorWindow = std::nullopt;
-                enqueue(1200, 0, 1199,
-                        [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture](double time)
+                if (selectedSector and *selectedSector == id)
+                {
+                    clicked = false;
+                    for (const auto& sprite : sector.sprites)
+                    {
+                        std::vector<sdl::Vertex> spriteVertices =
+                           {{(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY)},
+                            {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2))},
+                            {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY)},
+                            {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY + (mapScale / 2))}};
+                        if (mouseWithin<std::vector<sdl::Vertex>>(
+                                spriteVertices,
+                                [n = (size_t)0](const std::vector<sdl::Vertex>& vertices) mutable -> VertexGetter<sdl::Vertex>::result_type
+                                {
+                                    if (n >= vertices.size())
+                                    {
+                                        return std::nullopt;
+                                    }
+                                    n++;
+                                    return std::make_tuple(vertices[n].x,
+                                                           vertices[n].y,
+                                                           vertices[(n + 1) % vertices.size()].x,
+                                                           vertices[(n + 1) % vertices.size()].y);
+                                }))
                         {
-                            auto& s = level.map.at(id);
-                            if ((int)(time) % 400 < 200)
+                            selectedSprite = sprite.id;
+                            selectedSpriteWindow = std::nullopt;
+                            break;
+                        }
+                    }
+                }
+                if (not selectedSector or *selectedSector != id)
+                {
+                    selectedSector = id;
+                    selectedSectorWindow = std::nullopt;
+                    selectedSprite = std::nullopt;
+                    selectedSpriteWindow = std::nullopt;
+                    enqueue(1200, 0, 1199,
+                            [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture]
+                            (double time)
                             {
-                                s.ceilingTexture = "highlight";
-                                s.floorTexture = "highlight";
-                            }
-                            else
-                            {
-                                s.ceilingTexture = originalCeiling;
-                                s.floorTexture = originalFloor;
-                            }
-                        });
-                clicked = false;
+                                auto& s = level.map.at(id);
+                                if ((int) (time) % 400 < 200)
+                                {
+                                    s.ceilingTexture = "highlight";
+                                    s.floorTexture = "highlight";
+                                }
+                                else
+                                {
+                                    s.ceilingTexture = originalCeiling;
+                                    s.floorTexture = originalFloor;
+                                }
+                            });
+                    clicked = false;
+                }
             }
             break;
         }
@@ -247,6 +286,11 @@ void Editor::drawMap(sdl::Renderer& renderer)
         for (const auto& sprite : sector.sprites)
         {
             uint8_t r = 140, g = 170, b = 190, a = 200;
+            if (selectedSector and *selectedSector == id and
+                selectedSprite and *selectedSprite == sprite.id)
+            {
+                r = 120, g = 180, b = 230, a = 230;
+            }
             vertices = {{(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
                         {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2)), r, g, b, a},
                         {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
@@ -547,6 +591,18 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     clicked = selectedSectorWindow->consumeClick(clicked, mouseX, mouseY);
     selectedSectorWindow->move(rightX + 16, topY);
     selectedSectorWindow->render(renderer);
+
+    if (selectedSprite)
+    {
+        if (not selectedSpriteWindow)
+        {
+            selectedSpriteWindow.emplace(sector, *selectedSprite, font, textureWindow, rightX + 312, topY);
+        }
+
+        clicked = selectedSpriteWindow->consumeClick(clicked, mouseX, mouseY);
+        selectedSpriteWindow->move(rightX + 312, topY);
+        selectedSpriteWindow->render(renderer);
+    }
 }
 
 void Editor::drawGrid(sdl::Renderer& renderer) const

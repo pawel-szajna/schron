@@ -3,6 +3,7 @@
 #include "../object.hpp"
 #include "sdlwrapper/cursor.hpp"
 #include "window_sector.hpp"
+#include "window_sprite.hpp"
 #include "window_texture.hpp"
 
 #include <deque>
@@ -84,7 +85,9 @@ private:
     std::deque<Diff> diffs;
     std::optional<int> sectorUnderMouse;
     std::optional<int> selectedSector;
+    std::optional<int> selectedSprite;
     std::optional<WindowSector> selectedSectorWindow;
+    std::optional<WindowSprite> selectedSpriteWindow;
     std::optional<WindowTexture> textureWindow;
     std::set<int> resized;
 
