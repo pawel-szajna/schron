@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+namespace game
+{
+class Position;
+}
+
 namespace sdl
 {
 class Surface;
@@ -14,6 +19,7 @@ namespace world
 class Level;
 class Light;
 class Sector;
+class Sprite;
 class Wall;
 }
 
@@ -55,10 +61,11 @@ public:
              TextureGetter textureGetter);
     ~Lighting();
 
-    LightMap prepareWallMap(const world::Sector& sector, const world::Wall& wall);
-    std::pair<OffsetLightMap, OffsetLightMap> prepareSurfaceMap(const world::Sector& sector);
+    LightMap prepareWallMap(const world::Sector& sector, const world::Wall& wall, const game::Position& player);
+    std::pair<OffsetLightMap, OffsetLightMap> prepareSurfaceMap(const world::Sector& sector, const game::Position& player);
     LightPoint calculateWallLighting(double mapX, double mapY, const LightMap& lightMap);
     LightPoint calculateSurfaceLighting(double mapX, double mapY, const OffsetLightMap& lightMap);
+    LightPoint calculateSpriteLighting(const world::Sector& sector, const world::Sprite& sprite, const game::Position& player);
 
 private:
 

@@ -77,7 +77,7 @@ void Engine::frame(const game::Position& player)
 
         const world::Sector& sector = level.sector(id);
 
-        auto [ceilingLightMap, floorLightMap] = lighting.prepareSurfaceMap(sector);
+        auto [ceilingLightMap, floorLightMap] = lighting.prepareSurfaceMap(sector, player);
 
         for (const auto& wall : sector.walls)
         {
@@ -98,7 +98,6 @@ void Engine::renderWall(const world::Sector& sector,
                         const OffsetLightMap& floorLightMap)
 {
     const auto& renderParameters = renderQueue.front();
-    auto lightPoints = lighting.prepareWallMap(sector, wall);
 
     auto wallStartX = wall.xStart - player.x - renderParameters.offsetX;
     auto wallStartY = wall.yStart - player.y - renderParameters.offsetY;
@@ -213,6 +212,8 @@ void Engine::renderWall(const world::Sector& sector,
     auto distanceRight = std::hypot(transformedRightX, transformedRightZ, ceilingY - floorY);
 
     textureBoundaryRight *= wallLength * (sector.ceiling - sector.floor);
+
+    auto lightPoints = lighting.prepareWallMap(sector, wall, player);
 
     for (int x = beginX; x <= endX; ++x)
     {
@@ -407,43 +408,6 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
         auto startY = std::clamp(topY,    0, c::renderHeight - 1);
         auto endY   = std::clamp(bottomY, 0, c::renderHeight - 1);
 
-        LightPoint shade{};
-
-        auto addLight = [&shade, &sprite](const auto& light)
-        {
-            double deltaX = sprite.x - light.x;
-            double deltaY = sprite.y - light.y;
-            double deltaZ = sprite.z - light.z;
-
-            double distanceFactor = 1 / (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-
-            shade += distanceFactor * LightPoint{light.r, light.g, light.b};
-        };
-
-        for (const auto& light : sector.lights)
-        {
-            addLight(light);
-        }
-
-        for (const auto& w : sector.walls)
-        {
-            if (not w.portal)
-            {
-                continue;
-            }
-
-            double nx1 = w.xStart, nx2 = w.xEnd, ny1 = w.yStart, ny2 = w.yEnd;
-            for (const auto& light : level.sector(w.portal->sector).lights)
-            {
-                auto side1 = (nx1 - sprite.x) * (light.y - sprite.y) - (ny1 - sprite.y) * (light.x - sprite.x);
-                auto side2 = (sprite.x - nx2) * (light.y - ny2) - (sprite.y - ny2) * (light.x - nx2);
-                if (side1 > 0 and side2 > 0)
-                {
-                    addLight(light);
-                }
-            }
-        }
-
         for (auto y = startY; y <= endY; ++y)
         {
             int texY = (texture.height - 1) * (y - topY) / (bottomY - topY);
@@ -454,7 +418,7 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
                 const auto& pixel = texturePixels[texX + texY * texture.width];
                 if ((pixel & 0xff000000) >> 24 == 0xff)
                 {
-                    buffer[x + y * c::renderWidth] = shadeRgb(pixel, shade);
+                    buffer[x + y * c::renderWidth] = shadeRgb(pixel, lighting.calculateSpriteLighting(sector, sprite, player));
                     zBuffer[x + y * c::renderWidth] = distance;
                 }
             }

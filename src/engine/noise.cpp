@@ -16,7 +16,7 @@ void Noise::render()
 {
     if (level > 12)
     {
-        generateLinear(level);
+        generateLinear(level - 4);
     }
     else
     {

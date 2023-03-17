@@ -1,7 +1,8 @@
 #include "lighting.hpp"
 
-#include "utilities.hpp"
+#include "game/player.hpp"
 #include "sdlwrapper/surface.hpp"
+#include "utilities.hpp"
 #include "world/level.hpp"
 #include "world/sector.hpp"
 
@@ -75,7 +76,7 @@ LightPoint Lighting::calculateSurfaceLighting(double mapX, double mapY, const Of
            lmXnYn * (stepX * stepY / 2);
 }
 
-LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall& wall)
+LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall& wall, const game::Position& player)
 {
     auto lightMapWidth = (int)(std::hypot(wall.xEnd - wall.xStart, wall.yEnd - wall.yStart) * invMapRes) + 1;
     auto lightMapHeight = (int)(invMapRes * (sector.ceiling - sector.floor)) + 1;
@@ -96,6 +97,10 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
             double x = stepX * i + wall.xStart;
             double y = stepY * i + wall.yStart;
             LightPoint lightPoint{};
+
+            addLight(lightPoint, sector,
+                     world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375},
+                     x, y, z);
 
             for (const auto& light : sector.lights)
             {
@@ -134,7 +139,8 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
     return lightMap;
 }
 
-std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const world::Sector& sector)
+std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const world::Sector& sector,
+                                                                      const game::Position& player)
 {
     auto wallLeftX =   *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
     auto wallRightX =  *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
@@ -168,6 +174,14 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
             auto mapX = leftX + mapRes * x;
             auto mapY = topY + mapRes * y;
 
+            auto playerLight = world::Light{player.x ,player.y, player.z, 0.1, 0.1, 0.125};
+
+            if (player.sector == sector.id)
+            {
+                addLight(top, sector, playerLight, mapX, mapY, sector.ceiling);
+                addLight(bottom, sector, playerLight, mapX, mapY, sector.floor);
+            }
+
             for (const auto& light : sector.lights)
             {
                 addLight(top, sector, light, mapX, mapY, sector.ceiling);
@@ -183,6 +197,11 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
 
                 const auto& neighbour = level.sector(wall.portal->sector);
                 double nx1 = wall.xStart, nx2 = wall.xEnd, ny1 = wall.yStart, ny2 = wall.yEnd;
+                if (player.sector == neighbour.id)
+                {
+                    addLight(top, sector, playerLight, mapX, mapY, sector.ceiling);
+                    addLight(bottom, sector, playerLight, mapX, mapY, sector.floor);
+                }
                 for (const auto& light : neighbour.lights)
                 {
                     if (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2)
@@ -211,6 +230,53 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
     }
 
     return std::make_pair(std::move(lightMapCeiling), std::move(lightMapFloor));
+}
+
+LightPoint Lighting::calculateSpriteLighting(const world::Sector& sector,
+                                             const world::Sprite& sprite,
+                                             const game::Position& player)
+{
+    LightPoint lightPoint{};
+
+    auto addLight = [&lightPoint, &sprite](const auto& light)
+    {
+        double deltaX = sprite.x - light.x;
+        double deltaY = sprite.y - light.y;
+        double deltaZ = sprite.z - light.z;
+
+        double distanceFactor = 1 / (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+        lightPoint += distanceFactor * LightPoint{light.r, light.g, light.b};
+    };
+
+    addLight(world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375});
+
+    for (const auto& light : sector.lights)
+    {
+        addLight(light);
+    }
+
+    for (const auto& w : sector.walls)
+    {
+        if (not w.portal)
+        {
+            continue;
+        }
+
+        double nx1 = w.xStart, nx2 = w.xEnd, ny1 = w.yStart, ny2 = w.yEnd;
+
+        for (const auto& light : level.sector(w.portal->sector).lights)
+        {
+            auto side1 = (nx1 - sprite.x) * (light.y - sprite.y) - (ny1 - sprite.y) * (light.x - sprite.x);
+            auto side2 = (sprite.x - nx2) * (light.y - ny2) - (sprite.y - ny2) * (light.x - nx2);
+            if (side1 > 0 and side2 > 0)
+            {
+                addLight(light);
+            }
+        }
+    }
+
+    return lightPoint;
 }
 
 void Lighting::addLight(LightPoint& target,
@@ -258,14 +324,14 @@ void Lighting::addLight(LightPoint& target,
             auto ratio = intersectionDistance / wallDistance;
             auto intersectionZ = light.z + deltaZ * ratio;
             auto spriteTop = sprite.z + sprite.h / 2, spriteBottom = sprite.z - sprite.h / 2;
-            if (intersectionZ > spriteTop or intersectionZ < spriteBottom)
+            if (intersectionZ > spriteTop or intersectionZ <= spriteBottom)
             {
                 continue;
             }
 
             const auto& texture = this->getTexture(sprite.texture);
-            int spriteX = (int)((intersectionX - c.x + intersectionY - c.y) * (texture.width - 1) / (d.x - c.x + d.y - c.y));
-            int spriteY = (int)((sprite.h * (spriteTop - intersectionZ) / (spriteTop - spriteBottom)) * (texture.height - 1));
+            int spriteX = std::clamp((int)((intersectionX - c.x + intersectionY - c.y) * (texture.width - 1) / (d.x - c.x + d.y - c.y)), 0, texture.width - 1);
+            int spriteY = std::clamp((int)((sprite.h * (spriteTop - intersectionZ) / (spriteTop - spriteBottom)) * (texture.height - 1)), 0, texture.height - 1);
 
             // TODO: possibly just weaken the light based on alpha channel - transparent sprites could cast proper shadows
             if ((texture.pixels()[spriteX + spriteY * texture.width] & 0xff000000) >> 24 == 0xff)
