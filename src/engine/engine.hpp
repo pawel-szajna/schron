@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lighting.hpp"
 #include "sdlwrapper/common_types.hpp"
 #include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/texture.hpp"
@@ -30,27 +31,8 @@ class Wall;
 
 namespace engine
 {
-struct LightPoint
-{
-    double r, g, b;
-
-    LightPoint& operator+=(const LightPoint& other) { r += other.r; g += other.g; b += other.b; return *this; }
-    LightPoint& operator*=(double scalar) { r *= scalar; g *= scalar; b *= scalar; return *this; }
-
-    friend LightPoint operator+(LightPoint lhs, const LightPoint& rhs) { lhs += rhs; return lhs; }
-    friend LightPoint operator*(LightPoint lhs, double rhs) { lhs *= rhs; return lhs; }
-    friend LightPoint operator*(double lhs, LightPoint rhs) { rhs *= lhs; return rhs; }
-};
-
 class Engine
 {
-    struct HorizontalLightMap
-    {
-        double x, y;
-        int width, height;
-        std::vector<std::pair<LightPoint, LightPoint>> map;
-    };
-
     struct SectorRenderParams
     {
         int id;
@@ -74,29 +56,25 @@ private:
                     const world::Wall& wall,
                     const game::Position& player,
                     double angleSin, double angleCos,
-                    const HorizontalLightMap& lightMap);
+                    const OffsetLightMap& ceilingLightMap,
+                    const OffsetLightMap& floorLightMap);
     void renderCeilingAndFloor(const world::Sector& sector,
                                const game::Position& player,
                                int x, int wallTop, int wallBottom,
                                double distance,
                                double ceilingY, double floorY,
                                double angleSin, double angleCos,
-                               const HorizontalLightMap& lightMap);
+                               const OffsetLightMap& ceilingLightMap,
+                               const OffsetLightMap& floorLightMap);
     void renderSprites(const world::Sector& sector,
                        const game::Position& player,
                        double angleSin, double angleCos);
-    void lightedLine(int x,
+    void lightedLine(int x, double xProgress,
                      int wallTop, int wallBottom,
                      int visibleWallTop, int visibleWallBottom,
                      sdl::Surface& texture, int textureX,
                      double distance,
-                     const LightPoint& lightTop,
-                     const LightPoint& lightBottom);
-
-    HorizontalLightMap prepareSurfaceMap(const world::Sector& sector);
-    LightPoint calculateSurfaceLighting(double mapX, double mapY,
-                                        bool isCeiling,
-                                        const HorizontalLightMap& lightMap);
+                     const LightMap& lightMap);
 
     std::map<std::string, sdl::Surface> textures{};
     std::map<std::string, sdl::Surface> sprites{};
@@ -109,5 +87,7 @@ private:
     sdl::Texture view;
 
     world::Level& level;
+
+    Lighting lighting;
 };
 }

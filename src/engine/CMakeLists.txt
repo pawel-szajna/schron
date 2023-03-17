@@ -2,6 +2,7 @@ add_library(
         engine
         STATIC
         engine.cpp
+        lighting.cpp
         noise.cpp
 )
 
