@@ -116,11 +116,11 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
 
             addLight(lightPoint, sector,
                      world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375},
-                     x, y, z);
+                     player, x, y, z);
 
             for (const auto& light : sector.lights)
             {
-                addLight(lightPoint, sector, light, x, y, z);
+                addLight(lightPoint, sector, light, player, x, y, z);
             }
 
             for (const auto& w : sector.walls)
@@ -136,14 +136,14 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
                     // TODO: floor/ceiling collision
                     if ((x == nx1 or x == nx2) and (y == nx1 or y == ny2))
                     {
-                        addLight(lightPoint, sector, light, x, y, z);
+                        addLight(lightPoint, sector, light, player, x, y, z);
                         continue;
                     }
                     auto side1 = (nx1 - x) * (light.y - y) - (ny1 - y) * (light.x - x);
                     auto side2 = (x - nx2) * (light.y - ny2) - (y - ny2) * (light.x - nx2);
                     if (side1 > 0 and side2 > 0)
                     {
-                        addLight(lightPoint, sector, light, x, y, z);
+                        addLight(lightPoint, sector, light, player, x, y, z);
                     }
                 }
             }
@@ -199,14 +199,14 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
 
             if (player.sector == sector.id)
             {
-                addLight(top, sector, playerLight, mapX, mapY, sector.ceiling);
-                addLight(bottom, sector, playerLight, mapX, mapY, sector.floor);
+                addLight(top, sector, playerLight, player, mapX, mapY, sector.ceiling);
+                addLight(bottom, sector, playerLight, player, mapX, mapY, sector.floor);
             }
 
             for (const auto& light : sector.lights)
             {
-                addLight(top, sector, light, mapX, mapY, sector.ceiling);
-                addLight(bottom, sector, light, mapX, mapY, sector.floor);
+                addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
+                addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
             }
 
             for (const auto& wall : sector.walls)
@@ -220,8 +220,8 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                 double nx1 = wall.xStart, nx2 = wall.xEnd, ny1 = wall.yStart, ny2 = wall.yEnd;
                 if (player.sector == neighbour.id)
                 {
-                    addLight(top, sector, playerLight, mapX, mapY, sector.ceiling);
-                    addLight(bottom, sector, playerLight, mapX, mapY, sector.floor);
+                    addLight(top, sector, playerLight, player, mapX, mapY, sector.ceiling);
+                    addLight(bottom, sector, playerLight, player, mapX, mapY, sector.floor);
                 }
                 for (const auto& light : neighbour.lights)
                 {
@@ -229,8 +229,8 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                     {
                         if ((nx1 == mapX and nx2 == mapX) or (ny1 == mapY and ny2 == mapY))
                         {
-                            addLight(top, sector, light, mapX, mapY, sector.ceiling);
-                            addLight(bottom, sector, light, mapX, mapY, sector.floor);
+                            addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
+                            addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
                             continue;
                         }
                     }
@@ -239,8 +239,8 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                     auto side2 = (mapX - nx2) * (light.y - ny2) - (mapY - ny2) * (light.x - nx2);
                     if (side1 > 0 and side2 > 0)
                     {
-                        addLight(top, sector, light, mapX, mapY, sector.ceiling);
-                        addLight(bottom, sector, light, mapX, mapY, sector.floor);
+                        addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
+                        addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
                     }
                 }
             }
@@ -307,6 +307,7 @@ LightPoint Lighting::calculateSpriteLighting(const world::Sector& sector,
 void Lighting::addLight(LightPoint& target,
                         const world::Sector& sector,
                         const world::Light& light,
+                        const game::Position& player,
                         double worldX, double worldY, double worldZ)
 {
     double deltaX = worldX - light.x;
@@ -316,7 +317,9 @@ void Lighting::addLight(LightPoint& target,
 
     auto castsShadows = [](const world::Sprite& sprite) { return sprite.shadows; };
 
-    std::vector<std::reference_wrapper<const world::Sprite>> sprites{};
+    auto playerShadow = world::Sprite{-1, "sprites/shadow", player.x, player.y, player.z, 1.0, 1.0, 0, true};
+
+    std::vector<std::reference_wrapper<const world::Sprite>> sprites{std::ref(playerShadow)};
     std::copy_if(sector.sprites.begin(), sector.sprites.end(), std::back_inserter(sprites), castsShadows);
     for (const auto& wall : sector.walls)
     {

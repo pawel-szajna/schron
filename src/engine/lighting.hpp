@@ -61,17 +61,25 @@ public:
              TextureGetter textureGetter);
     ~Lighting();
 
-    LightMap prepareWallMap(const world::Sector& sector, const world::Wall& wall, const game::Position& player);
-    std::pair<OffsetLightMap, OffsetLightMap> prepareSurfaceMap(const world::Sector& sector, const game::Position& player);
-    LightPoint calculateWallLighting(double mapX, double mapY, const LightMap& lightMap);
-    LightPoint calculateSurfaceLighting(double mapX, double mapY, const OffsetLightMap& lightMap);
-    LightPoint calculateSpriteLighting(const world::Sector& sector, const world::Sprite& sprite, const game::Position& player);
+    LightMap prepareWallMap(const world::Sector& sector,
+                            const world::Wall& wall,
+                            const game::Position& player);
+    std::pair<OffsetLightMap, OffsetLightMap> prepareSurfaceMap(const world::Sector& sector,
+                                                                const game::Position& player);
+    LightPoint calculateWallLighting(double mapX, double mapY,
+                                     const LightMap& lightMap);
+    LightPoint calculateSurfaceLighting(double mapX, double mapY,
+                                        const OffsetLightMap& lightMap);
+    LightPoint calculateSpriteLighting(const world::Sector& sector,
+                                       const world::Sprite& sprite,
+                                       const game::Position& player);
 
 private:
 
     void addLight(LightPoint& target,
                   const world::Sector& sector,
                   const world::Light& light,
+                  const game::Position& player,
                   double worldX, double worldY, double worldZ);
 
     const world::Level& level;
