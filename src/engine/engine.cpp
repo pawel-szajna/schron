@@ -167,7 +167,7 @@ Engine::HorizontalLightMap Engine::prepareSurfaceMap(const world::Sector& sector
                         auto intersectionZFloor = light.z + (floor - light.z) * ratio;
 
                         const auto& texture = this->getTexture(sprite.texture);
-                        int spriteX = (int)((intersectionX - c.x) * (texture.width - 1) / (d.x - c.x));
+                        int spriteX = (int)((intersectionX - c.x + intersectionY - c.y) * (texture.width - 1) / (d.x - c.x + d.y - c.y));
                         int spriteYFloor = (int)(intersectionZCeiling * (texture.height - 1));
                         int spriteYCeiling = (int)(intersectionZFloor * (texture.height - 1));
 
@@ -292,7 +292,7 @@ void Engine::renderWall(const world::Sector& sector,
                     auto intersectionZFloor = light.z + (floor - light.z) * ratio;
 
                     const auto& texture = this->getTexture(sprite.texture);
-                    int spriteX = (int)((intersectionX - c.x) * (texture.width - 1) / (d.x - c.x));
+                    int spriteX = (int)((intersectionX - c.x + intersectionY - c.y) * (texture.width - 1) / (d.x - c.x + d.y - c.y));
                     int spriteYCeiling = (int)(intersectionZCeiling * (texture.height - 1));
                     int spriteYFloor = (int)(intersectionZFloor * (texture.height - 1));
 
