@@ -14,7 +14,7 @@
 
 namespace game
 {
-struct Position;
+class Position;
 }
 
 namespace sdl

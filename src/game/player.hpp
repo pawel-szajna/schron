@@ -9,8 +9,9 @@ class Level;
 
 namespace game
 {
-struct Position
+class Position
 {
+public:
     int sector{1};
     double x{0.5}, y{0.5}, z{0.6}, angle{std::numbers::pi / 2};
 };
