@@ -15,19 +15,22 @@ namespace world
 class Level
 {
     friend class ui::editor::Editor;
+    using SectorsMap = std::unordered_map<int, Sector>;
 
 public:
 
     Level(int id, std::string name);
 
     void put(Sector&& sector);
-    const Sector& sector(int id) const { return map.at(id); }
-    std::string toLua() const;
+    [[nodiscard]] const Sector& sector(int id) const { return map.at(id); }
+    [[nodiscard]] const SectorsMap& sectors() const { return map; }
+
+    [[nodiscard]] std::string toLua() const;
 
 private:
 
     std::string name{};
-    std::unordered_map<int, Sector> map{};
+    SectorsMap map{};
 
 };
 }

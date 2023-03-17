@@ -33,7 +33,7 @@ Game::~Game() = default;
 
 void Game::start()
 {
-    switchMode(GameMode::InGame);
+    switchMode(GameMode::MainMenu);
     mainLoop();
 }
 

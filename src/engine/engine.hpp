@@ -48,6 +48,8 @@ public:
     void frame(const game::Position& player);
     void draw();
 
+    void preload();
+
 private:
 
     sdl::Surface& getTexture(const std::string& name);

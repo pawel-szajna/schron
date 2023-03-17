@@ -26,6 +26,9 @@ namespace
 constexpr double fovH = c::renderHeight * 0.65;
 constexpr double fovV = c::renderWidth * 0.22;
 
+constexpr auto loadingMargin = 32;
+constexpr auto loadingBarSize = 4;
+
 constexpr auto shadeRgb(uint32_t pixel, double r, double g, double b)
 {
     auto pR = (pixel & 0x00ff0000) >> 16;
@@ -41,6 +44,16 @@ constexpr auto shadeRgb(uint32_t pixel, const LightPoint& color)
 {
     return shadeRgb(pixel, color.r, color.g, color.b);
 }
+
+constexpr auto loadingScreen(sdl::Renderer& renderer, int progress, int max)
+{
+    renderer.setColor(0, 0, 0, 255);
+    renderer.clear();
+    renderer.renderRectangle(loadingMargin, 4 * c::windowHeight / 5,
+                             progress * (c::windowHeight - 2 * loadingMargin) / max, loadingBarSize,
+                             0, 100, 200, 255);
+    renderer.present();
+}
 }
 
 Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
@@ -50,6 +63,27 @@ Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
     lighting(level, [&](const std::string& texture) -> sdl::Surface& { return getTexture(texture); })
 {
     spdlog::info("Initialized engine");
+}
+
+void Engine::preload()
+{
+    loadingScreen(renderer, 0, 1);
+    std::unordered_set<std::string> filenames;
+    for (const auto& [_, sector] : level.sectors())
+    {
+        filenames.emplace(sector.ceilingTexture);
+        filenames.emplace(sector.floorTexture);
+        std::transform(sector.walls.begin(), sector.walls.end(), std::inserter(filenames, filenames.begin()),
+                       [](const auto& wall) { return wall.texture; });
+        std::transform(sector.sprites.begin(), sector.sprites.end(), std::inserter(filenames, filenames.begin()),
+                       [](const auto& sprite) { return sprite.texture; });
+    }
+    int i = 0;
+    for (const auto& filename : filenames)
+    {
+        loadingScreen(renderer, ++i, filenames.size());
+        getTexture(filename);
+    }
 }
 
 sdl::Surface& Engine::getTexture(const std::string& name)

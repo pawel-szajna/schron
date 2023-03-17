@@ -32,7 +32,10 @@ void ModeInGame::entry()
     auto& level = world.level(1);
 
     engine = std::make_unique<engine::Engine>(renderer, level);
+    engine->preload();
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
+
+    spdlog::info("Ready");
 }
 
 void ModeInGame::exit()

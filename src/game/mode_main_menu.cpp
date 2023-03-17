@@ -21,7 +21,7 @@ void ModeMainMenu::entry()
 
 std::optional<GameMode> ModeMainMenu::frame(double frameTime)
 {
-    return noChange;
+    return GameMode::InGame;
 }
 
 void ModeMainMenu::event(const sdl::event::Event& event)
