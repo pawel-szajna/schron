@@ -109,9 +109,8 @@ void Engine::renderWall(const world::Sector& sector,
     auto transformedLeftZ  = wallStartX * angleCos + wallStartY * angleSin;
     auto transformedRightZ =   wallEndX * angleCos +   wallEndY * angleSin;
 
-    auto& t = getTexture(wall.texture);
-    int textureBoundaryLeft = 0;
-    int textureBoundaryRight = t.width - 1;
+    auto boundaryLeft = 0.0;
+    auto boundaryRight = 1.0;
 
     if (transformedLeftZ <= 0 and transformedRightZ <= 0)
     {
@@ -122,10 +121,10 @@ void Engine::renderWall(const world::Sector& sector,
     {
         auto nearZ = 1e-4, farZ = 5.0, nearSide = 1e-5, farSide = 20.0;
 
-        auto [i1x, i1y] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
-                                    -nearSide, nearZ, -farSide, farZ);
-        auto [i2x, i2y] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
-                                    nearSide, nearZ, farSide, farZ);
+        auto [iLeftX, iLeftZ] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
+                                          -nearSide, nearZ, -farSide, farZ);
+        auto [iRightX, iRightZ] = intersect(transformedLeftX, transformedLeftZ, transformedRightX, transformedRightZ,
+                                            nearSide, nearZ, farSide, farZ);
 
         auto oldLeftX = transformedLeftX;
         auto oldLeftZ = transformedLeftZ;
@@ -134,26 +133,27 @@ void Engine::renderWall(const world::Sector& sector,
 
         if (transformedLeftZ < nearZ)
         {
-            transformedLeftX = i1y > 0 ? i1x : i2x;
-            transformedLeftZ = i1y > 0 ? i1y : i2y;
+            transformedLeftX = iLeftZ > 0 ? iLeftX : iRightX;
+            transformedLeftZ = iLeftZ > 0 ? iLeftZ : iRightZ;
         }
 
         if (transformedRightZ < nearZ)
         {
-            transformedRightX = i1y > 0 ? i1x : i2x;
-            transformedRightZ = i1y > 0 ? i1y : i2y;
+            transformedRightX = iLeftZ > 0 ? iLeftX : iRightX;
+            transformedRightZ = iLeftZ > 0 ? iLeftZ : iRightZ;
         }
 
-        if (std::abs(transformedRightX - transformedLeftX) >
-            std::abs(transformedRightZ - transformedLeftZ))
+        if (std::abs(transformedRightX - transformedLeftX) > std::abs(transformedRightZ - transformedLeftZ))
         {
-            textureBoundaryLeft = (transformedLeftX - oldLeftX) * (t.width - 1) / (oldRightX - oldLeftX);
-            textureBoundaryRight = (transformedRightX - oldRightX) * (t.width - 1) / (oldRightX - oldLeftX);
+            auto denominator = 1 / (oldRightX - oldLeftX);
+            boundaryLeft = (transformedLeftX - oldLeftX) * denominator;
+            boundaryRight = (transformedRightX - oldLeftX) * denominator;
         }
         else
         {
-            textureBoundaryLeft = (transformedLeftZ - oldLeftZ) * (t.width - 1) / (oldRightZ - oldLeftZ);
-            textureBoundaryRight = (transformedRightZ - oldLeftZ) * (t.width - 1) / (oldRightZ - oldLeftZ);
+            auto denominator = 1 / (oldRightZ - oldLeftZ);
+            boundaryLeft = (transformedLeftZ - oldLeftZ) * denominator;
+            boundaryRight = (transformedRightZ - oldLeftZ) * denominator;
         }
     }
 
@@ -211,9 +211,15 @@ void Engine::renderWall(const world::Sector& sector,
     auto distanceLeft = std::hypot(transformedLeftX, transformedLeftZ, ceilingY - floorY);
     auto distanceRight = std::hypot(transformedRightX, transformedRightZ, ceilingY - floorY);
 
-    textureBoundaryRight *= wallLength * (sector.ceiling - sector.floor);
+    auto& t = getTexture(wall.texture);
+    int textureBoundaryLeft = (int)((t.width - 1) * boundaryLeft);
+    int textureBoundaryRight = (int)((t.width - 1) * boundaryRight);
+
+    textureBoundaryRight *= (int)(wallLength * (sector.ceiling - sector.floor));
 
     auto lightPoints = lighting.prepareWallMap(sector, wall, player);
+    int lightsBoundaryLeft = (int)((lightPoints.width - 1) * boundaryLeft);
+    int lightsBoundaryRight = (int)((lightPoints.width - 1) * boundaryRight);
 
     for (int x = beginX; x <= endX; ++x)
     {
@@ -231,11 +237,10 @@ void Engine::renderWall(const world::Sector& sector,
                               angleSin, angleCos,
                               ceilingLightMap, floorLightMap);
 
-        int textureX = (int)((textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) /
-                             ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ));
+        double denominator = 1.0 / ((rightX - x) * transformedRightZ + (x - leftX) * transformedLeftZ);
+        auto xProgress = (((double)lightsBoundaryLeft * (rightX - x) * transformedRightZ) + (double)lightsBoundaryRight * (x - leftX) * transformedLeftZ) * denominator;
+        int textureX = (int)((textureBoundaryLeft * ((rightX - x) * transformedRightZ) + textureBoundaryRight * ((x - leftX) * transformedLeftZ)) * denominator);
         while (textureX < 0) textureX += t.width;
-
-        double xProgress = (double)(x - leftX) / (double)(rightX - leftX + 1) * (lightPoints.width - 1);
 
         if (wall.portal.has_value())
         {
