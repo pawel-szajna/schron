@@ -67,8 +67,8 @@ LightPoint Lighting::calculateSurfaceLighting(double mapX, double mapY, const Of
     double nearestX = std::floor(mapX * invMapRes) * mapRes;
     double nearestY = std::floor(mapY * invMapRes) * mapRes;
 
-    auto lightMapX = std::clamp((int)((nearestX - lightMap.x) * invMapRes), 0, lightMap.width);
-    auto lightMapY = std::clamp((int)((nearestY - lightMap.y) * invMapRes), 0, lightMap.height);
+    auto lightMapX = std::clamp((int)((nearestX - lightMap.x) * invMapRes), 0, lightMap.width - 2);
+    auto lightMapY = std::clamp((int)((nearestY - lightMap.y) * invMapRes), 0, lightMap.height - 2);
 
     auto stepX = std::clamp((mapX - nearestX) * invMapRes, 0.0, 1.0);
     auto stepY = std::clamp((mapY - nearestY) * invMapRes, 0.0, 1.0);

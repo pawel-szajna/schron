@@ -228,8 +228,8 @@ void Engine::renderWall(const world::Sector& sector,
     textureBoundaryRight *= (int)(wallLength * (sector.ceiling - sector.floor));
 
     auto lightPoints = lighting.prepareWallMap(sector, wall, player);
-    int lightsBoundaryLeft = (int)((lightPoints.width - 1) * boundaryLeft);
-    int lightsBoundaryRight = (int)((lightPoints.width - 1) * boundaryRight);
+    int lightsBoundaryLeft = (int)((lightPoints.width - 2) * boundaryLeft);
+    int lightsBoundaryRight = (int)((lightPoints.width - 2) * boundaryRight);
 
 #if defined(DISABLE_PARALLELISM)
     for (int x = beginX; x <= endX; ++x)
@@ -333,7 +333,7 @@ void Engine::lightedLine(int x, double xProgress,
         int textureY = ((texture.height - 1) * (y - wallTop) / (wallBottom - wallTop) + texture.height) % texture.height;
 
         buffer[x + y * c::renderWidth] = shadeRgb(texture.pixels()[textureX + textureY * texture.width],
-                                                  lighting.calculateWallLighting(xProgress, yProgress * (lightMap.height - 1), lightMap));
+                                                  lighting.calculateWallLighting(xProgress, yProgress * (lightMap.height - 2), lightMap));
         zBuffer[x + y * c::renderWidth] = distance;
     }
 }
