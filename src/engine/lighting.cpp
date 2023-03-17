@@ -10,6 +10,16 @@
 #include <cmath>
 #include <queue>
 
+#if not defined(DISABLE_PARALLELISM)
+#   include <boost/iterator/counting_iterator.hpp>
+#   ifdef __APPLE__
+#       include <oneapi/dpl/execution>
+#       include <oneapi/dpl/algorithm>
+#   else
+#       include <execution>
+#   endif
+#endif
+
 namespace
 {
 constexpr double invMapRes = 32;
@@ -86,10 +96,16 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
     double stepY = (wall.yEnd - wall.yStart) * stepSize;
     double stepZ = (sector.ceiling - sector.floor) / (double)lightMapHeight;
 
-    LightMap lightMap{lightMapWidth, lightMapHeight};
-    lightMap.map.reserve(lightMapWidth * lightMapHeight);
+    LightMap lightMap{lightMapWidth, lightMapHeight, {(size_t)(lightMapWidth * lightMapHeight), {0, 0, 0}}};
 
+#if defined(DISABLE_PARALLELISM)
     for (int j = 0; j < lightMapHeight; ++j)
+#else
+    std::for_each(std::execution::par,
+                  boost::counting_iterator(0),
+                  boost::counting_iterator(lightMapHeight),
+                  [&](int j)
+#endif
     {
         double z = sector.ceiling - stepZ * j;
         for (int i = 0; i < lightMapWidth; ++i)
@@ -132,9 +148,13 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
                 }
             }
 
-            lightMap.map.emplace_back(lightPoint);
+            lightMap.map[i + j * lightMapWidth] = lightPoint;
         }
+#if defined(DISABLE_PARALLELISM)
     }
+#else
+    });
+#endif
 
     return lightMap;
 }
@@ -155,26 +175,27 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
     int width = (int)((rightX - leftX) * invMapRes) + 1;
     int height = (int)((bottomY - topY) * invMapRes) + 1;
 
-    OffsetLightMap lightMapCeiling{.x = leftX, .y = topY};
-    OffsetLightMap lightMapFloor{.x = leftX, .y = topY};
+    OffsetLightMap lightMapCeiling{{width, height, {(size_t)(width * height), {0, 0, 0}}}, leftX, topY};
+    OffsetLightMap lightMapFloor{{width, height, {(size_t)(width * height), {0, 0, 0}}}, leftX, topY};
 
-    lightMapCeiling.width = lightMapFloor.width = width;
-    lightMapCeiling.height = lightMapFloor.height = height;
-
-    lightMapCeiling.map.reserve(width * height);
-    lightMapFloor.map.reserve(width * height);
-
+#if defined(DISABLE_PARALLELISM)
     for (int y = 0; y < height; ++y)
+#else
+    std::for_each(std::execution::par,
+                  boost::counting_iterator(0),
+                  boost::counting_iterator(height),
+                  [&](int y)
+#endif
     {
         for (int x = 0; x < width; ++x)
         {
-            LightPoint top{0.0, 0.0, 0.0};
-            LightPoint bottom{0.0, 0.0, 0.0};
+            LightPoint top{ 0.0, 0.0, 0.0 };
+            LightPoint bottom{ 0.0, 0.0, 0.0 };
 
             auto mapX = leftX + mapRes * x;
             auto mapY = topY + mapRes * y;
 
-            auto playerLight = world::Light{player.x ,player.y, player.z, 0.1, 0.1, 0.125};
+            auto playerLight = world::Light{ player.x, player.y, player.z, 0.1, 0.1, 0.125 };
 
             if (player.sector == sector.id)
             {
@@ -224,10 +245,14 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                 }
             }
 
-            lightMapCeiling.map.emplace_back(top);
-            lightMapFloor.map.emplace_back(bottom);
+            lightMapCeiling.map[x + y * width] = top;
+            lightMapFloor.map[x + y * width] = bottom;
         }
+#if defined(DISABLE_PARALLELISM)
     }
+#else
+    });
+#endif
 
     return std::make_pair(std::move(lightMapCeiling), std::move(lightMapFloor));
 }

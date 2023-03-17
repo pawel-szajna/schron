@@ -9,6 +9,16 @@
 #include <algorithm>
 #include <cmath>
 
+#if not defined(DISABLE_PARALLELISM)
+#   include <boost/iterator/counting_iterator.hpp>
+#   ifdef __APPLE__
+#       include <oneapi/dpl/execution>
+#       include <oneapi/dpl/algorithm>
+#   else
+#       include <execution>
+#   endif
+#endif
+
 namespace engine
 {
 namespace
@@ -221,7 +231,14 @@ void Engine::renderWall(const world::Sector& sector,
     int lightsBoundaryLeft = (int)((lightPoints.width - 1) * boundaryLeft);
     int lightsBoundaryRight = (int)((lightPoints.width - 1) * boundaryRight);
 
+#if defined(DISABLE_PARALLELISM)
     for (int x = beginX; x <= endX; ++x)
+#else
+    std::for_each(std::execution::par,
+                  boost::counting_iterator(beginX),
+                  boost::counting_iterator(endX + 1),
+                  [&](int x)
+#endif
     {
         auto distance = (distanceRight - distanceLeft) * (x - leftX) / (rightX - leftX) + distanceLeft;
 
@@ -260,12 +277,20 @@ void Engine::renderWall(const world::Sector& sector,
             textureX %= t.width;
             if (visibleWallTop >= visibleWallBottom)
             {
+#if defined(DISABLE_PARALLELISM)
                 continue;
+#else
+                return;
+#endif
             }
 
             lightedLine(x, xProgress, wallTop, wallBottom, visibleWallTop, visibleWallBottom, t, textureX, distance, lightPoints);
         }
+#if defined(DISABLE_PARALLELISM)
     }
+#else
+    });
+#endif
 
     auto currentRenderDepth = renderParameters.depth;
     if (wall.portal.has_value() and currentRenderDepth > 0)

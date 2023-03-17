@@ -14,6 +14,31 @@ if(NOT MSVC)
     )
 endif()
 
+if(NOT DISABLE_PARALLELISM)
+    if(APPLE)
+        find_package(
+            oneDPL
+            REQUIRED)
+        target_link_libraries(
+            engine
+            PUBLIC
+            oneDPL
+        )
+    elseif(UNIX)
+        target_link_libraries(
+            engine
+            PUBLIC
+            tbb
+        )
+    endif()
+else()
+    target_compile_definitions(
+        engine
+        PUBLIC
+        DISABLE_PARALLELISM
+    )
+endif()
+
 target_link_libraries(
         engine
         PUBLIC

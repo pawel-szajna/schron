@@ -8,6 +8,8 @@ endif()
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 23)
 
+option(DISABLE_PARALLELISM "Disable parallel STL algorithms")
+
 find_package(Lua REQUIRED)
 
 if(APPLE)
