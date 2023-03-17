@@ -29,6 +29,14 @@ struct P { double x, y; };
 
 constexpr auto ccw(P a, P b, P c) { return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x); };
 constexpr auto intersects(P a, P b, P c, P d) { return ccw(a, c, d) != ccw(b, c, d) and ccw(a, b, c) != ccw(a, b, d); };
+
+struct GatheredSector
+{
+    const world::Sector& sector;
+    std::optional<P> boundaryLeft;
+    std::optional<P> boundaryRight;
+    int caller, depth;
+};
 }
 
 namespace engine
@@ -118,32 +126,54 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
                      world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375},
                      player, x, y, z);
 
-            for (const auto& light : sector.lights)
-            {
-                addLight(lightPoint, sector, light, player, x, y, z);
-            }
+            std::queue<GatheredSector> gatheringQueue{};
+            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, 4});
 
-            for (const auto& w : sector.walls)
+            while (not gatheringQueue.empty())
             {
-                if (not w.portal)
-                {
-                    continue;
-                }
+                auto current = gatheringQueue.front();
+                gatheringQueue.pop();
 
-                double nx1 = w.xStart, nx2 = w.xEnd, ny1 = w.yStart, ny2 = w.yEnd;
-                for (const auto& light : level.sector(w.portal->sector).lights)
+                for (const auto& light : current.sector.lights)
                 {
-                    // TODO: floor/ceiling collision
-                    if ((x == nx1 or x == nx2) and (y == nx1 or y == ny2))
+                    if (((current.boundaryLeft and x == current.boundaryLeft->x) or
+                         (current.boundaryRight and x == current.boundaryRight->x)) and
+                        ((current.boundaryLeft and y == current.boundaryLeft->y) or
+                         (current.boundaryRight and y == current.boundaryRight->y)))
                     {
                         addLight(lightPoint, sector, light, player, x, y, z);
                         continue;
                     }
-                    auto side1 = (nx1 - x) * (light.y - y) - (ny1 - y) * (light.x - x);
-                    auto side2 = (x - nx2) * (light.y - ny2) - (y - ny2) * (light.x - nx2);
+
+                    auto side1 = 1.0;
+                    auto side2 = 1.0;
+
+                    if (current.boundaryLeft)
+                    {
+                        side1 = (current.boundaryLeft->x - x) * (light.y - y) - (current.boundaryLeft->y - y) * (light.x - x);
+                    }
+                    if (current.boundaryRight)
+                    {
+                        side2 = (x - current.boundaryRight->x) * (light.y - current.boundaryRight->y) - (y - current.boundaryRight->y) * (light.x - current.boundaryRight->x);
+                    }
                     if (side1 > 0 and side2 > 0)
                     {
                         addLight(lightPoint, sector, light, player, x, y, z);
+                    }
+                }
+
+                if (current.depth > 0)
+                {
+                    for (const auto& w : current.sector.walls)
+                    {
+                        if (w.portal and w.portal->sector != current.caller)
+                        {
+                            gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
+                                                                  P{w.xStart, w.yStart},
+                                                                  P{w.xEnd, w.yEnd},
+                                                                  current.sector.id,
+                                                                  current.depth - 1});
+                        }
                     }
                 }
             }
@@ -197,34 +227,56 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
 
             auto playerLight = world::Light{ player.x, player.y, player.z, 0.1, 0.1, 0.125 };
 
-            if (player.sector == sector.id)
-            {
-                addLight(top, sector, playerLight, player, mapX, mapY, sector.ceiling);
-                addLight(bottom, sector, playerLight, player, mapX, mapY, sector.floor);
-            }
+            std::queue<GatheredSector> gatheringQueue{};
+            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, 4});
 
-            for (const auto& light : sector.lights)
+            while (not gatheringQueue.empty())
             {
-                addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
-                addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
-            }
+                auto current = gatheringQueue.front();
+                gatheringQueue.pop();
 
-            for (const auto& wall : sector.walls)
-            {
-                if (not wall.portal)
+                if (current.sector.id == player.sector)
                 {
-                    continue;
+                    addLight(top, sector, playerLight, player, mapX, mapY, current.sector.ceiling);
+                    addLight(bottom, sector, playerLight, player, mapX, mapY, current.sector.floor);
                 }
 
-                const auto& neighbour = level.sector(wall.portal->sector);
-                double nx1 = wall.xStart, nx2 = wall.xEnd, ny1 = wall.yStart, ny2 = wall.yEnd;
-                if (player.sector == neighbour.id)
+                for (const auto& light : current.sector.lights)
                 {
-                    addLight(top, sector, playerLight, player, mapX, mapY, sector.ceiling);
-                    addLight(bottom, sector, playerLight, player, mapX, mapY, sector.floor);
+                    auto side1 = 1.0;
+                    auto side2 = 1.0;
+
+                    if (current.boundaryLeft)
+                    {
+                        side1 = (current.boundaryLeft->x - mapX) * (light.y - mapY) - (current.boundaryLeft->y - mapY) * (light.x - mapX);
+                    }
+                    if (current.boundaryRight)
+                    {
+                        side2 = (mapX - current.boundaryRight->x) * (light.y - current.boundaryRight->y) - (mapY - current.boundaryRight->y) * (light.x - current.boundaryRight->x);
+                    }
+                    if (side1 > 0 and side2 > 0)
+                    {
+                        addLight(top, sector, light, player, mapX, mapY, current.sector.ceiling);
+                        addLight(bottom, sector, light, player, mapX, mapY, current.sector.floor);
+                    }
                 }
-                for (const auto& light : neighbour.lights)
+
+                if (current.depth > 0)
                 {
+                    for (const auto& w : current.sector.walls)
+                    {
+                        if (w.portal and w.portal->sector != current.caller)
+                        {
+                            gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
+                                                                  P{w.xStart, w.yStart},
+                                                                  P{w.xEnd, w.yEnd},
+                                                                  current.sector.id,
+                                                                  current.depth - 1});
+                        }
+                    }
+                }
+            }
+/*
                     if (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2)
                     {
                         if ((nx1 == mapX and nx2 == mapX) or (ny1 == mapY and ny2 == mapY))
@@ -234,16 +286,7 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                             continue;
                         }
                     }
-                    // TODO: floor/ceiling collision
-                    auto side1 = (nx1 - mapX) * (light.y - mapY) - (ny1 - mapY) * (light.x - mapX);
-                    auto side2 = (mapX - nx2) * (light.y - ny2) - (mapY - ny2) * (light.x - nx2);
-                    if (side1 > 0 and side2 > 0)
-                    {
-                        addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
-                        addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
-                    }
-                }
-            }
+                   */
 
             lightMapCeiling.map[x + y * width] = top;
             lightMapFloor.map[x + y * width] = bottom;
@@ -318,8 +361,9 @@ void Lighting::addLight(LightPoint& target,
     auto castsShadows = [](const world::Sprite& sprite) { return sprite.shadows; };
 
     auto playerShadow = world::Sprite{-1, "sprites/shadow", player.x, player.y, player.z, 1.0, 1.0, 0, true};
+    (void)playerShadow;
 
-    std::vector<std::reference_wrapper<const world::Sprite>> sprites{std::ref(playerShadow)};
+    std::vector<std::reference_wrapper<const world::Sprite>> sprites{/*std::ref(playerShadow)*/};
     std::copy_if(sector.sprites.begin(), sector.sprites.end(), std::back_inserter(sprites), castsShadows);
     for (const auto& wall : sector.walls)
     {

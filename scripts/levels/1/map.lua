@@ -1,7 +1,7 @@
 world_put(RectangularSectorBuilder.new(1):withDimensions(0, 0, 1, 3):withSouthNeighbour(2, 1, 3, 0, 3))
 world_put(PolygonalSectorBuilder.new(-1,3):withId(2):withCeiling(1):withFloor(0):withWall(0,3,"wall"):withPortal(1,3,"wall",1):withWall(2,3,"wall"):withWall(2,6,"wall"):withWall(1,6,"wall"):withPortal(0,6,"wall",3):withWall(-1,6,"wall"):withWall(-1,3,"wall"))
 world_sprite(2, 0, "sprites/lamp", 0.5, 4.5, 0.5, 0, false)
-world_sprite(2, 1, "sprites/metal_table", 1.5, 3.5, 0.5, 0, false)
+world_sprite(2, 1, "sprites/metal_table", 1.5, 3.5, 0.5, 0, true)
 world_light(2, 0.5, 4.5, 0.55, 0.8, 0.8, 0.8)
 world_put(RectangularSectorBuilder.new(3):withDimensions(0, 6, 1, 10):withNorthNeighbour(2, 0, 6, 1, 6):withEastNeighbour(4, 1, 8, 1, 9))
 world_sprite(3, 0, "sprites/pipe_with_steam_back", 0.5, 9.5, 0.5, 0, true)
