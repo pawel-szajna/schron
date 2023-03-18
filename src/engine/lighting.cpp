@@ -22,13 +22,21 @@
 
 namespace
 {
-constexpr double invMapRes = 32;
+constexpr double invMapRes = 16;
 constexpr double mapRes = 1 / invMapRes;
+constexpr int depth = 4;
 
-struct P { double x, y; };
+struct P
+{
+    double x, y;
+
+    constexpr P(double x, double y) : x(x), y(y) {}
+    constexpr P(const world::Light& light) : x(light.x), y(light.y) {}
+};
 
 constexpr auto ccw(P a, P b, P c) { return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x); };
 constexpr auto intersects(P a, P b, P c, P d) { return ccw(a, c, d) != ccw(b, c, d) and ccw(a, b, c) != ccw(a, b, d); };
+constexpr auto side(P lineStart, P lineEnd, P point) { return (point.x - lineStart.x) * (lineEnd.y - lineStart.y) - (point.y - lineStart.y) * (lineEnd.x - lineStart.x); }
 
 struct GatheredSector
 {
@@ -126,26 +134,24 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
             auto playerLight = world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375};
 
             std::queue<GatheredSector> gatheringQueue{};
-            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, 4});
+            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, depth});
 
             while (not gatheringQueue.empty())
             {
-                gatherLights(gatheringQueue, i, j, x, y, player, playerLight, sector,
+                gatherLights(gatheringQueue, x, y, player, playerLight,
                              [&lightPoint, &sector, &player, x, y, z, this]
                              (const world::Light& light, const world::Sector& currentSector)
                              {
                                  addLight(lightPoint, sector, light, player, x, y, z);
+                             },
+                             [x, y, &gatheringQueue] ()
+                             {
+                                 auto& bounds1 = gatheringQueue.front().boundaryLeft;
+                                 auto& bounds2 = gatheringQueue.front().boundaryRight;
+                                 if (not bounds1 or not bounds2) return false;
+                                 return ((x == bounds1->x) or (x == bounds2->x)) and
+                                        ((y == bounds1->y) or (y == bounds2->y));
                              });
-                /*
-                    if (((current.boundaryLeft and x == current.boundaryLeft->x) or
-                         (current.boundaryRight and x == current.boundaryRight->x)) and
-                        ((current.boundaryLeft and y == current.boundaryLeft->y) or
-                         (current.boundaryRight and y == current.boundaryRight->y)))
-                    {
-                        addLight(lightPoint, sector, light, player, x, y, z);
-                        continue;
-                    }
-*/
             }
 
             lightMap.map[i + j * lightMapWidth] = lightPoint;
@@ -198,29 +204,27 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
             auto playerLight = world::Light{ player.x, player.y, player.z, 0.1, 0.1, 0.125 };
 
             std::queue<GatheredSector> gatheringQueue{};
-            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, 4});
+            gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, depth});
 
             while (not gatheringQueue.empty())
             {
-                gatherLights(gatheringQueue, x, y, mapX, mapY, player, playerLight, sector,
+                gatherLights(gatheringQueue, mapX, mapY, player, playerLight,
                              [&top, &bottom, &sector, &player, mapX, mapY, this]
                              (const world::Light& light, const world::Sector& currentSector)
                              {
                                  addLight(top, sector, light, player, mapX, mapY, currentSector.ceiling);
                                  addLight(bottom, sector, light, player, mapX, mapY, currentSector.floor);
+                             },
+                             [x, y, width, height, mapX, mapY, &gatheringQueue] ()
+                             {
+                                 auto& bounds1 = gatheringQueue.front().boundaryLeft;
+                                 auto& bounds2 = gatheringQueue.front().boundaryRight;
+                                 if (not bounds1 or not bounds2) return true;
+                                 return (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2) and
+                                        ((bounds1->x == mapX and bounds2->x == mapX) or
+                                         (bounds1->y == mapY and bounds2->y == mapY));
                              });
             }
-    /*
-            if (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2)
-            {
-                if ((nx1 == mapX and nx2 == mapX) or (ny1 == mapY and ny2 == mapY))
-                {
-                    addLight(top, sector, light, player, mapX, mapY, sector.ceiling);
-                    addLight(bottom, sector, light, player, mapX, mapY, sector.floor);
-                    continue;
-                }
-            }
-           */
 
             lightMapCeiling.map[x + y * width] = top;
             lightMapFloor.map[x + y * width] = bottom;
@@ -235,15 +239,13 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
 }
 
 void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
-                            int x, int y,
                             double mapX, double mapY,
                             const game::Position& player,
                             const world::Light& playerLight,
-                            const world::Sector& sector,
-                            const LightAdder& lightAdder)
+                            const LightAdder& lightAdder,
+                            const LightPredicate& lightPredicate)
 {
     auto current = gatheringQueue.front();
-    gatheringQueue.pop();
 
     if (current.sector.id == player.sector)
     {
@@ -252,18 +254,9 @@ void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
 
     for (const auto& light : current.sector.lights)
     {
-        auto side1 = 1.0;
-        auto side2 = 1.0;
-
-        if (current.boundaryLeft)
-        {
-            side1 = (current.boundaryLeft->x - mapX) * (light.y - mapY) - (current.boundaryLeft->y - mapY) * (light.x - mapX);
-        }
-        if (current.boundaryRight)
-        {
-            side2 = (mapX - current.boundaryRight->x) * (light.y - current.boundaryRight->y) - (mapY - current.boundaryRight->y) * (light.x - current.boundaryRight->x);
-        }
-        if (side1 > 0 and side2 > 0)
+        if (((not current.boundaryLeft or side({mapX, mapY}, *current.boundaryLeft, light) < 0) and
+             (not current.boundaryRight or side(*current.boundaryRight, {mapX, mapY}, light) < 0)) or
+             lightPredicate())
         {
             lightAdder(light, current.sector);
         }
@@ -275,14 +268,19 @@ void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
         {
             if (w.portal and w.portal->sector != current.caller)
             {
-                if (current.boundaryLeft)
+                if (current.boundaryLeft and current.boundaryRight)
                 {
                     P portalStart{*current.boundaryLeft};
                     P portalEnd{*current.boundaryRight};
-                    auto side1 = (current.boundaryLeft->x - x) * (w.yStart - y) - (current.boundaryLeft->y - y) * (w.xStart - x);
-                    auto side2 = (x - current.boundaryRight->x) * (w.yEnd - current.boundaryRight->y) - (y - current.boundaryRight->y) * (w.xEnd - current.boundaryRight->x);
-                    if (side1 > 0) portalStart = {w.xStart, w.yStart};
-                    if (side2 > 0) portalEnd = {w.xEnd, w.yEnd};
+
+                    auto side1 = side(*current.boundaryLeft, {mapX, mapY}, {w.xStart, w.yStart});
+                    auto side2 = side({mapX, mapY}, *current.boundaryRight, {w.xStart, w.yStart});
+                    auto side3 = side(*current.boundaryLeft, {mapX, mapY}, {w.xEnd, w.yEnd});
+                    auto side4 = side({mapX, mapY}, *current.boundaryRight, {w.xEnd, w.yEnd});
+
+                    if (side1 < 0 and side2 < 0) portalStart = {w.xStart, w.yStart};
+                    if (side3 < 0 and side4 < 0) portalEnd = {w.xEnd, w.yEnd};
+
                     gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
                                                           portalStart, portalEnd,
                                                           current.sector.id,
@@ -299,6 +297,8 @@ void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
             }
         }
     }
+
+    gatheringQueue.pop();
 }
 
 LightPoint Lighting::calculateSpriteLighting(const world::Sector& sector,

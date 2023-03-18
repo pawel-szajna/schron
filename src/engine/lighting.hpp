@@ -65,6 +65,7 @@ public:
 
     using TextureGetter = std::function<sdl::Surface&(const std::string&)>;
     using LightAdder = std::function<void(const world::Light&, const world::Sector&)>;
+    using LightPredicate = std::function<bool()>;
 
     Lighting(const world::Level& level,
              TextureGetter textureGetter);
@@ -91,12 +92,11 @@ private:
                   const game::Position& player,
                   double worldX, double worldY, double worldZ);
     void gatherLights(std::queue<GatheredSector>& gatheringQueue,
-                      int x, int y,
                       double mapX, double mapY,
                       const game::Position& player,
                       const world::Light& playerLight,
-                      const world::Sector& sector,
-                      const LightAdder& lightAdder);
+                      const LightAdder& lightAdder,
+                      const LightPredicate& lightPredicate);
 
     const world::Level& level;
     TextureGetter getTexture;
