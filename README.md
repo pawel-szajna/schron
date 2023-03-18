@@ -8,8 +8,19 @@ decaying.
 ## Prerequisites
 
 * lua 5.3 (as the only dependency which caused problems when bundled)
-* C++23 compiler (tested with `g++` 13)
+* C++23 compiler (tested with g++ 13, Apple Clang 14, MSVC 19)
 * CMake
+
+### Parallel execution requirements
+
+Some parts of the code take advantage of the parallel STL algorithms.
+This can be disabled using the CMake `-DDISABLE_PARALLELISM=YES` option.
+When enabled, the following additional requirements are introduced:
+
+* Boost (header-only version is enough, as only `boost::iterator` is
+  used), on all platforms
+* TBB, UNIX platforms
+* oneDPL, macOS
 
 ## Compilation
 
