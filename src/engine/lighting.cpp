@@ -168,9 +168,17 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
                     {
                         if (w.portal and w.portal->sector != current.caller)
                         {
+                            P portalStart{*current.boundaryLeft};
+                            P portalEnd{*current.boundaryRight};
+                            if (current.boundaryLeft)
+                            {
+                                auto side1 = (current.boundaryLeft->x - x) * (w.yStart - y) - (current.boundaryLeft->y - y) * (w.xStart - x);
+                                auto side2 = (x - current.boundaryRight->x) * (w.yEnd - current.boundaryRight->y) - (y - current.boundaryRight->y) * (w.xEnd - current.boundaryRight->x);
+                                if (side1 > 0) portalStart = {w.xStart, w.yStart};
+                                if (side2 > 0) portalEnd = {w.xEnd, w.yEnd};
+                            }
                             gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
-                                                                  P{w.xStart, w.yStart},
-                                                                  P{w.xEnd, w.yEnd},
+                                                                  portalStart, portalEnd,
                                                                   current.sector.id,
                                                                   current.depth - 1});
                         }
@@ -267,9 +275,17 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                     {
                         if (w.portal and w.portal->sector != current.caller)
                         {
+                            P portalStart{*current.boundaryLeft};
+                            P portalEnd{*current.boundaryRight};
+                            if (current.boundaryLeft)
+                            {
+                                auto side1 = (current.boundaryLeft->x - x) * (w.yStart - y) - (current.boundaryLeft->y - y) * (w.xStart - x);
+                                auto side2 = (x - current.boundaryRight->x) * (w.yEnd - current.boundaryRight->y) - (y - current.boundaryRight->y) * (w.xEnd - current.boundaryRight->x);
+                                if (side1 > 0) portalStart = {w.xStart, w.yStart};
+                                if (side2 > 0) portalEnd = {w.xEnd, w.yEnd};
+                            }
                             gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
-                                                                  P{w.xStart, w.yStart},
-                                                                  P{w.xEnd, w.yEnd},
+                                                                  portalStart, portalEnd,
                                                                   current.sector.id,
                                                                   current.depth - 1});
                         }
@@ -310,7 +326,7 @@ LightPoint Lighting::calculateSpriteLighting(const world::Sector& sector,
     {
         double deltaX = sprite.x - light.x;
         double deltaY = sprite.y - light.y;
-        double deltaZ = sprite.z - light.z;
+        double deltaZ = sprite.z - sprite.h / 2 + sprite.lightCenter - light.z;
 
         double distanceFactor = 1 / (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 

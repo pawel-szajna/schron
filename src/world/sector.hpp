@@ -40,6 +40,7 @@ public:
     double w{1.0}, h{1.0};
     double offset{0};
     bool shadows{true};
+    double lightCenter{0.5};
 
     [[nodiscard]] std::string toLua(int sectorId) const;
 };

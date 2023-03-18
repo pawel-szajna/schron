@@ -30,7 +30,7 @@ std::string Sector::toLua() const
 
 std::string Sprite::toLua(int sectorId) const
 {
-    return std::format("world_sprite({},{},\"{}\",{},{},{},{},{})\n", sectorId, id, texture, x, y, z, offset, shadows);
+    return std::format("world_sprite({},{},\"{}\",{},{},{},{},{},{})\n", sectorId, id, texture, x, y, z, offset, shadows, lightCenter);
 }
 
 std::string Light::toLua(int sectorId) const
