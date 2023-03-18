@@ -1,8 +1,15 @@
 #pragma once
 
 #include <functional>
+#include <optional>
+#include <queue>
 #include <string>
 #include <vector>
+
+namespace
+{
+struct GatheredSector;
+}
 
 namespace game
 {
@@ -55,7 +62,9 @@ public:
 class Lighting
 {
 public:
+
     using TextureGetter = std::function<sdl::Surface&(const std::string&)>;
+    using LightAdder = std::function<void(const world::Light&, const world::Sector&)>;
 
     Lighting(const world::Level& level,
              TextureGetter textureGetter);
@@ -81,6 +90,13 @@ private:
                   const world::Light& light,
                   const game::Position& player,
                   double worldX, double worldY, double worldZ);
+    void gatherLights(std::queue<GatheredSector>& gatheringQueue,
+                      int x, int y,
+                      double mapX, double mapY,
+                      const game::Position& player,
+                      const world::Light& playerLight,
+                      const world::Sector& sector,
+                      const LightAdder& lightAdder);
 
     const world::Level& level;
     TextureGetter getTexture;
