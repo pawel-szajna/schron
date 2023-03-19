@@ -56,6 +56,10 @@ void loadingScreen(sdl::Renderer& renderer, int progress, int max)
 }
 }
 
+uint64_t lightingTime = 0;
+uint64_t geometryTime = 0;
+uint64_t spritesTime = 0;
+
 Engine::Engine(sdl::Renderer& renderer, world::Level& level) :
     renderer(renderer),
     view(renderer.createTexture(sdl::Texture::Access::Streaming, c::renderWidth, c::renderHeight)),
@@ -103,6 +107,10 @@ void Engine::frame(const game::Position& player)
     constexpr static auto renderEnd = c::renderWidth - 1;
     constexpr static auto initialDepth = 32;
 
+    lightingTime = 0;
+    geometryTime = 0;
+    spritesTime = 0;
+
     buffer.fill(0);
     zBuffer.fill(100);
 
@@ -121,16 +129,25 @@ void Engine::frame(const game::Position& player)
 
         const world::Sector& sector = level.sector(id);
 
+        uint64_t sectorStart = sdl::currentTimeNs();
+
         auto [ceilingLightMap, floorLightMap] = lighting.prepareSurfaceMap(sector, player);
+        uint64_t lightingDone = sdl::currentTimeNs();
 
         for (const auto& wall : sector.walls)
         {
             renderWall(sector, wall, player, angleSin, angleCos, ceilingLightMap, floorLightMap);
         }
+        uint64_t wallsDone = sdl::currentTimeNs();
 
         renderSprites(sector, player, angleSin, angleCos);
+        uint64_t spritesDone = sdl::currentTimeNs();
 
         renderQueue.pop();
+
+        lightingTime += lightingDone - sectorStart;
+        geometryTime += wallsDone - lightingDone;
+        spritesTime += spritesDone - wallsDone;
     }
 }
 

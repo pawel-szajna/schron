@@ -18,6 +18,7 @@ void assign(sol::state& lua, const std::string& name, T& value)
 
 namespace c
 {
+bool renderStats = false;
 bool frameLimit = true;
 double shadowResolution = 16;
 int shadowDepth = 4;
@@ -30,6 +31,7 @@ void loadConfig()
         sol::state lua;
         lua.open_libraries(sol::lib::base);
         lua.script_file("config.lua");
+        assign(lua, "renderStats", renderStats);
         assign(lua, "frameLimit", frameLimit);
         assign(lua, "shadowResolution", shadowResolution);
         assign(lua, "shadowDepth", shadowDepth);

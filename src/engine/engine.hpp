@@ -92,4 +92,8 @@ private:
 
     Lighting lighting;
 };
+
+extern uint64_t lightingTime;
+extern uint64_t geometryTime;
+extern uint64_t spritesTime;
 }

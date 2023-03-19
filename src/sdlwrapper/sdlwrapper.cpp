@@ -50,6 +50,11 @@ uint64_t currentTime()
     return SDL_GetTicks();
 }
 
+uint64_t currentTimeNs()
+{
+    return SDL_GetTicksNS();
+}
+
 void resetCursor()
 {
     SDL_SetCursor(SDL_GetDefaultCursor());

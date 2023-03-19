@@ -1,5 +1,6 @@
 #include "game.hpp"
 
+#include "engine/engine.hpp"
 #include "game_mode.hpp"
 #include "mode_in_game.hpp"
 #include "mode_init.hpp"
@@ -7,6 +8,7 @@
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "ui/text.hpp"
 #include "ui/ui.hpp"
 #include "util/constants.hpp"
 #include "util/format.hpp"
@@ -53,7 +55,11 @@ void Game::switchMode(GameMode target)
 void Game::mainLoop()
 {
     uint64_t newTime{}, oldTime{}, windowUpdateTime{};
+    uint64_t frameStartTime{0}, frameStartTimeOld{0}, renderEndTime{0}, noiseEndTime{0}, uiEndTime{0};
     int framesCounter{};
+    sdl::Surface statsSurface(c::windowWidth, c::windowHeight);
+    sdl::Texture statsTexture(renderer, sdl::Texture::Access::Streaming, c::windowWidth, c::windowHeight);
+    statsTexture.setBlendMode(sdl::BlendMode::Add);
 
     while (++framesCounter, mode != GameMode::Quit)
     {
@@ -76,14 +82,54 @@ void Game::mainLoop()
 
         renderer.clear();
 
+        frameStartTimeOld = frameStartTime;
+        frameStartTime = sdl::currentTimeNs();
+        auto frameTotalTime = frameStartTime - frameStartTimeOld;
+        auto miscTime = frameStartTime - uiEndTime;
+
         auto stateChange = modes.at(mode)->frame(frameTime);
         if (stateChange.has_value())
         {
             switchMode(*stateChange);
         }
 
+        renderEndTime = sdl::currentTimeNs();
+        auto renderTime = renderEndTime - frameStartTime;
+
         noise.render();
+        noiseEndTime = sdl::currentTimeNs();
+        auto noiseTime = noiseEndTime - renderEndTime;
+
         ui->render();
+        uiEndTime = sdl::currentTimeNs();
+        auto uiTime = uiEndTime - noiseEndTime;
+
+        if (c::renderStats)
+        {
+            auto& font = ui->fonts.get("TitilliumWeb", 16);
+            statsSurface.empty();
+            font.render(std::format("render: {:.4f}ms", (double) renderTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 8, 0, 0 });
+            font.render(std::format("lighting: {:.4f}ms", (double) engine::lightingTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 48, 24, 0, 0 });
+            font.render(std::format("geometry: {:.4f}ms", (double) engine::geometryTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 48, 40, 0, 0 });
+            font.render(std::format("sprites: {:.4f}ms", (double) engine::spritesTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 48, 56, 0, 0 });
+            font.render(std::format("noise: {:.4f}ms", (double) noiseTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 72, 0, 0 });
+            font.render(std::format("ui: {:.4f}ms", (double) uiTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 88, 0, 0 });
+            font.render(std::format("other: {:.4f}ms", (double) miscTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 104, 0, 0 });
+            font.render(std::format("total: {:.4f}ms", (double) frameTotalTime / 1'000'000.0),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 120, 0, 0 });
+            font.render(std::format("fps: {:.1f}", 1'000'000'000.0 / (double) frameTotalTime),
+                        sdl::Color{ 255, 255, 255, 216 }).render(statsSurface, sdl::Rectangle{ 16, 136, 0, 0 });
+            statsSurface.render(statsTexture);
+            renderer.copy(statsTexture);
+        }
+
         renderer.present();
 
         if (newTime - windowUpdateTime >= 1000)

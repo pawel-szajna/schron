@@ -6,3 +6,6 @@ shadowResolution = 16
 
 -- how many neighbour portals should be crossed by light
 shadowDepth = 4
+
+-- show rendering statistics
+renderStats = true

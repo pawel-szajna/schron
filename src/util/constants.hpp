@@ -2,6 +2,7 @@
 
 namespace c
 {
+extern bool renderStats;
 extern bool frameLimit;
 extern double shadowResolution;
 extern int shadowDepth;
