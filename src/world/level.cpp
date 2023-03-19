@@ -32,13 +32,28 @@ std::string Level::toLua() const
 
 void Level::interaction(int sector, double x, double y, const std::string& script)
 {
-    auto nearEnough = [sector, x, y](const auto& i)
-    {
-        return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1;
-    };
-
-    interactions.erase(std::remove_if(interactions.begin(), interactions.end(), nearEnough),
+    interactions.erase(std::remove_if(interactions.begin(), interactions.end(),
+                                      [sector, x, y] (const auto& i)
+                                      {
+                                          return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1;
+                                      }),
                        interactions.end());
     interactions.emplace_back(Interaction{sector, x, y, script});
+}
+
+std::optional<std::string> Level::checkScript(int sector, double x, double y) const
+{
+    auto maybeScript = std::find_if(interactions.begin(), interactions.end(),
+                                    [sector, x, y] (const auto& i)
+                                    {
+                                        return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1;
+                                    });
+
+    if (maybeScript == interactions.end())
+    {
+        return std::nullopt;
+    }
+
+    return maybeScript->script;
 }
 }

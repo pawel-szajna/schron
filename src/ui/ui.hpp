@@ -25,7 +25,15 @@ public:
 
     int add(std::unique_ptr<Object>&& object);
     Object& get(int id);
+    void remove(int id);
     void clear();
+
+    template<typename T, typename... Args>
+    requires std::derived_from<T, Object>
+    int add(Args&& ...args)
+    {
+        return add(std::make_unique<T>(std::forward<Args>(args)...));
+    }
 
     void event(const sdl::event::Event& event);
     void render();

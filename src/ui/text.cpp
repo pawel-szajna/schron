@@ -156,4 +156,10 @@ void Text::advance()
 
     buffer.render(texture);
 }
+
+void Text::move(int x, int y)
+{
+    lastX = x;
+    lastY = y;
+}
 }

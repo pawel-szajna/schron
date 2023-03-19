@@ -25,6 +25,8 @@ public:
     void clear();
     void write(std::string text, std::string font, int charsPerSecond, bool flashingLetters = true);
 
+    void move(int x, int y);
+
 private:
 
     void advance();

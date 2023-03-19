@@ -32,6 +32,11 @@ void UI::clear()
     counter = 0;
 }
 
+void UI::remove(int id)
+{
+    objects[id] = nullptr;
+}
+
 void UI::render()
 {
     for (auto& object : objects)

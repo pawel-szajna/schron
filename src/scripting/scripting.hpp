@@ -31,6 +31,8 @@ public:
     ~Scripting();
 
     void run(const std::string& script);
+    void runAsCoroutine(const std::string& script);
+
     void sectorEntry(int x, int y, int z);
 
 private:

@@ -2,8 +2,10 @@
 
 #include "sector.hpp"
 
+#include <optional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace ui::editor
 {
@@ -27,6 +29,7 @@ public:
     [[nodiscard]] const SectorsMap& sectors() const { return map; }
 
     void interaction(int sector, double x, double y, const std::string& script);
+    std::optional<std::string> checkScript(int sector, double x, double y) const;
 
     [[nodiscard]] std::string toLua() const;
 

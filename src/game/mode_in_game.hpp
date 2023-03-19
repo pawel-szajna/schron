@@ -4,6 +4,7 @@
 #include "player.hpp"
 
 #include <memory>
+#include <string>
 
 namespace engine
 {
@@ -61,5 +62,8 @@ private:
     scripting::Scripting& scripting;
 
     int lastX, lastY, lastZ;
+    double lastFrameX, lastFrameY, lastFrameZ, lastFrameAngle;
+
+    std::optional<std::pair<int, std::string>> tooltipWidget;
 };
 }

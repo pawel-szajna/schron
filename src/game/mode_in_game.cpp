@@ -2,11 +2,13 @@
 
 #include "engine/engine.hpp"
 #include "scripting/scripting.hpp"
+#include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/editor/editor.hpp"
 #include "ui/mini_map.hpp"
 #include "ui/ui.hpp"
+#include "ui/text.hpp"
 #include "world/world.hpp"
 
 #include <SDL3/SDL_scancode.h>
@@ -45,9 +47,29 @@ void ModeInGame::exit()
 }
 
 void ModeInGame::event(const sdl::event::Event& event)
-{}
+{
+    if (std::holds_alternative<sdl::event::Key>(event))
+    {
+        const auto& key = get<sdl::event::Key>(event);
 
-double direction = -1;
+        if (key.direction != sdl::event::Key::Direction::Down)
+        {
+            return;
+        }
+
+        switch (key.scancode)
+        {
+        case SDL_SCANCODE_RETURN:
+            if (tooltipWidget)
+            {
+                scripting.runAsCoroutine(std::format("scripts/levels/1/{}", tooltipWidget->second));
+                ui.remove(tooltipWidget->first);
+                tooltipWidget = std::nullopt;
+            }
+            break;
+        }
+    }
+}
 
 std::optional<GameMode> ModeInGame::frame(double frameTime)
 {
@@ -77,9 +99,48 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     player.frame(world.level(1), frameTime);
 
+    if (player.getPosition().x != lastFrameX or
+        player.getPosition().y != lastFrameY or
+        player.getPosition().z != lastFrameZ or
+        player.getPosition().angle != lastFrameAngle)
+    {
+        auto lookX = player.getPosition().x + std::cos(player.getPosition().angle);
+        auto lookY = player.getPosition().y + std::sin(player.getPosition().angle);
+
+        if (auto script = world.level(1).checkScript(player.getPosition().sector, lookX, lookY))
+        {
+            if (tooltipWidget and tooltipWidget->second != *script)
+            {
+                ui.remove(tooltipWidget->first);
+            }
+            if (not tooltipWidget or tooltipWidget->second != *script)
+            {
+                tooltipWidget = {ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script};
+                auto& text = dynamic_cast<ui::Text&>(ui.get(tooltipWidget->first));
+                const static std::string interactionPrompt = "Press [Enter] to interact";
+                text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2, c::windowHeight * 3 / 4);
+                text.write(interactionPrompt, "KellySlab", 50);
+            }
+        }
+        else
+        {
+            if (tooltipWidget)
+            {
+                ui.remove(tooltipWidget->first);
+                tooltipWidget = std::nullopt;
+            }
+        }
+
+        lastFrameX = player.getPosition().x;
+        lastFrameY = player.getPosition().y;
+        lastFrameZ = player.getPosition().z;
+        lastFrameAngle = player.getPosition().angle;
+    }
+
     int playerX = static_cast<int>(player.getPosition().x);
     int playerY = static_cast<int>(player.getPosition().y);
     int playerZ = static_cast<int>(player.getPosition().z);
+
     if (playerX != lastX or playerY != lastY or playerZ != lastZ)
     {
         lastX = playerX;
