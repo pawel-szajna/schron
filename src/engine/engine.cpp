@@ -45,7 +45,7 @@ constexpr auto shadeRgb(uint32_t pixel, const LightPoint& color)
     return shadeRgb(pixel, color.r, color.g, color.b);
 }
 
-constexpr auto loadingScreen(sdl::Renderer& renderer, int progress, int max)
+void loadingScreen(sdl::Renderer& renderer, int progress, int max)
 {
     renderer.setColor(0, 0, 0, 255);
     renderer.clear();
