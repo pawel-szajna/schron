@@ -33,11 +33,35 @@ catch (std::runtime_error& exception)
 }
 
 void Scripting::runAsCoroutine(const std::string& script)
+try
 {
     spdlog::info("Running interactive script: {}", script);
     sol::thread thread = sol::thread::create(lua);
     sol::coroutine coroutine = thread.state().load_file(script);
-    coroutine();
+    coroutines.emplace(std::move(thread), std::move(coroutine));
+    std::get<sol::coroutine>(coroutines.top())();
+}
+catch (std::runtime_error& exception)
+{
+    spdlog::error("LUA error: {}", exception.what());
+}
+
+void Scripting::resume()
+{
+    if (coroutines.empty())
+    {
+        spdlog::warn("Tried to resume not existing execution");
+        return;
+    }
+
+    try
+    {
+        std::get<sol::coroutine>(coroutines.top())();
+    }
+    catch (std::runtime_error& exception)
+    {
+        spdlog::error("LUA error: {}");
+    }
 }
 
 void Scripting::sectorEntry(int x, int y, int z)

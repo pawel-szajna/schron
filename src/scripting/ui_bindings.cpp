@@ -1,5 +1,6 @@
 #include "ui_bindings.hpp"
 
+#include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/text.hpp"
 #include "ui/ui.hpp"
 

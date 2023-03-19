@@ -40,6 +40,12 @@ namespace game
 {
 class ModeInGame : public ModeExecutor
 {
+    enum class State
+    {
+        Default,
+        Choice,
+    };
+
 public:
 
     ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting);
@@ -51,6 +57,8 @@ public:
     void event(const sdl::event::Event& event) override;
 
 private:
+
+    void choice(const std::string caption, const std::vector<std::string> choices);
 
     Player player{};
 
@@ -64,6 +72,9 @@ private:
     int lastX, lastY, lastZ;
     double lastFrameX, lastFrameY, lastFrameZ, lastFrameAngle;
 
+    State state{State::Default};
+
     std::optional<std::pair<int, std::string>> tooltipWidget;
+    int choiceWidget;
 };
 }

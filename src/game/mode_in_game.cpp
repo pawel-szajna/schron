@@ -37,6 +37,8 @@ void ModeInGame::entry()
     engine->preload();
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
 
+    scripting.bind("choice", &ModeInGame::choice, this);
+
     spdlog::info("Ready");
 }
 
@@ -44,6 +46,23 @@ void ModeInGame::exit()
 {
     engine.reset();
     ui.clear();
+
+    scripting.unbind("choice");
+}
+
+void ModeInGame::choice(const std::string caption, const std::vector<std::string> choices)
+{
+    state = State::Choice;
+    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
+    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
+    text.write(caption, "KellySlab", 60);
+    int counter{};
+    for (auto& c : choices)
+    {
+        ++counter;
+        text.write(std::format("\n{}. ", counter), "RubikDirt", 7);
+        text.write(c, "KellySlab", 90);
+    }
 }
 
 void ModeInGame::event(const sdl::event::Event& event)
@@ -54,6 +73,15 @@ void ModeInGame::event(const sdl::event::Event& event)
 
         if (key.direction != sdl::event::Key::Direction::Down)
         {
+            return;
+        }
+
+        if (state == State::Choice)
+        {
+            scripting.set("result", key.scancode - SDL_SCANCODE_1 + 1);
+            ui.remove(choiceWidget);
+            state = State::Default;
+            scripting.resume();
             return;
         }
 
@@ -92,10 +120,13 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         ui.add(std::make_unique<ui::editor::Editor>(world.level(1), ui.fonts.get("TitilliumWeb", 14)));
     }
 
-    if (keys[SDL_SCANCODE_DOWN])  player.move(world.level(1), Player::Direction::Backward);
-    if (keys[SDL_SCANCODE_UP])    player.move(world.level(1), Player::Direction::Forward);
-    if (keys[SDL_SCANCODE_LEFT])  player.rotate(Player::Rotation::Left);
-    if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
+    if (state == State::Default)
+    {
+        if (keys[SDL_SCANCODE_DOWN]) player.move(world.level(1), Player::Direction::Backward);
+        if (keys[SDL_SCANCODE_UP]) player.move(world.level(1), Player::Direction::Forward);
+        if (keys[SDL_SCANCODE_LEFT]) player.rotate(Player::Rotation::Left);
+        if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
+    }
 
     player.frame(world.level(1), frameTime);
 
