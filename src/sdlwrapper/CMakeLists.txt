@@ -33,4 +33,5 @@ target_link_libraries(
         SDL3-shared
         SDL3_ttf
         SDL3_image
+        util
 )

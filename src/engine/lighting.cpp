@@ -2,6 +2,7 @@
 
 #include "game/player.hpp"
 #include "sdlwrapper/surface.hpp"
+#include "util/constants.hpp"
 #include "utilities.hpp"
 #include "world/level.hpp"
 #include "world/sector.hpp"
@@ -22,9 +23,9 @@
 
 namespace
 {
-constexpr double invMapRes = 16;
-constexpr double mapRes = 1 / invMapRes;
-constexpr int depth = 4;
+double invMapRes;
+double mapRes;
+int depth;
 
 struct P
 {
@@ -54,7 +55,11 @@ Lighting::Lighting(const world::Level& level,
                    TextureGetter textureGetter) :
     level(level),
     getTexture(std::move(textureGetter))
-{}
+{
+    invMapRes = c::shadowResolution;
+    mapRes = 1.0 / invMapRes;
+    depth = c::shadowDepth;
+}
 
 Lighting::~Lighting() = default;
 

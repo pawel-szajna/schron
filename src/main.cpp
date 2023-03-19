@@ -8,6 +8,8 @@ int main()
     spdlog::set_level(spdlog::level::debug);
     spdlog::info("Starting Schron!");
 
+    c::loadConfig();
+
     sdl::initialize();
 
     {

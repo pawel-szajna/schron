@@ -20,4 +20,5 @@ target_link_libraries(
         schron
         PRIVATE
         game
+        util
 )
