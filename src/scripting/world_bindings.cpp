@@ -17,6 +17,8 @@ WorldBindings::WorldBindings(sol::state&lua, world::World& world) :
     lua.set_function("world_sprite", &WorldBindings::sprite, this);
     lua.set_function("world_light", &WorldBindings::light, this);
 
+    lua.set_function("interactive_point", &WorldBindings::interactivePoint, this);
+
     sol::usertype<world::PolygonalSectorBuilder> polygonalSectorBuilderType =
         lua.new_usertype<world::PolygonalSectorBuilder>("PolygonalSectorBuilder",
                                                         sol::constructors<world::PolygonalSectorBuilder(double, double)>());
@@ -74,5 +76,10 @@ void WorldBindings::light(int sectorId, double x, double y, double z, double r, 
 {
     auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
     sector.lights.push_back(world::Light{x, y, z, r, g, b});
+}
+
+void WorldBindings::interactivePoint(int sectorId, double x, double y, const std::string& script)
+{
+    world.level(1).interaction(sectorId, x, y, script);
 }
 }
