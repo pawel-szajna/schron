@@ -15,10 +15,17 @@ if(NOT MSVC)
 endif()
 
 if(NOT DISABLE_PARALLELISM)
+    find_package(Boost REQUIRED)
+    target_include_directories(
+        engine
+        PRIVATE
+        ${Boost_INCLUDE_DIR}
+    )
     if(APPLE)
         find_package(
             oneDPL
-            REQUIRED)
+            REQUIRED
+        )
         target_link_libraries(
             engine
             PUBLIC
