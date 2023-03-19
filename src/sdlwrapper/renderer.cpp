@@ -17,6 +17,10 @@ namespace sdl
 {
 Renderer::Renderer(Window& window, uint32_t flags)
 {
+    if (c::frameLimit)
+    {
+        flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
     assign(SDL_CreateRenderer(*window, nullptr, flags),
            "SDL renderer");
     SDL_RendererInfo info;

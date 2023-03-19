@@ -52,7 +52,7 @@ void Game::switchMode(GameMode target)
 
 void Game::mainLoop()
 {
-    double newTime{}, oldTime{}, windowUpdateTime{};
+    uint64_t newTime{}, oldTime{}, windowUpdateTime{};
     int framesCounter{};
 
     while (++framesCounter, mode != GameMode::Quit)
@@ -72,11 +72,7 @@ void Game::mainLoop()
 
         oldTime = newTime;
         newTime = sdl::currentTime();
-        auto frameTime = (newTime - oldTime) / 1000.0;
-        if (frameTime < c::frameLimit)
-        {
-            sdl::delay(c::frameLimit - frameTime);
-        }
+        auto frameTime = (double)(newTime - oldTime) / 1000.0;
 
         renderer.clear();
 

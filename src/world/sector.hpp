@@ -67,6 +67,19 @@ public:
     std::string ceilingTexture{"ceiling"};
     std::string floorTexture{"floor"};
 
+    Sector(int id,
+           std::vector<Wall> walls,
+           std::vector<Sprite> sprites,
+           std::vector<Light> lights,
+           double ceiling,
+           double floor,
+           std::string ceilingTexture,
+           std::string floorTexture);
+    ~Sector();
+
+    double boundsTop{}, boundsLeft{}, boundsRight{}, boundsBottom{};
+    void recalculateBounds();
+
     [[nodiscard]] std::string toLua() const;
 };
 }

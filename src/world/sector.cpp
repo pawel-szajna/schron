@@ -28,6 +28,36 @@ std::string Sector::toLua() const
     return output;
 }
 
+Sector::Sector(int id,
+       std::vector<Wall> walls,
+       std::vector<Sprite> sprites,
+       std::vector<Light> lights,
+       double ceiling,
+       double floor,
+       std::string ceilingTexture,
+       std::string floorTexture) :
+    id(id),
+    walls(std::move(walls)),
+    sprites(std::move(sprites)),
+    lights(std::move(lights)),
+    ceiling(ceiling),
+    floor(floor),
+    ceilingTexture(std::move(ceilingTexture)),
+    floorTexture(std::move(floorTexture))
+{
+    recalculateBounds();
+}
+
+Sector::~Sector() = default;
+
+void Sector::recalculateBounds()
+{
+    boundsLeft   = std::min_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; })->xStart;
+    boundsRight  = std::max_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; })->xEnd;
+    boundsTop    = std::min_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; })->yStart;
+    boundsBottom = std::max_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; })->yEnd;
+}
+
 std::string Sprite::toLua(int sectorId) const
 {
     return std::format("world_sprite({},{},\"{}\",{},{},{},{},{},{})\n", sectorId, id, texture, x, y, z, offset, shadows, lightCenter);

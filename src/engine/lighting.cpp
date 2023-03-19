@@ -168,15 +168,10 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
 std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const world::Sector& sector,
                                                                       const game::Position& player)
 {
-    auto wallLeftX =   *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
-    auto wallRightX =  *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
-    auto wallTopY =    *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
-    auto wallBottomY = *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
-
-    auto leftX = wallLeftX.xStart - mapRes;
-    auto rightX = wallRightX.xEnd + 2 * mapRes;
-    auto topY = wallTopY.yStart - mapRes;
-    auto bottomY = wallBottomY.yEnd + 2 * mapRes;
+    auto leftX = sector.boundsLeft - mapRes;
+    auto rightX = sector.boundsRight + 2 * mapRes;
+    auto topY = sector.boundsTop - mapRes;
+    auto bottomY = sector.boundsBottom + 2 * mapRes;
 
     int width = (int)((rightX - leftX) * invMapRes) + 1;
     int height = (int)((bottomY - topY) * invMapRes) + 1;
