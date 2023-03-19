@@ -82,9 +82,12 @@ void Text::advance()
         if (current->position + static_cast<int>(lettersToAppend) > current->verified)
         {
             auto nextSpace = text.find(' ', current->position);
+            auto nextBreak = text.find('\n', current->position);
+            if (nextBreak < nextSpace) nextSpace = nextBreak;
+
             std::string nextWord = text.substr(current->position, nextSpace - current->position);
             auto [w, h] = font.size(nextWord);
-            if (current->x + w > x + width)
+            if (current->x + w > x + width or text[current->position] == '\n')
             {
                 current->x = x;
                 current->y += h;

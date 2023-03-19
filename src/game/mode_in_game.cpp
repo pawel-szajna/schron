@@ -38,6 +38,8 @@ void ModeInGame::entry()
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
 
     scripting.bind("choice", &ModeInGame::choice, this);
+    scripting.bind("text", &ModeInGame::text, this);
+    scripting.bind("speech", &ModeInGame::speech, this);
 
     spdlog::info("Ready");
 }
@@ -48,21 +50,43 @@ void ModeInGame::exit()
     ui.clear();
 
     scripting.unbind("choice");
+    scripting.unbind("text");
+    scripting.unbind("speech");
 }
 
-void ModeInGame::choice(const std::string caption, const std::vector<std::string> choices)
+void ModeInGame::choice(std::string caption, std::vector<std::string> choices)
 {
     state = State::Choice;
     choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
     auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
-    text.write(caption, "KellySlab", 60);
+    text.move(32, c::windowHeight - 100);
+    text.write(std::move(caption), "KellySlab", 80);
     int counter{};
     for (auto& c : choices)
     {
         ++counter;
-        text.write(std::format("\n{}. ", counter), "RubikDirt", 7);
+        text.write(std::format("\n{}. ", counter), "RubikDirt", 20);
         text.write(c, "KellySlab", 90);
     }
+}
+
+void ModeInGame::text(std::string caption)
+{
+    state = State::Speech;
+    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
+    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
+    text.move(32, c::windowHeight - 64);
+    text.write(std::move(caption), "KellySlab", 64);
+}
+
+void ModeInGame::speech(std::string person, std::string caption)
+{
+    state = State::Speech;
+    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
+    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
+    text.move(32, c::windowHeight - 64);
+    text.write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
+    text.write(std::move(caption), "KellySlab", 64);
 }
 
 void ModeInGame::event(const sdl::event::Event& event)
@@ -88,6 +112,14 @@ void ModeInGame::event(const sdl::event::Event& event)
         switch (key.scancode)
         {
         case SDL_SCANCODE_RETURN:
+            if (state == State::Speech)
+            {
+                ui.remove(choiceWidget);
+                state = State::Default;
+                scripting.resume();
+                return;
+            }
+
             if (tooltipWidget)
             {
                 scripting.runAsCoroutine(std::format("scripts/levels/1/{}", tooltipWidget->second));

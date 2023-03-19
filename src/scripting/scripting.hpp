@@ -35,10 +35,10 @@ public:
     void runAsCoroutine(const std::string& script);
     void resume();
 
-    template<typename... Args>
-    void bind(const std::string& name, Args&& ...args)
+    template<typename Fn, typename... Args>
+    void bind(const std::string& name, Fn&& fn, Args&& ...args)
     {
-        lua.set_function(name, std::forward<Args>(args)...);
+        lua.set_function(name, sol::yielding(fn), std::forward<Args>(args)...);
     }
 
     void unbind(const std::string& name)

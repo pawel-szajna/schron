@@ -44,6 +44,7 @@ class ModeInGame : public ModeExecutor
     {
         Default,
         Choice,
+        Speech,
     };
 
 public:
@@ -58,7 +59,9 @@ public:
 
 private:
 
-    void choice(const std::string caption, const std::vector<std::string> choices);
+    void choice(std::string caption, std::vector<std::string> choices);
+    void text(std::string caption);
+    void speech(std::string person, std::string caption);
 
     Player player{};
 
