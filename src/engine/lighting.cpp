@@ -219,8 +219,8 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
                              {
                                  auto& bounds1 = gatheringQueue.front().boundaryLeft;
                                  auto& bounds2 = gatheringQueue.front().boundaryRight;
-                                 if (not bounds1 or not bounds2) return true;
-                                 return (x <= 1 or y <= 1 or x >= width - 2 or y >= height - 2) and
+                                 if (not bounds1 or not bounds2) return false;
+                                 return (x < 1 or y < 1 or x > width - 2 or y > height - 2) and
                                         ((bounds1->x == mapX and bounds2->x == mapX) or
                                          (bounds1->y == mapY and bounds2->y == mapY));
                              });
@@ -254,8 +254,8 @@ void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
 
     for (const auto& light : current.sector.lights)
     {
-        if (((not current.boundaryLeft or side({mapX, mapY}, *current.boundaryLeft, light) < 0) and
-             (not current.boundaryRight or side(*current.boundaryRight, {mapX, mapY}, light) < 0)) or
+        if (((not current.boundaryLeft or side({mapX, mapY}, *current.boundaryLeft, light) <= 0) and
+             (not current.boundaryRight or side(*current.boundaryRight, {mapX, mapY}, light) <= 0)) or
              lightPredicate())
         {
             lightAdder(light, current.sector);
@@ -273,18 +273,21 @@ void Lighting::gatherLights(std::queue<GatheredSector>& gatheringQueue,
                     P portalStart{*current.boundaryLeft};
                     P portalEnd{*current.boundaryRight};
 
-                    auto side1 = side(*current.boundaryLeft, {mapX, mapY}, {w.xStart, w.yStart});
-                    auto side2 = side({mapX, mapY}, *current.boundaryRight, {w.xStart, w.yStart});
-                    auto side3 = side(*current.boundaryLeft, {mapX, mapY}, {w.xEnd, w.yEnd});
-                    auto side4 = side({mapX, mapY}, *current.boundaryRight, {w.xEnd, w.yEnd});
+                    auto side1 = side({mapX, mapY}, *current.boundaryLeft, {w.xStart, w.yStart});
+                    auto side2 = side(*current.boundaryRight, {mapX, mapY}, {w.xStart, w.yStart});
+                    auto side3 = side({mapX, mapY}, *current.boundaryLeft, {w.xEnd, w.yEnd});
+                    auto side4 = side(*current.boundaryRight, {mapX, mapY}, {w.xEnd, w.yEnd});
 
-                    if (side1 < 0 and side2 < 0) portalStart = {w.xStart, w.yStart};
-                    if (side3 < 0 and side4 < 0) portalEnd = {w.xEnd, w.yEnd};
+                    if (side1 <= 0) portalStart = {w.xStart, w.yStart};
+                    if (side4 <= 0) portalEnd = {w.xEnd, w.yEnd};
 
-                    gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
-                                                          portalStart, portalEnd,
-                                                          current.sector.id,
-                                                          current.depth - 1});
+                    if (side2 <= 0 and side3 <= 0)
+                    {
+                        gatheringQueue.emplace(GatheredSector{level.sector(w.portal->sector),
+                                                              portalStart, portalEnd,
+                                                              current.sector.id,
+                                                              current.depth - 1});
+                    }
                 }
                 else
                 {
