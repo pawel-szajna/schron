@@ -70,10 +70,8 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         ui.add(std::make_unique<ui::editor::Editor>(world.level(1), ui.fonts.get("TitilliumWeb", 14)));
     }
 
-    if (keys[SDL_SCANCODE_DOWN])  player.move(Player::Direction::Backward);
-    if (keys[SDL_SCANCODE_UP])    player.move(Player::Direction::Forward);
-    if (keys[SDL_SCANCODE_X])     player.move(Player::Direction::Left);
-    if (keys[SDL_SCANCODE_Z])     player.move(Player::Direction::Right);
+    if (keys[SDL_SCANCODE_DOWN])  player.move(world.level(1), Player::Direction::Backward);
+    if (keys[SDL_SCANCODE_UP])    player.move(world.level(1), Player::Direction::Forward);
     if (keys[SDL_SCANCODE_LEFT])  player.rotate(Player::Rotation::Left);
     if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
 

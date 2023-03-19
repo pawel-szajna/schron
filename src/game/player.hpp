@@ -1,6 +1,7 @@
 #pragma once
 
 #include <numbers>
+#include <queue>
 
 namespace world
 {
@@ -18,7 +19,14 @@ public:
 
 class Player
 {
+    struct MoveTarget
+    {
+        double x, y, z;
+        int factor;
+    };
+
 public:
+
     enum class Direction
     {
         Forward,
@@ -35,7 +43,7 @@ public:
     Player();
     ~Player();
 
-    void move(Direction direction);
+    void move(const world::Level& level, Direction direction);
     void rotate(Rotation rotation);
 
     void frame(const world::Level& level, double frameTime);
@@ -43,11 +51,15 @@ public:
 
 private:
 
+    void acquireMove();
+    double enterable(const world::Level& level, double x, double y) const;
+
     Position position;
     Position target;
 
+    std::queue<MoveTarget> moves{};
+
     int moving{0};
-    int strafing{0};
     int rotating{0};
 };
 }

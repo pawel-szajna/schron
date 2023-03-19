@@ -2,6 +2,7 @@
 
 #include "world/level.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <numbers>
 
@@ -40,31 +41,96 @@ const Position& Player::getPosition() const
     return position;
 }
 
-void Player::move(Direction direction)
+void Player::move(const world::Level& level, Direction direction)
 {
     if (moving or rotating)
     {
         return;
     }
 
-    target = position;
+    MoveTarget move{position.x, position.y, position.z};
 
     switch (direction)
     {
     case Direction::Forward:
-        target.x += std::cos(position.angle);
-        target.y += std::sin(position.angle);
-        moving = 1;
+        move.x += std::cos(position.angle);
+        move.y += std::sin(position.angle);
+        move.factor = 1;
         break;
     case Direction::Backward:
-        target.x -= std::cos(position.angle);
-        target.y -= std::sin(position.angle);
-        moving = -1;
+        move.x -= std::cos(position.angle);
+        move.y -= std::sin(position.angle);
+        move.factor = -1;
         break;
     case Direction::Left:
     case Direction::Right:
         break;
     }
+
+    auto bump = enterable(level, move.x, move.y);
+    if (bump <= 0)
+    {
+        moves.emplace(move);
+    }
+    else
+    {
+        move.x -= move.factor * std::cos(position.angle) * bump;
+        move.y -= move.factor * std::sin(position.angle) * bump;
+        moves.emplace(move);
+        move.x = position.x;
+        move.y = position.y;
+        move.factor *= -1;
+        moves.emplace(move);
+    }
+
+    acquireMove();
+}
+
+void Player::acquireMove()
+{
+    if (moving == 0 and not moves.empty())
+    {
+        auto& nextMove = moves.front();
+        target.x = nextMove.x;
+        target.y = nextMove.y;
+        target.z = nextMove.z;
+        moving = nextMove.factor;
+        moves.pop();
+    }
+}
+
+double Player::enterable(const world::Level& level, double x, double y) const
+{
+    constexpr static auto canEnter = -1.0;
+    constexpr static auto wallBump = 0.77;
+    constexpr static auto spriteBump = 0.45;
+
+    const auto& sector = level.sector(position.sector);
+
+    for (const auto& wall : sector.walls)
+    {
+        if (intersect(position.x, position.y, x, y, wall.xStart, wall.yStart, wall.xEnd, wall.yEnd) and
+            side(x, y, wall.xStart, wall.yStart, wall.xEnd, wall.yEnd) < 0)
+        {
+            if (wall.portal)
+            {
+                const auto& neighbour = level.sector(wall.portal->sector);
+                return std::abs(neighbour.floor - sector.floor) < 0.3 ? canEnter : wallBump;
+            }
+
+            return wallBump;
+        }
+    }
+
+    for (const auto& sprite : sector.sprites)
+    {
+        if (sprite.blocking and std::abs(sprite.x - x) < 0.1 and std::abs(sprite.y - y) < 0.1)
+        {
+            return spriteBump;
+        }
+    }
+
+    return canEnter;
 }
 
 void Player::rotate(Rotation rotation)
@@ -91,6 +157,8 @@ void Player::rotate(Rotation rotation)
 
 void Player::frame(const world::Level& level, double frameTime)
 {
+    acquireMove();
+
     const auto& sector = level.sector(position.sector);
     auto targetZ = sector.floor + 0.6;
     if (position.z != targetZ)
@@ -98,10 +166,10 @@ void Player::frame(const world::Level& level, double frameTime)
         position.z = std::clamp(targetZ, position.z - frameTime, position.z + frameTime * 2);
     }
 
-    if (moving or strafing)
+    if (moving)
     {
-        auto deltaX = frameTime * moving * movementSpeed * std::cos(position.angle) + frameTime * strafing * movementSpeed * std::sin(position.angle);
-        auto deltaY = frameTime * moving * movementSpeed * std::sin(position.angle) - frameTime * strafing * movementSpeed * std::cos(position.angle);
+        auto deltaX = frameTime * moving * movementSpeed * std::cos(position.angle);
+        auto deltaY = frameTime * moving * movementSpeed * std::sin(position.angle);
 
         for (const auto& wall : sector.walls)
         {
@@ -113,7 +181,6 @@ void Player::frame(const world::Level& level, double frameTime)
                     if (wall.portal.has_value())
                     {
                         const auto& portal = *wall.portal;
-                        spdlog::debug("Changed sector to {}", portal.sector);
                         position.sector = portal.sector;
                         if (portal.transform.has_value())
                         {
@@ -141,6 +208,7 @@ void Player::frame(const world::Level& level, double frameTime)
             position.x = target.x;
             position.y = target.y;
             moving = 0;
+            acquireMove();
         }
     }
 
