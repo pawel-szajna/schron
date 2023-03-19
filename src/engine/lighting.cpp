@@ -115,6 +115,8 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
 
     LightMap lightMap{lightMapWidth, lightMapHeight, {(size_t)(lightMapWidth * lightMapHeight), {0, 0, 0}}};
 
+    std::vector queues{(size_t)lightMapHeight, std::queue<GatheredSector>{}};
+
 #if defined(DISABLE_PARALLELISM)
     for (int j = 0; j < lightMapHeight; ++j)
 #else
@@ -133,7 +135,7 @@ LightMap Lighting::prepareWallMap(const world::Sector& sector, const world::Wall
 
             auto playerLight = world::Light{player.x, player.y, player.z, 0.3, 0.3, 0.375};
 
-            std::queue<GatheredSector> gatheringQueue{};
+            auto& gatheringQueue = queues[j];
             gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, depth});
 
             while (not gatheringQueue.empty())
@@ -179,6 +181,8 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
     OffsetLightMap lightMapCeiling{{width, height, {(size_t)(width * height), {0, 0, 0}}}, leftX, topY};
     OffsetLightMap lightMapFloor{{width, height, {(size_t)(width * height), {0, 0, 0}}}, leftX, topY};
 
+    std::vector queues{(size_t)height, std::queue<GatheredSector>{}};
+
 #if defined(DISABLE_PARALLELISM)
     for (int y = 0; y < height; ++y)
 #else
@@ -198,7 +202,7 @@ std::pair<OffsetLightMap, OffsetLightMap> Lighting::prepareSurfaceMap(const worl
 
             auto playerLight = world::Light{ player.x, player.y, player.z, 0.1, 0.1, 0.125 };
 
-            std::queue<GatheredSector> gatheringQueue{};
+            auto& gatheringQueue = queues[y];
             gatheringQueue.emplace(GatheredSector{sector, std::nullopt, std::nullopt, -1, depth});
 
             while (not gatheringQueue.empty())
