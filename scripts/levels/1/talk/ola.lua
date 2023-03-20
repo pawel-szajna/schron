@@ -1,3 +1,5 @@
+dialogue_start()
+
 if not met_ola then
     text('Dziewczynka śledziła mnie wzrokiem od kiedy wszedłem do pomieszczenia, w którym ' ..
          'się znajduje. Nie jest zdziwiona ani zawstydzona tym, że jakiś obcy dorosły chce ' ..
@@ -207,4 +209,5 @@ goto finish
 
 ::finish::
 
+dialogue_end()
 done()

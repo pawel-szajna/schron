@@ -1,5 +1,6 @@
 #include "mode_in_game.hpp"
 
+#include "dialogue.hpp"
 #include "engine/engine.hpp"
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/event_types.hpp"
@@ -37,9 +38,8 @@ void ModeInGame::entry()
     engine->preload();
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
 
-    scripting.bind("choice", &ModeInGame::choice, this);
-    scripting.bind("text", &ModeInGame::text, this);
-    scripting.bind("speech", &ModeInGame::speech, this);
+    scripting.bind("dialogue_start", &ModeInGame::startDialogue, this);
+    scripting.bind("dialogue_end", &ModeInGame::endDialogue, this);
 
     spdlog::info("Ready");
 }
@@ -48,53 +48,35 @@ void ModeInGame::exit()
 {
     engine.reset();
     ui.clear();
+    subMode.reset();
 
-    scripting.unbind("choice");
-    scripting.unbind("text");
-    scripting.unbind("speech");
+    scripting.unbind("dialogue_start");
+    scripting.unbind("dialogue_end");
 }
 
-// NOLINTNEXTLINE(performance-unnecessary-value-param) Temporary value coming from LUA
-void ModeInGame::choice(std::string caption, std::vector<std::string> choices)
+void ModeInGame::startDialogue()
 {
-    spdlog::debug("Choice called");
-    state = State::Choice;
-    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
-    text.move(32, c::windowHeight - 100);
-    text.write(std::move(caption), "KellySlab", 80);
-    int counter{};
-    for (auto& c : choices)
+    if (tooltipWidget)
     {
-        ++counter;
-        text.write(std::format("\n{}. ", counter), "RubikDirt", 20);
-        text.write(c, "KellySlab", 90);
+        ui.remove(tooltipWidget->first);
+        tooltipWidget = std::nullopt;
     }
+    subMode = std::make_unique<Dialogue>(renderer, scripting, ui);
 }
 
-void ModeInGame::text(std::string caption)
+void ModeInGame::endDialogue()
 {
-    spdlog::debug("Text called");
-    state = State::Speech;
-    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
-    text.move(32, c::windowHeight - 64);
-    text.write(std::move(caption), "KellySlab", 64);
-}
-
-void ModeInGame::speech(std::string person, std::string caption)
-{
-    spdlog::debug("Speech called ({})", person);
-    state = State::Speech;
-    choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
-    text.move(32, c::windowHeight - 64);
-    text.write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
-    text.write(std::move(caption), "KellySlab", 64);
+    subMode.reset();
 }
 
 void ModeInGame::event(const sdl::event::Event& event)
 {
+    if (subMode != nullptr)
+    {
+        subMode->event(event);
+        return;
+    }
+
     if (std::holds_alternative<sdl::event::Key>(event))
     {
         const auto& key = get<sdl::event::Key>(event);
@@ -104,26 +86,9 @@ void ModeInGame::event(const sdl::event::Event& event)
             return;
         }
 
-        if (state == State::Choice)
-        {
-            scripting.set("result", key.scancode - SDL_SCANCODE_1 + 1);
-            ui.remove(choiceWidget);
-            state = State::Default;
-            scripting.resume();
-            return;
-        }
-
         switch (key.scancode)
         {
         case SDL_SCANCODE_RETURN:
-            if (state == State::Speech)
-            {
-                ui.remove(choiceWidget);
-                state = State::Default;
-                scripting.resume();
-                return;
-            }
-
             if (tooltipWidget)
             {
                 scripting.runAsCoroutine(std::format("scripts/levels/1/{}", tooltipWidget->second));
@@ -156,64 +121,67 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         ui.add(std::make_unique<ui::editor::Editor>(world.level(1), ui.fonts.get("TitilliumWeb", 14)));
     }
 
-    if (state == State::Default)
+    player.frame(world.level(1), frameTime);
+
+    if (subMode != nullptr)
+    {
+        subMode->frame();
+    }
+    else
     {
         if (keys[SDL_SCANCODE_DOWN]) player.move(world.level(1), Player::Direction::Backward);
         if (keys[SDL_SCANCODE_UP]) player.move(world.level(1), Player::Direction::Forward);
         if (keys[SDL_SCANCODE_LEFT]) player.rotate(Player::Rotation::Left);
         if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
-    }
 
-    player.frame(world.level(1), frameTime);
-
-    if (player.getPosition().x != lastFrameX or
-        player.getPosition().y != lastFrameY or
-        player.getPosition().z != lastFrameZ or
-        player.getPosition().angle != lastFrameAngle)
-    {
-        auto lookX = player.getPosition().x + std::cos(player.getPosition().angle);
-        auto lookY = player.getPosition().y + std::sin(player.getPosition().angle);
-
-        if (auto script = world.level(1).checkScript(player.getPosition().sector, lookX, lookY))
+        if (player.getPosition().x != lastFrameX or player.getPosition().y != lastFrameY or
+            player.getPosition().z != lastFrameZ or player.getPosition().angle != lastFrameAngle)
         {
-            if (tooltipWidget and tooltipWidget->second != *script)
+            auto lookX = player.getPosition().x + std::cos(player.getPosition().angle);
+            auto lookY = player.getPosition().y + std::sin(player.getPosition().angle);
+
+            if (auto script = world.level(1).checkScript(player.getPosition().sector, lookX, lookY))
             {
-                ui.remove(tooltipWidget->first);
+                if (tooltipWidget and tooltipWidget->second != *script)
+                {
+                    ui.remove(tooltipWidget->first);
+                }
+                if (not tooltipWidget or tooltipWidget->second != *script)
+                {
+                    tooltipWidget = { ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script };
+                    auto& text = dynamic_cast<ui::Text&>(ui.get(tooltipWidget->first));
+                    const static std::string interactionPrompt = "Press [Enter] to interact";
+                    text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
+                              c::windowHeight * 3 / 4);
+                    text.write(interactionPrompt, "KellySlab", 50);
+                }
             }
-            if (not tooltipWidget or tooltipWidget->second != *script)
+            else
             {
-                tooltipWidget = {ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script};
-                auto& text = dynamic_cast<ui::Text&>(ui.get(tooltipWidget->first));
-                const static std::string interactionPrompt = "Press [Enter] to interact";
-                text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2, c::windowHeight * 3 / 4);
-                text.write(interactionPrompt, "KellySlab", 50);
+                if (tooltipWidget)
+                {
+                    ui.remove(tooltipWidget->first);
+                    tooltipWidget = std::nullopt;
+                }
             }
+
+            lastFrameX = player.getPosition().x;
+            lastFrameY = player.getPosition().y;
+            lastFrameZ = player.getPosition().z;
+            lastFrameAngle = player.getPosition().angle;
         }
-        else
+
+        int playerX = static_cast<int>(player.getPosition().x);
+        int playerY = static_cast<int>(player.getPosition().y);
+        int playerZ = static_cast<int>(player.getPosition().z);
+
+        if (playerX != lastX or playerY != lastY or playerZ != lastZ)
         {
-            if (tooltipWidget)
-            {
-                ui.remove(tooltipWidget->first);
-                tooltipWidget = std::nullopt;
-            }
+            lastX = playerX;
+            lastY = playerY;
+            lastZ = playerZ;
+            scripting.sectorEntry(playerX, playerY, playerZ);
         }
-
-        lastFrameX = player.getPosition().x;
-        lastFrameY = player.getPosition().y;
-        lastFrameZ = player.getPosition().z;
-        lastFrameAngle = player.getPosition().angle;
-    }
-
-    int playerX = static_cast<int>(player.getPosition().x);
-    int playerY = static_cast<int>(player.getPosition().y);
-    int playerZ = static_cast<int>(player.getPosition().z);
-
-    if (playerX != lastX or playerY != lastY or playerZ != lastZ)
-    {
-        lastX = playerX;
-        lastY = playerY;
-        lastZ = playerZ;
-        scripting.sectorEntry(playerX, playerY, playerZ);
     }
 
     engine->frame(player.getPosition());

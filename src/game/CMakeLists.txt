@@ -1,6 +1,7 @@
 add_library(
         game
         STATIC
+        dialogue.cpp
         game.cpp
         mode_main_menu.cpp
         mode_in_game.cpp

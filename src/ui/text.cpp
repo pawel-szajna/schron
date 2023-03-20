@@ -54,9 +54,24 @@ void Text::clear()
     buffer.empty();
 }
 
-void Text::write(std::string text, std::string font, int charsPerSecond, bool flashingLetters)
+void Text::write(std::string text, std::string font, int charsPerSecond)
 {
-    requests.push({std::move(text), std::move(font), 200, charsPerSecond});
+    requests.push({std::move(text), std::move(font), charsPerSecond, 255});
+}
+
+bool Text::done() const
+{
+    return requests.empty() and not current;
+}
+
+void Text::finish()
+{
+    if (not current)
+    {
+        return;
+    }
+
+    current->request.charsPerSecond = -1;
 }
 
 void Text::advance()
@@ -70,10 +85,14 @@ void Text::advance()
     auto now = sdl::currentTime();
     auto timePassed = now - current->lastLetterAdded;
     auto lettersToAppend = static_cast<std::string::size_type>(timePassed * current->request.charsPerSecond / 1000);
-
     const auto& text = current->request.text;
 
     lettersToAppend = std::min(lettersToAppend, text.size() - current->position);
+
+    if (current->request.charsPerSecond < 0)
+    {
+        lettersToAppend = text.size() - current->position;
+    }
 
     auto& font = fonts.get(current->request.font, 32);
 
@@ -95,8 +114,6 @@ void Text::advance()
 
             if (current->y + h > y + height)
             {
-                std::transform(current->flashes.begin(), current->flashes.end(), current->flashes.begin(),
-                               [h = h](auto& flash) { flash.y -= h; return flash; });
                 current->y -= h;
                 sdl::Surface tempBuffer{c::windowWidth, c::windowHeight};
                 current->flashed.render(tempBuffer, sdl::Rectangle{0, -(h + y + 2), 0, 0});
@@ -113,44 +130,30 @@ void Text::advance()
             ++lettersToAppend;
         }
 
-        auto substring = text.substr(current->position, lettersToAppend);
-        auto [w, _] = font.size(substring);
-        current->flashes.push_back(Flash{ substring, now + current->request.flashSpeed, current->x, current->y });
-        current->position += lettersToAppend;
-        current->lastLetterAdded = now;
-        current->x += w;
-    }
+        while (lettersToAppend > 0 and current->position < text.size() and text[current->position] == '\n')
+        {
+            current->position++;
+            lettersToAppend--;
+        }
 
-    auto renderFlash = [&font, now, flashSpeed = current->request.flashSpeed](const Flash& flash)
-    {
-        auto intensity = static_cast<uint8_t>(112 * ((now - flash.finishTime + flashSpeed) / flashSpeed));
-        uint8_t bright = std::clamp(128 + intensity, 0, 255);
-        uint8_t dark = std::clamp(128 - intensity, 0, 255);
-        uint8_t alpha = std::clamp(2 * intensity, 1, 255);
-        return font.renderOutlined(flash.part,
-                                   sdl::Color{bright, bright, bright, alpha},
-                                   sdl::Color{dark, dark, dark, alpha});
-    };
-
-    while (not current->flashes.empty() and
-           current->flashes.front().finishTime < now)
-    {
-        auto flash = std::move(current->flashes.front());
-        auto finishedText = renderFlash(flash);
-        finishedText.render(current->flashed, sdl::Rectangle{flash.x, flash.y, 0, 0});
-        current->flashes.pop_front();
+        if (lettersToAppend > 0)
+        {
+            auto substring = text.substr(current->position, lettersToAppend);
+            auto [w, _] = font.size(substring);
+            current->position += lettersToAppend;
+            current->lastLetterAdded = now;
+            auto rendered = font.renderOutlined(substring,
+                                                sdl::Color{current->request.color, current->request.color, current->request.color, 255},
+                                                sdl::Color{64, 64, 64, 255});
+            rendered.render(current->flashed, sdl::Rectangle{current->x, current->y, 0, 0});
+            current->x += w;
+        }
     }
 
     buffer.empty();
     current->flashed.render(buffer);
 
-    for (const auto& flash : current->flashes)
-    {
-        auto flashingText = renderFlash(flash);
-        flashingText.render(buffer, sdl::Rectangle{flash.x, flash.y, 0, 0});
-    }
-
-    if (current->position >= static_cast<int>(current->request.text.size()) and current->flashes.empty())
+    if (current->position >= static_cast<int>(current->request.text.size()))
     {
         lastX = current->x;
         lastY = current->y;

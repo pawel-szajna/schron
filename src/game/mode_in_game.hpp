@@ -2,6 +2,7 @@
 
 #include "mode_executor.hpp"
 #include "player.hpp"
+#include "sub_mode.hpp"
 
 #include <memory>
 #include <string>
@@ -40,13 +41,6 @@ namespace game
 {
 class ModeInGame : public ModeExecutor
 {
-    enum class State
-    {
-        Default,
-        Choice,
-        Speech,
-    };
-
 public:
 
     ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting);
@@ -59,9 +53,8 @@ public:
 
 private:
 
-    void choice(std::string caption, std::vector<std::string> choices);
-    void text(std::string caption);
-    void speech(std::string person, std::string caption);
+    void startDialogue();
+    void endDialogue();
 
     Player player{};
 
@@ -75,9 +68,8 @@ private:
     int lastX, lastY, lastZ;
     double lastFrameX, lastFrameY, lastFrameZ, lastFrameAngle;
 
-    State state{State::Default};
-
     std::optional<std::pair<int, std::string>> tooltipWidget;
-    int choiceWidget;
+
+    std::unique_ptr<SubMode> subMode;
 };
 }

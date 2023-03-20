@@ -24,7 +24,7 @@ world_put(RectangularSectorBuilder.new(11):withDimensions(2, 15, 3, 16):withEast
 world_put(RectangularSectorBuilder.new(12):withDimensions(4, 7, 5, 8):withSouthNeighbour(4, 5, 8, 4, 8):withNorthNeighbour(13, 4, 7, 5, 7))
 world_put(RectangularSectorBuilder.new(13):withDimensions(3, 4, 6, 7):withSouthNeighbour(12, 5, 7, 4, 7))
 world_sprite(13, 0, "sprites/lamp", 4.5, 5.5, 0.5, 0, false, 0.9, false)
-world_light(13, 4.5, 5.5, 0.7, 0.6, 0.45, 0.42)
+world_light(13, 4.5, 5.5, 0.4, 0.6, 0.45, 0.42)
 
 -- Pokój Oli
 world_put(RectangularSectorBuilder.new(15):withDimensions(8, 7, 9, 8):withSouthNeighbour(14, 9, 8, 8, 8):withNorthNeighbour(16, 8, 7, 9, 7))
@@ -32,7 +32,7 @@ world_put(RectangularSectorBuilder.new(16):withDimensions(7, 4, 10, 7):withSouth
 world_sprite(16, 0, "sprites/metal_table", 9.5, 4.5, 0.5, 0, true, 0.4, true)
 world_sprite(16, 1, "sprites/ola", 9.5, 5.5, 0.5, 0, true, 0.5, true)
 world_sprite(16, 2, "sprites/lamp", 8.5, 5.5, 0.5, 0, false, 0.9, false)
-world_light(16, 8.5, 5.5, 0.55, 0.4, 0.3, 0.2)
+world_light(16, 8.5, 5.5, 0.55, 0.5, 0.3, 0.2)
 -- Pokój z polybiusem
 world_put(RectangularSectorBuilder.new(17):withDimensions(7, 9, 8, 10):withNorthNeighbour(14, 7, 9, 8, 9):withSouthNeighbour(18, 8, 10, 7, 10))
 world_put(RectangularSectorBuilder.new(18):withDimensions(6, 10, 9, 13):withNorthNeighbour(17, 7, 10, 8, 10))

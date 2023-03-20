@@ -16,6 +16,8 @@ class Text : public Object
 {
 public:
 
+    constexpr static auto NonAnimated{-1};
+
     Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x = 0, int y = 0);
     virtual ~Text();
 
@@ -23,9 +25,12 @@ public:
     void event(const sdl::event::Event& event) override;
 
     void clear();
-    void write(std::string text, std::string font, int charsPerSecond, bool flashingLetters = true);
+    void write(std::string text, std::string font, int charsPerSecond);
 
     void move(int x, int y);
+
+    [[nodiscard]] bool done() const;
+    void finish();
 
 private:
 
@@ -35,15 +40,8 @@ private:
     {
         std::string text{};
         std::string font{};
-        int flashSpeed{100};
         int charsPerSecond{5};
-    };
-
-    struct Flash
-    {
-        std::string part;
-        uint64_t finishTime;
-        int x, y;
+        uint8_t color{255};
     };
 
     struct Typing
@@ -60,7 +58,6 @@ private:
         int x{};
         int y{};
         double lastLetterAdded{};
-        std::deque<Flash> flashes{};
         sdl::Surface flashed;
     };
 

@@ -37,6 +37,6 @@ void UiBindings::textWrite(int id, std::string message, std::string font, int sp
 {
     spdlog::debug("UiBindings::textWrite(id={}, message={}, font={}, speed={})", id, message, font, speed);
     auto& text = dynamic_cast<ui::Text&>(ui.get(id));
-    text.write(std::move(message), std::move(font), speed, true);
+    text.write(std::move(message), std::move(font), speed);
 }
 }

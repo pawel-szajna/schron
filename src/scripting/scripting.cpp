@@ -40,7 +40,7 @@ try
     sol::thread thread = sol::thread::create(lua);
     sol::coroutine coroutine = thread.state().load_file(script);
     coroutines.emplace(std::move(thread), std::move(coroutine));
-    std::get<sol::coroutine>(coroutines.top())();
+    resume();
 }
 catch (std::runtime_error& exception)
 {
@@ -55,13 +55,22 @@ void Scripting::resume()
         return;
     }
 
-    try
+    spdlog::debug("Resume called on current script");
+
+    auto result = std::get<sol::coroutine>(coroutines.top())();
+    if (result.valid())
     {
-        std::get<sol::coroutine>(coroutines.top())();
+        spdlog::debug("LUA coroutine execution result: {}", std::to_underlying(result.status()));
+        if (result.status() != sol::call_status::yielded)
+        {
+            coroutines.pop();
+        }
     }
-    catch (std::runtime_error& exception)
+    else
     {
-        spdlog::error("LUA error: {}");
+        sol::error err = result;
+        spdlog::warn("LUA error: {}", err.what());
+        coroutines.pop();
     }
 }
 
