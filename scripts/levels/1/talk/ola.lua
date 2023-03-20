@@ -21,9 +21,9 @@ local options = {'Ten pokój wygląda strasznie, nie boisz się?',
 if not ola_name then
     table.insert(options, 1, 'Jak masz na imię?')
 end
--- if not petard_taken then
---     table.insert(options, 'Co tam chowasz za plecami?')
--- end
+if not petard_taken then
+    table.insert(options, 'Co tam chowasz za plecami?')
+end
 choice('', options)
 
 if not ola_name then
@@ -32,7 +32,7 @@ end
 
 if result == 0 then
     goto imi
-if result == 1 then
+elseif result == 1 then
     goto stra
 elseif result == 2 then
     goto rodzic
