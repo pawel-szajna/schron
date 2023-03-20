@@ -54,8 +54,10 @@ void ModeInGame::exit()
     scripting.unbind("speech");
 }
 
+// NOLINTNEXTLINE(performance-unnecessary-value-param) Temporary value coming from LUA
 void ModeInGame::choice(std::string caption, std::vector<std::string> choices)
 {
+    spdlog::debug("Choice called");
     state = State::Choice;
     choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
     auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
@@ -72,6 +74,7 @@ void ModeInGame::choice(std::string caption, std::vector<std::string> choices)
 
 void ModeInGame::text(std::string caption)
 {
+    spdlog::debug("Text called");
     state = State::Speech;
     choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
     auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
@@ -81,6 +84,7 @@ void ModeInGame::text(std::string caption)
 
 void ModeInGame::speech(std::string person, std::string caption)
 {
+    spdlog::debug("Speech called ({})", person);
     state = State::Speech;
     choiceWidget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
     auto& text = dynamic_cast<ui::Text&>(ui.get(choiceWidget));
