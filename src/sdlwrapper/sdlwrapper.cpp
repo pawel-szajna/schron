@@ -14,6 +14,13 @@ void initialize()
 {
     spdlog::info("SDL initialization");
     spdlog::debug("SDL main init");
+
+    auto drivers = SDL_GetNumVideoDrivers();
+    for (int i = 0; i < drivers; ++i)
+    {
+           spdlog::debug("Available driver #{}: {}", i, SDL_GetVideoDriver(i));
+    }
+
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL: {}", SDL_GetError())};
