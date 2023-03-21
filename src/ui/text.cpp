@@ -26,19 +26,13 @@ void Text::render(sdl::Renderer& target)
 {
     target.copy(texture);
 
-    if (current != std::nullopt)
+    if (current)
     {
         advance();
         return;
     }
 
-    if (not requests.empty())
-    {
-        current.emplace(std::move(requests.front()), lastX, lastY);
-        current->lastLetterAdded = sdl::currentTime();
-        buffer.render(current->flashed);
-        requests.pop();
-    }
+    processQueue();
 }
 
 void Text::event(const sdl::event::Event& event)
@@ -54,9 +48,27 @@ void Text::clear()
     buffer.empty();
 }
 
-void Text::write(std::string text, std::string font, int charsPerSecond)
+void Text::write(std::string text, std::string font, int charsPerSecond, uint8_t color)
 {
-    requests.push({std::move(text), std::move(font), charsPerSecond, 255});
+    requests.push({std::move(text), std::move(font), charsPerSecond, color});
+    if (not current)
+    {
+        processQueue();
+        advance();
+    }
+}
+
+void Text::processQueue()
+{
+    if (requests.empty())
+    {
+        return;
+    }
+
+    current.emplace(std::move(requests.front()), lastX, lastY);
+    current->lastLetterAdded = sdl::currentTime();
+    buffer.render(current->flashed);
+    requests.pop();
 }
 
 bool Text::done() const
@@ -83,29 +95,36 @@ void Text::advance()
     }
 
     auto now = sdl::currentTime();
-    auto timePassed = now - current->lastLetterAdded;
-    auto lettersToAppend = static_cast<std::string::size_type>(timePassed * current->request.charsPerSecond / 1000);
-    const auto& text = current->request.text;
+    auto passed = now - current->lastLetterAdded;
+    auto lettersToAppend = static_cast<std::string::size_type>(passed * current->request.charsPerSecond / 1000);
 
-    lettersToAppend = std::min(lettersToAppend, text.size() - current->position);
+    const auto& text = current->request.text;
+    auto remaining = text.size() - current->position;
+
+    lettersToAppend = std::min(lettersToAppend, remaining);
 
     if (current->request.charsPerSecond < 0)
     {
-        lettersToAppend = text.size() - current->position;
+        lettersToAppend = remaining;
     }
 
     auto& font = fonts.get(current->request.font, 32);
 
-    if (lettersToAppend > 0)
+    // UTF-8 multibyte character should not be cut in half
+    while ((text[current->position + lettersToAppend] & 0xc0) == 0x80 and lettersToAppend < remaining)
+    {
+        ++lettersToAppend;
+    }
+
+    while (lettersToAppend > 0)
     {
         if (current->position + lettersToAppend > current->verified)
         {
-            auto nextSpace = text.find(' ', current->position);
-            auto nextBreak = text.find('\n', current->position);
-            if (nextBreak < nextSpace) nextSpace = nextBreak;
+            auto nextBreak = std::min(text.find(' ', current->position + 1), text.find('\n', current->position + 1));
+            auto length = std::min(nextBreak - current->position, remaining);
+            std::string next = text.substr(current->position, length);
+            auto [w, h] = font.size(next);
 
-            std::string nextWord = text.substr(current->position, nextSpace - current->position);
-            auto [w, h] = font.size(nextWord);
             if (current->x + w > x + width or text[current->position] == '\n')
             {
                 current->x = x;
@@ -121,13 +140,7 @@ void Text::advance()
                 tempBuffer.render(current->flashed, sdl::Rectangle{0, (y + 2), 0, 0});
             }
 
-            current->verified = (nextSpace == std::string::npos ? text.size() : nextSpace) + 1;
-        }
-
-        // UTF-8 multibyte character should not be cut in half
-        while ((text[current->position + lettersToAppend] & 0xc0) == 0x80)
-        {
-            ++lettersToAppend;
+            current->verified = current->position + length + 1;
         }
 
         while (lettersToAppend > 0 and current->position < text.size() and text[current->position] == '\n')
@@ -138,15 +151,17 @@ void Text::advance()
 
         if (lettersToAppend > 0)
         {
-            auto substring = text.substr(current->position, lettersToAppend);
+            auto length = std::min(current->verified - current->position, lettersToAppend);
+            auto substring = text.substr(current->position, length);
             auto [w, _] = font.size(substring);
-            current->position += lettersToAppend;
+            current->position += length;
             current->lastLetterAdded = now;
             auto rendered = font.renderOutlined(substring,
                                                 sdl::Color{current->request.color, current->request.color, current->request.color, 255},
                                                 sdl::Color{64, 64, 64, 255});
             rendered.render(current->flashed, sdl::Rectangle{current->x, current->y, 0, 0});
             current->x += w;
+            lettersToAppend -= length;
         }
     }
 

@@ -44,9 +44,13 @@ public:
 
 private:
 
-    void choice(std::string caption, std::vector<std::string> choices);
+    void choice(std::vector<std::string> choices);
     void text(std::string caption);
     void speech(std::string person, std::string caption);
+
+    void eventChoice(const sdl::event::Key& key);
+    void eventSpeech(const sdl::event::Key& key);
+    void redrawChoiceWithHighlight();
 
     sdl::Renderer& renderer;
     scripting::Scripting& scripting;
@@ -55,6 +59,7 @@ private:
     State state{State::Default};
 
     std::optional<int> widget;
+    std::vector<std::string> currentChoices;
 
     int choicesCount;
     int currentChoice{1};

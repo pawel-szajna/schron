@@ -60,9 +60,9 @@ void Scripting::resume()
     auto result = std::get<sol::coroutine>(coroutines.top())();
     if (result.valid())
     {
-        spdlog::debug("LUA coroutine execution result: {}", std::to_underlying(result.status()));
         if (result.status() != sol::call_status::yielded)
         {
+            spdlog::debug("Popping coroutine due to execution result: {}", std::to_underlying(result.status()));
             coroutines.pop();
         }
     }

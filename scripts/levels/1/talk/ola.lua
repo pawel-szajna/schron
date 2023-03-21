@@ -26,7 +26,7 @@ end
 if not petard_taken then
     table.insert(options, 'Co tam chowasz za plecami?')
 end
-choice('', options)
+choice(options)
 
 if not ola_name then
     result = result - 1
@@ -56,9 +56,9 @@ goto start
 ::stra::
 
 speech(name, 'A czego miałabym się bać? Tutaj wszystko jest jak w domu, czerwono, ciepło...')
-choice('', {'Twój dom tak wyglądał?',
-            'Co ty opowiadasz?! Jak w domu?! Dziecko, czyś ty rozum postradała?',
-            'Co się tu w ogóle stało i gdzie są twoi rodzice?'})
+choice({'Twój dom tak wyglądał?',
+        'Co ty opowiadasz?! Jak w domu?! Dziecko, czyś ty rozum postradała?',
+        'Co się tu w ogóle stało i gdzie są twoi rodzice?'})
 
 if result == 1 then
     goto dom
@@ -101,9 +101,9 @@ goto finish
 ::rodzic::
 
 speech(name, 'Rodzica? A kto to taki?')
-choice('', {'Jak to kto? Mama i tata.',
-            'Ktoś, kto się tobą opiekuje i jest dla ciebie bardzo dobry.',
-            'Ktoś, kogo bardzo kochasz.'})
+choice({'Jak to kto? Mama i tata.',
+        'Ktoś, kto się tobą opiekuje i jest dla ciebie bardzo dobry.',
+        'Ktoś, kogo bardzo kochasz.'})
 
 if result == 1 then
     goto mt
@@ -118,8 +118,8 @@ end
 ::mt::
 
 speech(name, 'Mama? Kim jest mama?')
-choice('', {'Ktoś, kto się tobą opiekuje i jest dla ciebie bardzo dobry.',
-            'Ktoś, kogo bardzo kochasz.'})
+choice({'Ktoś, kto się tobą opiekuje i jest dla ciebie bardzo dobry.',
+        'Ktoś, kogo bardzo kochasz.'})
 
 if result == 1 then
     goto dobro
@@ -135,8 +135,8 @@ text('Twarz dziewczynki smutnieje, po czym przebiega po niej, trwający ułamek 
      'ale niemożliwy do przeoczenia, rozpaczliwy skurcz lęku.')
 speech(name, 'Cicho! Bo usłyszy! Nie ma tutaj niczego dobrego i nie mogę o tym mówić, ' ..
              'rozumie pan?')
-choice('', {'Kto usłyszy, kogo się boisz?',
-            'Spokojnie, nie musisz się bać, nic ci nie grozi.'})
+choice({'Kto usłyszy, kogo się boisz?',
+        'Spokojnie, nie musisz się bać, nic ci nie grozi.'})
 
 if result == 1 then
     goto kto
@@ -169,8 +169,8 @@ text('Dziewczynka uśmiecha się niewinnie, po czym pokazuje mi to, co trzyma w 
      'moment robi mi się zimno - podsuwa mi przed oczy ogromną petardę. Kiedy zbliżam do niej ' ..
      'dłoń, chowa ją za plecami i patrzy na mnie z niesmakiem.')
 speech(name, 'To moja zabawka. Moja ulubiona.')
-choice('', {'Oddaj mi to natychmiast! Dzieci nie powinny bawić się takimi rzeczami.',
-            'Skąd to wzięłaś?'})
+choice({'Oddaj mi to natychmiast! Dzieci nie powinny bawić się takimi rzeczami.',
+        'Skąd to wzięłaś?'})
 
 if result == 1 then
     goto oddaj

@@ -4,9 +4,15 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 
 int main()
+#if defined(RELEASE_BUILD)
 try
+#endif
 {
-    spdlog::set_level(spdlog::level::debug);
+#   if defined(RELEASE_BUILD)
+        spdlog::set_level(spdlog::level::info);
+#   else
+        spdlog::set_level(spdlog::level::debug);
+#   endif
     spdlog::info("Starting Schron!");
 
     c::loadConfig();
@@ -23,8 +29,10 @@ try
 
     return 0;
 }
+#if defined(RELEASE_BUILD)
 catch(std::exception& e)
 {
     spdlog::critical("Unhandled {}: {}", typeid(e).name(), e.what());
-    return 1;
+    throw;
 }
+#endif

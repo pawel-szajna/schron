@@ -25,7 +25,7 @@ public:
     void event(const sdl::event::Event& event) override;
 
     void clear();
-    void write(std::string text, std::string font, int charsPerSecond);
+    void write(std::string text, std::string font, int charsPerSecond, uint8_t color = 255);
 
     void move(int x, int y);
 
@@ -35,6 +35,7 @@ public:
 private:
 
     void advance();
+    void processQueue();
 
     struct Request
     {
