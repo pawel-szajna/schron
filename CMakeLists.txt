@@ -14,9 +14,11 @@ find_package(Lua REQUIRED)
 
 include(CheckIncludeFileCXX)
 CHECK_INCLUDE_FILE_CXX("format" HAVE_STD_FORMAT)
-IF(HAVE_STD_FORMAT)
+IF(HAVE_STD_FORMAT AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) # Clang provides an empty <format> header
+    message("Using standard library <format> header")
     add_compile_definitions(SPDLOG_USE_STD_FORMAT)
 else()
+    message("No usable <format> header found, using bundled fmtlib")
     add_compile_definitions(FMT_HEADER_ONLY)
 endif()
 

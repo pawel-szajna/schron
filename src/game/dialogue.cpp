@@ -5,6 +5,7 @@
 #include "sdlwrapper/renderer.hpp"
 #include "ui/text.hpp"
 #include "ui/ui.hpp"
+#include "util/format.hpp"
 
 #include <SDL3/SDL_scancode.h>
 #include <spdlog/spdlog.h>
