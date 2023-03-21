@@ -12,10 +12,12 @@ option(DISABLE_PARALLELISM "Disable parallel STL algorithms")
 
 find_package(Lua REQUIRED)
 
-if(APPLE)
-	add_compile_definitions(FMT_HEADER_ONLY)
-else()
+include(CheckIncludeFileCXX)
+CHECK_INCLUDE_FILE_CXX("format" HAVE_STD_FORMAT)
+IF(HAVE_STD_FORMAT)
     add_compile_definitions(SPDLOG_USE_STD_FORMAT)
+else()
+    add_compile_definitions(FMT_HEADER_ONLY)
 endif()
 
 add_subdirectory(lib)
