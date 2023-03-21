@@ -23,9 +23,6 @@ namespace engine
 {
 namespace
 {
-constexpr double fovH = c::renderHeight * 0.65;
-constexpr double fovV = c::renderWidth * 0.22;
-
 constexpr auto loadingMargin = 32;
 constexpr auto loadingBarSize = 4;
 
@@ -218,10 +215,10 @@ void Engine::renderWall(const world::Sector& sector,
         }
     }
 
-    double scaleX1 = fovH / transformedLeftZ;
-    double scaleY1 = fovV / transformedLeftZ;
-    double scaleX2 = fovH / transformedRightZ;
-    double scaleY2 = fovV / transformedRightZ;
+    double scaleX1 = player.fovH / transformedLeftZ;
+    double scaleY1 = player.fovV / transformedLeftZ;
+    double scaleX2 = player.fovH / transformedRightZ;
+    double scaleY2 = player.fovV / transformedRightZ;
 
     int leftX  = c::renderWidth / 2 - (int)(transformedLeftX * scaleX1);
     int rightX = c::renderWidth / 2 - (int)(transformedRightX * scaleX2);
@@ -401,7 +398,7 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
     auto& floorTexture = getTexture(sector.floorTexture);
     auto& ceilingTexture = getTexture(sector.ceilingTexture);
 
-    auto invFovH = (c::renderWidth / 2 - x) / fovH;
+    auto invFovH = (c::renderWidth / 2 - x) / player.fovH;
 
     for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
     {
@@ -410,7 +407,7 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
 
         auto isCeiling = y < wallTop;
 
-        auto transformedZ = (isCeiling ? ceilingY : floorY) * fovV / (c::renderHeight / 2 - y);
+        auto transformedZ = (isCeiling ? ceilingY : floorY) * player.fovV / (c::renderHeight / 2 - y);
         auto transformedX = transformedZ * invFovH;
 
         auto mapX = transformedZ * angleCos + transformedX * angleSin + player.x + renderQueue.front().offsetX;
@@ -463,8 +460,10 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
             continue;
         }
 
-        double scaleX = fovH / transformedZ;
-        double scaleY = fovV / transformedZ;
+        auto invZ = 1 / transformedZ;
+
+        double scaleX = player.fovH * invZ;
+        double scaleY = player.fovV * invZ;
 
         int leftX  = c::renderWidth / 2 - (int)((transformedX + sprite.w / 2) * scaleX);
         int rightX = c::renderWidth / 2 - (int)((transformedX - sprite.w / 2) * scaleX);

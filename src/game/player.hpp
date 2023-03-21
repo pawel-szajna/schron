@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/constants.hpp"
+
 #include <numbers>
 #include <queue>
 
@@ -15,6 +17,8 @@ class Position
 public:
     int sector{15};
     double x{8.5}, y{7.5}, z{0.6}, angle{-std::numbers::pi / 2};
+    double fovH = c::renderHeight * 0.65;
+    double fovV = c::renderWidth * 0.22;
 };
 
 class Player
