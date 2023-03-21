@@ -1,5 +1,6 @@
 #include "dialogue.hpp"
 
+#include "player.hpp"
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/renderer.hpp"
@@ -13,9 +14,11 @@
 
 namespace game
 {
-Dialogue::Dialogue(sdl::Renderer& renderer,
+Dialogue::Dialogue(Position& player,
+                   sdl::Renderer& renderer,
                    scripting::Scripting& scripting,
                    ui::UI& ui) :
+    player(player),
     renderer(renderer),
     scripting(scripting),
     ui(ui)
@@ -25,6 +28,9 @@ Dialogue::Dialogue(sdl::Renderer& renderer,
     scripting.bind("choice", &Dialogue::choice, this);
     scripting.bind("text", &Dialogue::text, this);
     scripting.bind("speech", &Dialogue::speech, this);
+
+    player.fovH = c::renderHeight * 0.65 * 1.8;
+    player.fovV = c::renderWidth * 0.22 * 1.8;
 }
 
 Dialogue::~Dialogue()
@@ -38,18 +44,27 @@ Dialogue::~Dialogue()
     scripting.unbind("text");
     scripting.unbind("speech");
 
+    player.fovH = c::renderHeight * 0.65;
+    player.fovV = c::renderWidth * 0.22;
+
     spdlog::debug("Dialogue mode finished");
 }
 
-void Dialogue::redrawChoiceWithHighlight()
+ui::Text& Dialogue::resetTextbox()
 {
     if (widget)
     {
         ui.remove(*widget);
     }
-    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
+    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
     auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
     text.move(32, c::windowHeight - 64);
+    return text;
+}
+
+void Dialogue::redrawChoiceWithHighlight()
+{
+    auto& text = resetTextbox();
     int counter = 0;
     for (auto& c : currentChoices)
     {
@@ -62,20 +77,14 @@ void Dialogue::redrawChoiceWithHighlight()
 void Dialogue::choice(std::vector<std::string> choices)
 {
     state = State::Choice;
-    if (widget)
-    {
-        ui.remove(*widget);
-    }
-    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 32, c::windowHeight - 64, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
-    text.move(32, c::windowHeight - 64);
+    auto& text = resetTextbox();
     choicesCount = 0;
     currentChoice = 0;
     for (auto& c : choices)
     {
         ++choicesCount;
-        text.write(std::format("\n{}. ", choicesCount), "RubikDirt", 20);
-        text.write(c, "KellySlab", 90);
+        text.write(std::format("\n{}. ", choicesCount), "RubikDirt", 40);
+        text.write(c, "KellySlab", 130);
     }
     currentChoices = std::move(choices);
 }
@@ -83,26 +92,14 @@ void Dialogue::choice(std::vector<std::string> choices)
 void Dialogue::text(std::string caption)
 {
     state = State::Speech;
-    if (widget)
-    {
-        ui.remove(*widget);
-    }
-    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, c::windowHeight - 32, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
-    text.move(32, c::windowHeight - 64);
+    auto& text = resetTextbox();
     text.write(std::move(caption), "KellySlab", 64);
 }
 
 void Dialogue::speech(std::string person, std::string caption)
 {
     state = State::Speech;
-    if (widget)
-    {
-        ui.remove(*widget);
-    }
-    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, c::windowHeight - 32, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
-    text.move(32, c::windowHeight - 64);
+    auto& text = resetTextbox();
     text.write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
     text.write(std::move(caption), "KellySlab", 64);
 }

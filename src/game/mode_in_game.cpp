@@ -61,7 +61,7 @@ void ModeInGame::startDialogue()
         ui.remove(tooltipWidget->first);
         tooltipWidget = std::nullopt;
     }
-    subMode = std::make_unique<Dialogue>(renderer, scripting, ui);
+    subMode = std::make_unique<Dialogue>(player.getPosition(), renderer, scripting, ui);
 }
 
 void ModeInGame::endDialogue()
@@ -153,7 +153,9 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
                     const static std::string interactionPrompt = "Press [Enter] to interact";
                     text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
                               c::windowHeight * 3 / 4);
-                    text.write(interactionPrompt, "KellySlab", 50);
+                    text.write("Press ", "KellySlab", 50, 185);
+                    text.write("[Enter]", "KellySlab", 50, 255);
+                    text.write(" to interact", "KellySlab", 50, 185);
                 }
             }
             else

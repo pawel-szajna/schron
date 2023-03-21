@@ -36,6 +36,11 @@ Player::Player() = default;
 
 Player::~Player() = default;
 
+Position& Player::getPosition()
+{
+    return position;
+}
+
 const Position& Player::getPosition() const
 {
     return position;

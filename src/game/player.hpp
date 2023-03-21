@@ -51,6 +51,7 @@ public:
     void rotate(Rotation rotation);
 
     void frame(const world::Level& level, double frameTime);
+    Position& getPosition();
     [[nodiscard]] const Position& getPosition() const;
 
 private:

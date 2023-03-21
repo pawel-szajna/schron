@@ -18,11 +18,14 @@ class Renderer;
 
 namespace ui
 {
+class Text;
 class UI;
 }
 
 namespace game
 {
+class Position;
+
 class Dialogue : public SubMode
 {
     enum class State
@@ -34,7 +37,8 @@ class Dialogue : public SubMode
 
 public:
 
-    explicit Dialogue(sdl::Renderer& renderer,
+    explicit Dialogue(Position& player,
+                      sdl::Renderer& renderer,
                       scripting::Scripting& scripting,
                       ui::UI& ui);
     virtual ~Dialogue();
@@ -51,7 +55,9 @@ private:
     void eventChoice(const sdl::event::Key& key);
     void eventSpeech(const sdl::event::Key& key);
     void redrawChoiceWithHighlight();
+    ui::Text& resetTextbox();
 
+    Position& player;
     sdl::Renderer& renderer;
     scripting::Scripting& scripting;
     ui::UI& ui;
@@ -61,7 +67,7 @@ private:
     std::optional<int> widget;
     std::vector<std::string> currentChoices;
 
-    int choicesCount;
-    int currentChoice{1};
+    int choicesCount{};
+    int currentChoice{};
 };
 }
