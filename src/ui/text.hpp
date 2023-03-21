@@ -53,11 +53,11 @@ private:
         {}
 
         Request request;
-        int position{};
-        int verified{};
+        std::string::size_type position{};
+        std::string::size_type verified{};
         int x{};
         int y{};
-        double lastLetterAdded{};
+        uint64_t lastLetterAdded{};
         sdl::Surface flashed;
     };
 

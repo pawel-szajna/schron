@@ -98,7 +98,7 @@ void Text::advance()
 
     if (lettersToAppend > 0)
     {
-        if (current->position + static_cast<int>(lettersToAppend) > current->verified)
+        if (current->position + lettersToAppend > current->verified)
         {
             auto nextSpace = text.find(' ', current->position);
             auto nextBreak = text.find('\n', current->position);
@@ -153,7 +153,7 @@ void Text::advance()
     buffer.empty();
     current->flashed.render(buffer);
 
-    if (current->position >= static_cast<int>(current->request.text.size()))
+    if (current->position >= current->request.text.size())
     {
         lastX = current->x;
         lastY = current->y;
