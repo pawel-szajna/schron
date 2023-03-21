@@ -4,6 +4,7 @@
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/renderer.hpp"
+#include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/text.hpp"
 #include "ui/ui.hpp"
 #include "util/format.hpp"
@@ -14,7 +15,7 @@
 
 namespace game
 {
-Dialogue::Dialogue(Position& player,
+Dialogue::Dialogue(Player& player,
                    sdl::Renderer& renderer,
                    scripting::Scripting& scripting,
                    ui::UI& ui) :
@@ -29,8 +30,8 @@ Dialogue::Dialogue(Position& player,
     scripting.bind("text", &Dialogue::text, this);
     scripting.bind("speech", &Dialogue::speech, this);
 
-    player.fovH = c::renderHeight * 0.65 * 1.8;
-    player.fovV = c::renderWidth * 0.22 * 1.8;
+    animationTarget = sdl::currentTime() + 250;
+    player.animateFov(c::renderHeight * 0.65 * 1.9, c::renderWidth * 0.22 * 1.9, animationTarget);
 }
 
 Dialogue::~Dialogue()
@@ -44,8 +45,7 @@ Dialogue::~Dialogue()
     scripting.unbind("text");
     scripting.unbind("speech");
 
-    player.fovH = c::renderHeight * 0.65;
-    player.fovV = c::renderWidth * 0.22;
+    player.animateFov(c::renderHeight * 0.65, c::renderWidth * 0.22, sdl::currentTime() + 250);
 
     spdlog::debug("Dialogue mode finished");
 }
@@ -196,7 +196,7 @@ void Dialogue::event(const sdl::event::Event& event)
 
 void Dialogue::frame()
 {
-    if (state == State::Default)
+    if (state == State::Default and sdl::currentTime() >= animationTarget)
     {
         scripting.resume();
     }

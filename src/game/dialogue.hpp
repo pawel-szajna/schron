@@ -24,7 +24,7 @@ class UI;
 
 namespace game
 {
-class Position;
+class Player;
 
 class Dialogue : public SubMode
 {
@@ -37,7 +37,7 @@ class Dialogue : public SubMode
 
 public:
 
-    explicit Dialogue(Position& player,
+    explicit Dialogue(Player& player,
                       sdl::Renderer& renderer,
                       scripting::Scripting& scripting,
                       ui::UI& ui);
@@ -57,7 +57,7 @@ private:
     void redrawChoiceWithHighlight();
     ui::Text& resetTextbox();
 
-    Position& player;
+    Player& player;
     sdl::Renderer& renderer;
     scripting::Scripting& scripting;
     ui::UI& ui;
@@ -66,6 +66,8 @@ private:
 
     std::optional<int> widget;
     std::vector<std::string> currentChoices;
+
+    uint64_t animationTarget{};
 
     int choicesCount{};
     int currentChoice{};

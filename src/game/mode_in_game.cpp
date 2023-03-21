@@ -61,7 +61,7 @@ void ModeInGame::startDialogue()
         ui.remove(tooltipWidget->first);
         tooltipWidget = std::nullopt;
     }
-    subMode = std::make_unique<Dialogue>(player.getPosition(), renderer, scripting, ui);
+    subMode = std::make_unique<Dialogue>(player, renderer, scripting, ui);
 }
 
 void ModeInGame::endDialogue()

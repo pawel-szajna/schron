@@ -1,5 +1,6 @@
 #include "player.hpp"
 
+#include "sdlwrapper/sdlwrapper.hpp"
 #include "world/level.hpp"
 
 #include <algorithm>
@@ -35,11 +36,6 @@ double side(double px, double py, double x1, double y1, double x2, double y2)
 Player::Player() = default;
 
 Player::~Player() = default;
-
-Position& Player::getPosition()
-{
-    return position;
-}
 
 const Position& Player::getPosition() const
 {
@@ -102,6 +98,11 @@ void Player::acquireMove()
         moving = nextMove.factor;
         moves.pop();
     }
+}
+
+void Player::animateFov(double fovH, double fovV, uint64_t targetTime)
+{
+    fovAnimation = {fovH, fovV, targetTime};
 }
 
 double Player::enterable(const world::Level& level, double x, double y) const
@@ -225,6 +226,23 @@ void Player::frame(const world::Level& level, double frameTime)
         {
             position.angle = target.angle;
             rotating = 0;
+        }
+    }
+
+    if (fovAnimation)
+    {
+        auto now = sdl::currentTime();
+        if (now >= fovAnimation->targetTime)
+        {
+            position.fovH = fovAnimation->fovH;
+            position.fovV = fovAnimation->fovV;
+            fovAnimation.reset();
+        }
+        else
+        {
+            double invRemaining = 1.0 / (double)(fovAnimation->targetTime - now);
+            position.fovH += (fovAnimation->fovH - position.fovH) * invRemaining;
+            position.fovV += (fovAnimation->fovV - position.fovV) * invRemaining;
         }
     }
 }

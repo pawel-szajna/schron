@@ -3,6 +3,7 @@
 #include "util/constants.hpp"
 
 #include <numbers>
+#include <optional>
 #include <queue>
 
 namespace world
@@ -29,6 +30,12 @@ class Player
         int factor;
     };
 
+    struct FovAnimation
+    {
+        double fovH, fovV;
+        uint64_t targetTime;
+    };
+
 public:
 
     enum class Direction
@@ -51,7 +58,7 @@ public:
     void rotate(Rotation rotation);
 
     void frame(const world::Level& level, double frameTime);
-    Position& getPosition();
+    void animateFov(double fovH, double fovV, uint64_t targetTime);
     [[nodiscard]] const Position& getPosition() const;
 
 private:
@@ -63,6 +70,7 @@ private:
     Position target;
 
     std::queue<MoveTarget> moves{};
+    std::optional<FovAnimation> fovAnimation{};
 
     int moving{0};
     int rotating{0};
