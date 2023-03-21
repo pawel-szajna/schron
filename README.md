@@ -7,9 +7,19 @@ decaying.
 
 ## Prerequisites
 
-* lua 5.3 (as the only dependency which caused problems when bundled)
-* C++23 compiler (tested with g++ 13, Apple Clang 14, MSVC 19)
+* lua 5.3+ (as the only dependency which caused problems when bundled)
+* freetype (on Unix platforms; even though `SDL_ttf` includes this as
+  a submodule, its CMakeLists expect it to be provided by system)
+* C++23 compiler (tested with g++ 12.2, g++13, Apple Clang 14, MSVC 19)
 * CMake
+
+Debian prerequisites: `apt install liblua54-dev libfreetype-dev`
+
+openSUSE prerequisites: `zypper in lua54-devel freetype-devel`
+
+macOS prerequisites: `brew install lua freetype`
+
+Windows prerequisites: `vcpkg install lua:x64-windows`
 
 ### Parallel execution requirements
 
@@ -21,6 +31,14 @@ When enabled, the following additional requirements are introduced:
   used), on all platforms
 * TBB, UNIX platforms
 * oneDPL, macOS
+
+Debian prerequisites: `apt install libboost-dev libtbb-dev`
+
+openSUSE prerequisites: `zypper in boost-devel tbb-devel`
+
+macOS prerequisites: `brew install boost onedpl`
+
+Windows prerequisites: `vcpkg install boost:x64-windows`
 
 ## Compilation
 
