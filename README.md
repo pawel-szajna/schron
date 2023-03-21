@@ -42,11 +42,6 @@ Windows prerequisites: `vcpkg install boost:x64-windows`
 
 ## Compilation
 
-The compilation should be pretty straightforward. First of all (the
-hardest part), lua should be somehow obtained. This might include your
-package manager on Unix-like systems (apt, zypper, dnf, homebrew) or
-something like vcpkg on Windows.
-
 Most of the dependencies are compiled along the project (as this
 helped resolve some conflicts with SDL versioning). To get those
 dependencies, use git submodules:
@@ -55,7 +50,7 @@ dependencies, use git submodules:
 $ git submodule update --init --recursive
 ```
 
-Afterwards, the usual steps of:
+Afterwards, the usual steps, like:
 
 ```console
 $ mkdir build
