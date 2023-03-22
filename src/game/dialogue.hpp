@@ -2,8 +2,11 @@
 
 #include "sub_mode.hpp"
 
+#include <array>
+#include <map>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace scripting
@@ -48,10 +51,11 @@ public:
 
 private:
 
-    void choice(std::vector<std::string> choices);
+    void choice(std::vector<std::array<std::string, 2>> choices);
     void text(std::string caption);
     void speech(std::string person, std::string caption);
 
+    void choose();
     void eventChoice(const sdl::event::Key& key);
     void eventSpeech(const sdl::event::Key& key);
     void redrawChoiceWithHighlight();
@@ -65,11 +69,10 @@ private:
     State state{State::Default};
 
     std::optional<int> widget;
-    std::vector<std::string> currentChoices;
+    std::vector<std::array<std::string, 2>> currentChoices;
 
     uint64_t animationTarget{};
 
-    int choicesCount{};
     int currentChoice{};
 };
 }

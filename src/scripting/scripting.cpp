@@ -14,7 +14,6 @@ Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     world(world)
 {
     lua.open_libraries(sol::lib::base, sol::lib::table);
-    lua.set_function("done", [&]() { if (not coroutines.empty()) coroutines.pop(); });
 
     uiBindings = std::make_unique<UiBindings>(lua, ui, renderer);
     worldBindings = std::make_unique<WorldBindings>(lua, world);

@@ -65,28 +65,24 @@ ui::Text& Dialogue::resetTextbox()
 void Dialogue::redrawChoiceWithHighlight()
 {
     auto& text = resetTextbox();
-    int counter = 0;
-    for (auto& c : currentChoices)
+    for (int counter = 1; counter <= currentChoices.size(); ++counter)
     {
-        ++counter;
         text.write(std::format("\n{}. ", counter), "RubikDirt", -1, counter == currentChoice ? 255 : 88);
-        text.write(c, "KellySlab", -1, counter == currentChoice ? 255 : 120);
+        text.write(currentChoices[counter - 1][1], "KellySlab", -1, counter == currentChoice ? 255 : 120);
     }
 }
 
-void Dialogue::choice(std::vector<std::string> choices)
+void Dialogue::choice(std::vector<std::array<std::string, 2>> choices)
 {
     state = State::Choice;
-    auto& text = resetTextbox();
-    choicesCount = 0;
-    currentChoice = 0;
-    for (auto& c : choices)
+    if (choices.empty())
     {
-        ++choicesCount;
-        text.write(std::format("\n{}. ", choicesCount), "RubikDirt", 40);
-        text.write(c, "KellySlab", 130);
+        spdlog::error("Empty choices map provided");
+        return;
     }
+    currentChoice = 1;
     currentChoices = std::move(choices);
+    redrawChoiceWithHighlight();
 }
 
 void Dialogue::text(std::string caption)
@@ -109,10 +105,9 @@ void Dialogue::eventChoice(const sdl::event::Key& key)
     switch (key.scancode)
     {
     case SDL_SCANCODE_RETURN:
-        if (currentChoice > 0 and currentChoice <= choicesCount)
+        if (currentChoice > 0 and currentChoice <= currentChoices.size())
         {
-            scripting.set("result", currentChoice);
-            scripting.resume();
+            choose();
         }
         return;
 
@@ -120,14 +115,14 @@ void Dialogue::eventChoice(const sdl::event::Key& key)
         currentChoice--;
         if (currentChoice < 1)
         {
-            currentChoice = choicesCount;
+            currentChoice = currentChoices.size();
         }
         redrawChoiceWithHighlight();
         return;
 
     case SDL_SCANCODE_DOWN:
         currentChoice++;
-        if (currentChoice > choicesCount)
+        if (currentChoice > currentChoices.size())
         {
             currentChoice = 1;
         }
@@ -144,13 +139,19 @@ void Dialogue::eventChoice(const sdl::event::Key& key)
     case SDL_SCANCODE_8:
     case SDL_SCANCODE_9:
         int value = key.scancode - SDL_SCANCODE_1 + 1;
-        if (value <= choicesCount)
+        if (value <= currentChoices.size())
         {
-            scripting.set("result", value);
-            scripting.resume();
+            currentChoice = value;
+            choose();
         }
         return;
     }
+}
+
+void Dialogue::choose()
+{
+    scripting.set("result", currentChoices[currentChoice - 1][0]);
+    scripting.resume();
 }
 
 void Dialogue::eventSpeech(const sdl::event::Key& key)
