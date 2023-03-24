@@ -153,9 +153,11 @@ void Player::acquireMove()
     }
 }
 
-void Player::animateFov(double fovH, double fovV, uint64_t targetTime)
+void Player::animateFov(double targetFovH, double targetFovV, uint64_t length)
 {
-    fovAnimation = {fovH, fovV, targetTime};
+    fovAnimation = { { position.fovH, targetFovH },
+                     { position.fovV, targetFovV },
+                     { sdl::currentTime(), sdl::currentTime() + length } };
 }
 
 double Player::enterable(const world::Level& level, double x, double y) const
@@ -285,17 +287,20 @@ void Player::frame(const world::Level& level, double frameTime)
     if (fovAnimation)
     {
         auto now = sdl::currentTime();
-        if (now >= fovAnimation->targetTime)
+        if (now > fovAnimation->time.target)
         {
-            position.fovH = fovAnimation->fovH;
-            position.fovV = fovAnimation->fovV;
+            position.fovH = fovAnimation->fovH.target;
+            position.fovV = fovAnimation->fovV.target;
             fovAnimation.reset();
         }
         else
         {
-            double invRemaining = 1.0 / (double)(fovAnimation->targetTime - now);
-            position.fovH += (fovAnimation->fovH - position.fovH) * invRemaining;
-            position.fovV += (fovAnimation->fovV - position.fovV) * invRemaining;
+            auto passed = now - fovAnimation->time.old;
+            auto length = 1.0 / (double)(fovAnimation->time.target - fovAnimation->time.old);
+            auto diff = [length, passed] (const auto& field)
+                        { return field.old + passed * (field.target - field.old) * length; };
+            position.fovH = diff(fovAnimation->fovH);
+            position.fovV = diff(fovAnimation->fovV);
         }
     }
 }

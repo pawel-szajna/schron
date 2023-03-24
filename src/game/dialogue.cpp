@@ -30,8 +30,7 @@ Dialogue::Dialogue(Player& player,
     scripting.bindYielding("text", &Dialogue::text, this);
     scripting.bindYielding("speech", &Dialogue::speech, this);
 
-    animationTarget = sdl::currentTime() + 250;
-    player.animateFov(c::renderHeight * 0.65 * 1.9, c::renderWidth * 0.22 * 1.9, animationTarget);
+    player.animateFov(c::renderHeight * 0.65 * 1.9, c::renderWidth * 0.22 * 1.9, 250);
 }
 
 Dialogue::~Dialogue()
@@ -45,7 +44,7 @@ Dialogue::~Dialogue()
     scripting.unbind("text");
     scripting.unbind("speech");
 
-    player.animateFov(c::renderHeight * 0.65, c::renderWidth * 0.22, sdl::currentTime() + 250);
+    player.animateFov(c::renderHeight * 0.65, c::renderWidth * 0.22, 400);
 
     spdlog::debug("Dialogue mode finished");
 }

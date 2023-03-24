@@ -39,8 +39,11 @@ class Player
 
     struct FovAnimation
     {
-        double fovH, fovV;
-        uint64_t targetTime;
+    private:
+        template<typename T> struct Change { T old, target; };
+    public:
+        Change<double> fovH, fovV;
+        Change<uint64_t> time;
     };
 
     struct Item
@@ -72,7 +75,7 @@ public:
     void rotate(Rotation rotation);
 
     void frame(const world::Level& level, double frameTime);
-    void animateFov(double fovH, double fovV, uint64_t targetTime);
+    void animateFov(double fovH, double fovV, uint64_t length);
     [[nodiscard]] const Position& getPosition() const;
 
     [[nodiscard]] int getSanity() const;
