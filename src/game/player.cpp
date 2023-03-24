@@ -44,6 +44,8 @@ Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
     scripting.bind("item_add", &Player::addItem, this);
     scripting.bind("item_check", &Player::checkItem, this);
     scripting.bind("item_remove", &Player::removeItem, this);
+
+    setSanity(100);
 }
 
 Player::~Player() = default; // Intentionally not unbinding functions bound in the c-tor, as the Player is
@@ -58,8 +60,9 @@ const Position& Player::getPosition() const
 void Player::setSanity(int value)
 {
     sanity = std::clamp(value, 0, 100);
+    noiseLevel = 23 - (sanity / 10);
     scripting.set("sanity", sanity);
-    noiseLevel = 13 + (100 - sanity);
+    scripting.sanityChange();
 }
 
 void Player::modSanity(int delta)

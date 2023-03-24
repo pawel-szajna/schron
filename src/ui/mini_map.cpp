@@ -174,7 +174,7 @@ void MiniMap::render(sdl::Renderer& renderer)
     surfaceRenderer.present();
 
     auto font = sdl::Font("res/font/KellySlab.ttf", 18);
-    auto text = font.render(std::format("[{}] x={:.2} y={:.2} z={:.2}",
+    auto text = font.render(std::format("[{}] x={:.1f} y={:.1f} z={:.1f}",
                                         position.sector,
                                         position.x, position.y, position.z),
                             sdl::Color{255, 255, 255, 200});

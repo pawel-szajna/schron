@@ -17,6 +17,8 @@ WorldBindings::WorldBindings(sol::state&lua, world::World& world) :
     lua.set_function("world_sprite", &WorldBindings::sprite, this);
     lua.set_function("world_light", &WorldBindings::light, this);
 
+    lua.set_function("change_texture", &WorldBindings::changeTexture, this);
+
     lua.set_function("interactive_point", &WorldBindings::interactivePoint, this);
 
     sol::usertype<world::PolygonalSectorBuilder> polygonalSectorBuilderType =
@@ -70,6 +72,17 @@ void WorldBindings::sprite(int sectorId, int id,
                                            .shadows = shadows,
                                            .lightCenter = lightCenter,
                                            .blocking = blocking});
+}
+
+void WorldBindings::changeTexture(int sectorId, int spriteId, std::string texture)
+try
+{
+    auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
+    sector.sprites.at(spriteId).texture = std::move(texture);
+}
+catch (std::exception& e)
+{
+    spdlog::warn("Failure during texture change: {}", e.what());
 }
 
 void WorldBindings::light(int sectorId, double x, double y, double z, double r, double g, double b)

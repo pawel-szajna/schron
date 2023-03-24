@@ -7,6 +7,13 @@
 
 #include <spdlog/spdlog.h>
 
+namespace
+{
+void debug(const std::string& msg) { spdlog::debug(msg); }
+void info(const std::string& msg) { spdlog::info(msg); }
+void warning(const std::string& msg) { spdlog::warn(msg); }
+}
+
 namespace scripting
 {
 Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
@@ -14,6 +21,10 @@ Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     world(world)
 {
     lua.open_libraries(sol::lib::base, sol::lib::table);
+
+    bind("debug", debug);
+    bind("info", info);
+    bind("warn", warning);
 
     uiBindings = std::make_unique<UiBindings>(lua, ui, renderer);
     worldBindings = std::make_unique<WorldBindings>(lua, world);
@@ -75,13 +86,25 @@ void Scripting::resume()
 
 void Scripting::sectorEntry(int x, int y, int z)
 {
-    auto sectorFunction = std::format("enter_{}_{}_{}", x, y, z);
-    if (lua[sectorFunction].valid())
+    runFunctionIfExists(std::format("enter_{}_{}_{}", x, y, z));
+}
+
+void Scripting::sanityChange()
+{
+    runFunctionIfExists("sanity_change");
+}
+
+void Scripting::runFunctionIfExists(const std::string& function)
+{
+    if (lua[function].valid())
     {
-        spdlog::debug("Calling LUA function {} due to sector entry", sectorFunction);
         try
         {
-            lua[sectorFunction]();
+            auto result = lua[function]();
+            if (not result.valid())
+            {
+                throw sol::error(result);
+            }
         }
         catch (std::exception& e)
         {

@@ -59,8 +59,11 @@ public:
     }
 
     void sectorEntry(int x, int y, int z);
+    void sanityChange();
 
 private:
+
+    void runFunctionIfExists(const std::string& function);
 
     sol::state lua;
 

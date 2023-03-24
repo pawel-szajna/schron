@@ -90,6 +90,14 @@ void ModeInGame::event(const sdl::event::Event& event)
 
         switch (key.scancode)
         {
+        case SDL_SCANCODE_LEFTBRACKET:
+            player.modSanity(-1);
+            spdlog::info("sanity = {}", player.getSanity());
+            break;
+        case SDL_SCANCODE_RIGHTBRACKET:
+            player.modSanity(1);
+            spdlog::info("sanity = {}", player.getSanity());
+            break;
         case SDL_SCANCODE_RETURN:
             if (tooltipWidget)
             {
