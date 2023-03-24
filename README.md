@@ -70,5 +70,5 @@ repository directory, and it should work out of the box.
 ## Scripting
 
 The game uses LUA language quite extensively for scripting purposes.
-At the moment, the scripting API is quite unstable and thus not yet
-really documented.
+At the moment, the scripting API is quite unstable, but some (more or
+less accurate) description is provided in the [API.md](API.md) file.
