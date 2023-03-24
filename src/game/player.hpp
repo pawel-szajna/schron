@@ -2,6 +2,7 @@
 
 #include "util/constants.hpp"
 
+#include <cstdint>
 #include <numbers>
 #include <optional>
 #include <queue>

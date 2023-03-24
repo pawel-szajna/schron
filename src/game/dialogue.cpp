@@ -65,7 +65,7 @@ ui::Text& Dialogue::resetTextbox()
 void Dialogue::redrawChoiceWithHighlight()
 {
     auto& text = resetTextbox();
-    for (int counter = 1; counter <= currentChoices.size(); ++counter)
+    for (auto counter = 1u; counter <= currentChoices.size(); ++counter)
     {
         text.write(std::format("\n{}. ", counter), "RubikDirt", -1, counter == currentChoice ? 255 : 88);
         text.write(currentChoices[counter - 1][1], "KellySlab", -1, counter == currentChoice ? 255 : 120);
@@ -138,7 +138,7 @@ void Dialogue::eventChoice(const sdl::event::Key& key)
     case SDL_SCANCODE_7:
     case SDL_SCANCODE_8:
     case SDL_SCANCODE_9:
-        int value = key.scancode - SDL_SCANCODE_1 + 1;
+        size_t value = key.scancode - SDL_SCANCODE_1 + 1;
         if (value <= currentChoices.size())
         {
             currentChoice = value;

@@ -73,6 +73,6 @@ private:
 
     uint64_t animationTarget{};
 
-    int currentChoice{};
+    size_t currentChoice{};
 };
 }
