@@ -46,7 +46,7 @@ void WorldBindings::put(world::SectorBuilder& builder)
 {
     auto sector = builder.build();
     spdlog::debug("WorldBindings::put(sector={{id:{}}})", sector.id);
-    world.level(1).put(std::move(sector));
+    world.level(1).put(sector); // Careful: LUA can garbage collect this sector. A copy is needed!
 }
 
 void WorldBindings::sprite(int sectorId, int id,

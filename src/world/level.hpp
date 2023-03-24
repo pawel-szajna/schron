@@ -24,7 +24,7 @@ public:
 
     Level(int id, std::string name);
 
-    void put(Sector&& sector);
+    void put(Sector sector);
     [[nodiscard]] const Sector& sector(int id) const { return map.at(id); }
     [[nodiscard]] const SectorsMap& sectors() const { return map; }
 

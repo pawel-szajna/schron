@@ -11,7 +11,7 @@ Level::Level(int id,
     spdlog::info("Loading level #{}", id);
 }
 
-void Level::put(Sector&& sector)
+void Level::put(Sector sector)
 {
     if (map.contains(sector.id))
     {
