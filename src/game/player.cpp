@@ -42,11 +42,9 @@ Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
     scripting.bind("sanity_mod", &Player::modSanity, this);
 }
 
-Player::~Player()
-{
-    scripting.unbind("sanity_set");
-    scripting.unbind("sanity_mod");
-}
+Player::~Player() = default; // Intentionally not unbinding sanity_set and sanity_mod, as the Player destructor
+                             // is called after the Scripting destructor. This does, however, sound like a poor
+                             // design and should probably be addressed in future.
 
 const Position& Player::getPosition() const
 {
