@@ -100,6 +100,11 @@ bool Button::consumeClick(int mouseX, int mouseY)
     return false;
 }
 
+void Button::setCaption(const std::string& text)
+{
+    caption.setCaption(text);
+}
+
 Window::Window(int x, int y, int width, int height) :
     x(x), y(y),
     width(width), height(height),

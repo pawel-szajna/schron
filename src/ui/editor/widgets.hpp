@@ -97,6 +97,8 @@ public:
     void render(sdl::Renderer &renderer, sdl::Surface &target, int absX, int absY, int offsetX, int offsetY) override;
     bool consumeClick(int mouseX, int mouseY) override;
 
+    void setCaption(const std::string& text);
+
 private:
 
     int width, height;

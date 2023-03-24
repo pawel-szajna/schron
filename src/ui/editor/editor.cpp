@@ -596,7 +596,39 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     {
         if (not selectedSpriteWindow)
         {
-            selectedSpriteWindow.emplace(sector, *selectedSprite, font, textureWindow, rightX + 312, topY);
+            selectedSpriteWindow.emplace(sector, *selectedSprite, font, textureWindow, rightX + 312, topY,
+                                         [&, this] ()
+                                         {
+                                             const auto& src = sector.sprites[*selectedSprite];
+                                             sector.sprites.emplace_back(world::Sprite{sector.sprites.back().id + 1,
+                                                                                       src.texture,
+                                                                                       src.x + 0.5, src.y + 0.5, src.z,
+                                                                                       src.w, src.h,
+                                                                                       src.offset,
+                                                                                       src.shadows,
+                                                                                       src.lightCenter,
+                                                                                       src.blocking});
+                                         },
+                                         [&, this] ()
+                                         {
+                                             sector.sprites.erase(std::find_if(sector.sprites.begin(),
+                                                                               sector.sprites.end(),
+                                                                               [this](const world::Sprite& sprite)
+                                                                               {
+                                                                                   return sprite.id == *selectedSprite;
+                                                                               }));
+                                             selectedSprite.reset();
+                                             int counter = 0;
+                                             for (auto& sprite : sector.sprites)
+                                             {
+                                                 sprite.id = counter++;
+                                             }
+                                         },
+                                         [&, this] ()
+                                         {
+                                             auto& sprite = sector.sprites[*selectedSprite];
+                                             sprite.blocking = not sprite.blocking;
+                                         });
         }
 
         clicked = selectedSpriteWindow->consumeClick(clicked, mouseX, mouseY);

@@ -17,11 +17,16 @@ class WindowSprite
 {
 public:
 
+    using SpriteAction = std::function<void(void)>;
+
     WindowSprite(world::Sector& sector,
                  int spriteId,
                  sdl::Font& font,
                  std::optional<WindowTexture>& textureSelector,
-                 int x, int y);
+                 int x, int y,
+                 SpriteAction duplicate,
+                 SpriteAction destroy,
+                 SpriteAction block);
     ~WindowSprite();
 
     bool consumeClick(bool clicked, int mouseX, int mouseY);
@@ -41,5 +46,9 @@ private:
     Text& x;
     Text& y;
     Text& z;
+    Button& blocking;
+    SpriteAction duplicate;
+    SpriteAction destroy;
+    SpriteAction block;
 };
 }

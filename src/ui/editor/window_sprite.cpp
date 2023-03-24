@@ -8,7 +8,10 @@ WindowSprite::WindowSprite(world::Sector& sector,
                            int spriteId,
                            sdl::Font& font,
                            std::optional<WindowTexture>& textureSelector,
-                           int x, int y) :
+                           int x, int y,
+                           SpriteAction duplicate,
+                           SpriteAction destroy,
+                           SpriteAction block) :
         width(280),
         height(170),
         textureSelector(textureSelector),
@@ -18,7 +21,11 @@ WindowSprite::WindowSprite(world::Sector& sector,
         texture(spriteWindow.add<Text>(10, 30, font, "Texture")),
         x(spriteWindow.add<Text>(10, 50, font, "X")),
         y(spriteWindow.add<Text>(10, 70, font, "Y")),
-        z(spriteWindow.add<Text>(10, 90, font, "Z"))
+        z(spriteWindow.add<Text>(10, 90, font, "Z")),
+        blocking(spriteWindow.add<Button>(30, 150, width - 60, 16, font, "Switch", block)),
+        duplicate(std::move(duplicate)),
+        destroy(std::move(destroy)),
+        block(std::move(block))
 {
     auto& s = this->sprite;
 
@@ -42,6 +49,8 @@ WindowSprite::WindowSprite(world::Sector& sector,
     spriteWindow.add<Button>(width - 110, 93, 30, 16, font, "–0.1", [&s]() { s.z -= 0.1; });
     spriteWindow.add<Button>(width - 145, 93, 30, 16, font, "–1", [&s]() { s.z -= 1; });
 
+    spriteWindow.add<Button>(30, 110, width - 60, 16, font, "Duplicate", duplicate);
+    spriteWindow.add<Button>(30, 130, width - 60, 16, font, "Destroy", destroy);
 }
 
 WindowSprite::~WindowSprite() = default;
@@ -62,6 +71,7 @@ void WindowSprite::render(sdl::Renderer& renderer)
     x.setCaption(std::format("x = {:.1f}", sprite.x));
     y.setCaption(std::format("y = {:.1f}", sprite.y));
     z.setCaption(std::format("z = {:.1f}", sprite.z));
+    blocking.setCaption(std::format("Make {}", sprite.blocking ? "walkable" : "blocking"));
 
     spriteWindow.render(renderer);
 }
