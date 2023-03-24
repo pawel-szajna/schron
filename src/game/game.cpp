@@ -25,7 +25,7 @@ Game::Game() :
 {
     modes.emplace(GameMode::Init,     std::make_unique<DummyMode>());
     modes.emplace(GameMode::MainMenu, std::make_unique<ModeMainMenu>(*scripting, *ui));
-    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, renderer, *scripting));
+    modes.emplace(GameMode::InGame,   std::make_unique<ModeInGame>(*ui, *world, renderer, *scripting, noiseLevel));
     modes.emplace(GameMode::Quit,     std::make_unique<DummyMode>());
 
     spdlog::debug("Game initialization complete");

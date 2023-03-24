@@ -57,7 +57,7 @@ public:
         Right,
     };
 
-    Player(scripting::Scripting& scripting);
+    Player(scripting::Scripting& scripting, int& noiseLevel);
     ~Player();
 
     void move(const world::Level& level, Direction direction);
@@ -83,6 +83,7 @@ private:
     std::optional<FovAnimation> fovAnimation{};
 
     scripting::Scripting& scripting;
+    int& noiseLevel;
 
     int moving{0};
     int rotating{0};

@@ -43,7 +43,11 @@ class ModeInGame : public ModeExecutor
 {
 public:
 
-    ModeInGame(ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting);
+    ModeInGame(ui::UI& ui,
+               world::World& world,
+               sdl::Renderer& renderer,
+               scripting::Scripting& scripting,
+               int& noiseLevel);
     virtual ~ModeInGame();
 
     void entry() override;

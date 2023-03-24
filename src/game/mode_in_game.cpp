@@ -20,12 +20,13 @@ namespace game
 ModeInGame::ModeInGame(ui::UI& ui,
                        world::World& world,
                        sdl::Renderer& renderer,
-                       scripting::Scripting& scripting) :
+                       scripting::Scripting& scripting,
+                       int& noiseLevel) :
     ui(ui),
     world(world),
     renderer(renderer),
     scripting(scripting),
-    player(scripting)
+    player(scripting, noiseLevel)
 {}
 
 ModeInGame::~ModeInGame() = default;

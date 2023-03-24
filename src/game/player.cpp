@@ -34,8 +34,9 @@ double side(double px, double py, double x1, double y1, double x2, double y2)
 }
 }
 
-Player::Player(scripting::Scripting& scripting) :
-    scripting(scripting)
+Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
+    scripting(scripting),
+    noiseLevel(noiseLevel)
 {
     scripting.bind("sanity_set", &Player::setSanity, this);
     scripting.bind("sanity_mod", &Player::modSanity, this);
@@ -56,6 +57,7 @@ void Player::setSanity(int value)
 {
     sanity = std::clamp(value, 0, 100);
     scripting.set("sanity", sanity);
+    noiseLevel = 13 + (100 - sanity);
 }
 
 void Player::modSanity(int delta)
