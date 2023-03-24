@@ -7,6 +7,11 @@
 #include <optional>
 #include <queue>
 
+namespace scripting
+{
+class Scripting;
+}
+
 namespace world
 {
 class Level;
@@ -52,7 +57,7 @@ public:
         Right,
     };
 
-    Player();
+    Player(scripting::Scripting& scripting);
     ~Player();
 
     void move(const world::Level& level, Direction direction);
@@ -61,6 +66,10 @@ public:
     void frame(const world::Level& level, double frameTime);
     void animateFov(double fovH, double fovV, uint64_t targetTime);
     [[nodiscard]] const Position& getPosition() const;
+
+    int getSanity() const;
+    void setSanity(int sanity);
+    void modSanity(int delta);
 
 private:
 
@@ -73,7 +82,11 @@ private:
     std::queue<MoveTarget> moves{};
     std::optional<FovAnimation> fovAnimation{};
 
+    scripting::Scripting& scripting;
+
     int moving{0};
     int rotating{0};
+
+    int sanity{100};
 };
 }

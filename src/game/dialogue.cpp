@@ -26,9 +26,9 @@ Dialogue::Dialogue(Player& player,
 {
     spdlog::debug("Entering dialogue mode, binding LUA functions");
 
-    scripting.bind("choice", &Dialogue::choice, this);
-    scripting.bind("text", &Dialogue::text, this);
-    scripting.bind("speech", &Dialogue::speech, this);
+    scripting.bindYielding("choice", &Dialogue::choice, this);
+    scripting.bindYielding("text", &Dialogue::text, this);
+    scripting.bindYielding("speech", &Dialogue::speech, this);
 
     animationTarget = sdl::currentTime() + 250;
     player.animateFov(c::renderHeight * 0.65 * 1.9, c::renderWidth * 0.22 * 1.9, animationTarget);

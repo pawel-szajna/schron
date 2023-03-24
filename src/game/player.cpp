@@ -1,5 +1,6 @@
 #include "player.hpp"
 
+#include "scripting/scripting.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "world/level.hpp"
 
@@ -33,13 +34,38 @@ double side(double px, double py, double x1, double y1, double x2, double y2)
 }
 }
 
-Player::Player() = default;
+Player::Player(scripting::Scripting& scripting) :
+    scripting(scripting)
+{
+    scripting.bind("sanity_set", &Player::setSanity, this);
+    scripting.bind("sanity_mod", &Player::modSanity, this);
+}
 
-Player::~Player() = default;
+Player::~Player()
+{
+    scripting.unbind("sanity_set");
+    scripting.unbind("sanity_mod");
+}
 
 const Position& Player::getPosition() const
 {
     return position;
+}
+
+void Player::setSanity(int value)
+{
+    sanity = std::clamp(value, 0, 100);
+    scripting.set("sanity", sanity);
+}
+
+void Player::modSanity(int delta)
+{
+    setSanity(getSanity() + delta);
+}
+
+int Player::getSanity() const
+{
+    return sanity;
 }
 
 void Player::move(const world::Level& level, Direction direction)

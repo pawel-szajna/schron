@@ -24,7 +24,8 @@ ModeInGame::ModeInGame(ui::UI& ui,
     ui(ui),
     world(world),
     renderer(renderer),
-    scripting(scripting)
+    scripting(scripting),
+    player(scripting)
 {}
 
 ModeInGame::~ModeInGame() = default;
@@ -38,8 +39,8 @@ void ModeInGame::entry()
     engine->preload();
     ui.add(std::make_unique<ui::MiniMap>(renderer, level, player));
 
-    scripting.bind("dialogue_start", &ModeInGame::startDialogue, this);
-    scripting.bind("dialogue_end", &ModeInGame::endDialogue, this);
+    scripting.bindYielding("dialogue_start", &ModeInGame::startDialogue, this);
+    scripting.bindYielding("dialogue_end", &ModeInGame::endDialogue, this);
 
     spdlog::info("Ready");
 }

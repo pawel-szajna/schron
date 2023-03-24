@@ -56,14 +56,14 @@ private:
     void startDialogue();
     void endDialogue();
 
-    Player player{};
-
     std::unique_ptr<engine::Engine> engine;
 
     ui::UI& ui;
     world::World& world;
     sdl::Renderer& renderer;
     scripting::Scripting& scripting;
+
+    Player player;
 
     int lastX, lastY, lastZ;
     double lastFrameX, lastFrameY, lastFrameZ, lastFrameAngle;
