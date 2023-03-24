@@ -6,6 +6,7 @@
 #include <numbers>
 #include <optional>
 #include <queue>
+#include <string>
 
 namespace scripting
 {
@@ -42,6 +43,13 @@ class Player
         uint64_t targetTime;
     };
 
+    struct Item
+    {
+        int id;
+        std::string name;
+        std::string description;
+    };
+
 public:
 
     enum class Direction
@@ -67,9 +75,13 @@ public:
     void animateFov(double fovH, double fovV, uint64_t targetTime);
     [[nodiscard]] const Position& getPosition() const;
 
-    int getSanity() const;
+    [[nodiscard]] int getSanity() const;
     void setSanity(int sanity);
     void modSanity(int delta);
+
+    int addItem(std::string name, std::string description);
+    [[nodiscard]] int checkItem(const std::string& name) const;
+    void removeItem(int id);
 
 private:
 
@@ -81,6 +93,9 @@ private:
 
     std::queue<MoveTarget> moves{};
     std::optional<FovAnimation> fovAnimation{};
+
+    std::vector<Item> inventory{};
+    int itemCounter{0};
 
     scripting::Scripting& scripting;
     int& noiseLevel;

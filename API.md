@@ -71,6 +71,34 @@ sane, and `0` means totally insane.
 Should the value ever become less than zero or exceed  one hundred, it will be clamped
 to fit within those boundaries.
 
+### `item_add(name, description)`
+
+**Arguments**:
+
+* `name` *string*: name of the item
+* `description` *string*: description of the item
+
+**Return value** *int*: unique ID of the item
+
+Adds the item to the player's inventory.
+
+### `item_check(name)`
+
+* `name` *string*: name of the item to check
+
+**Return value** *int*: unique ID of the item
+
+Checks if player has item with given name and returns the unique ID of this item.
+If the item is not found, value of `-1` is returned instead.
+
+### `item_remove(id)`
+
+**Arguments**:
+
+* `id` *int*: unique ID of the item
+
+Removes the item with unique ID equal to `id` from player's inventory.
+
 ### `sanity_mod(delta)`
 
 **Arguments**:

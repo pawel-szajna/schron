@@ -40,10 +40,14 @@ Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
 {
     scripting.bind("sanity_set", &Player::setSanity, this);
     scripting.bind("sanity_mod", &Player::modSanity, this);
+
+    scripting.bind("item_add", &Player::addItem, this);
+    scripting.bind("item_check", &Player::checkItem, this);
+    scripting.bind("item_remove", &Player::removeItem, this);
 }
 
-Player::~Player() = default; // Intentionally not unbinding sanity_set and sanity_mod, as the Player destructor
-                             // is called after the Scripting destructor. This does, however, sound like a poor
+Player::~Player() = default; // Intentionally not unbinding functions bound in the c-tor, as the Player is
+                             // destructed after the Scripting destructor. This does, however, sound like a poor
                              // design and should probably be addressed in future.
 
 const Position& Player::getPosition() const
@@ -66,6 +70,29 @@ void Player::modSanity(int delta)
 int Player::getSanity() const
 {
     return sanity;
+}
+
+int Player::addItem(std::string name, std::string description)
+{
+    inventory.emplace_back(Item{itemCounter, std::move(name), std::move(description)});
+    return itemCounter++;
+}
+
+int Player::checkItem(const std::string& name) const
+{
+    auto item = std::find_if(inventory.cbegin(), inventory.cend(),
+                             [&name](const auto& item) { return item.name == name; });
+    if (item == inventory.cend())
+    {
+        return -1;
+    }
+    return item->id;
+}
+
+void Player::removeItem(int id)
+{
+    inventory.erase(std::find_if(inventory.begin(), inventory.end(),
+                                 [id](const auto& item) { return item.id == id; }));
 }
 
 void Player::move(const world::Level& level, Direction direction)
