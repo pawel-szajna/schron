@@ -63,7 +63,6 @@ private:
     void renderCeilingAndFloor(const world::Sector& sector,
                                const game::Position& player,
                                int x, int wallTop, int wallBottom,
-                               double distance,
                                double ceilingY, double floorY,
                                double angleSin, double angleCos,
                                const OffsetLightMap& ceilingLightMap,

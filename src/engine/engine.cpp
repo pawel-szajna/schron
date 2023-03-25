@@ -297,7 +297,6 @@ void Engine::renderWall(const world::Sector& sector,
 
         renderCeilingAndFloor(sector, player, x,
                               visibleWallTop, visibleWallBottom,
-                              distance,
                               ceilingY, floorY,
                               angleSin, angleCos,
                               ceilingLightMap, floorLightMap);
@@ -389,7 +388,6 @@ void Engine::lightedLine(int x, double xProgress,
 void Engine::renderCeilingAndFloor(const world::Sector& sector,
                                    const game::Position& player,
                                    int x, int wallTop, int wallBottom,
-                                   double distance,
                                    double ceilingY, double floorY,
                                    double angleSin, double angleCos,
                                    const OffsetLightMap& ceilingLightMap,
@@ -403,8 +401,8 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
     for (int y = limitTop[x]; y <= limitBottom[x]; ++y)
     {
         if (y <= wallBottom and y >= wallTop) continue;
-        if (distance > zBuffer[x + y * c::renderWidth]) continue;
 
+        auto index = x + y * c::renderWidth;
         auto isCeiling = y < wallTop;
 
         auto transformedZ = (isCeiling ? ceilingY : floorY) * player.fovV / (c::renderHeight / 2 - y);
@@ -413,14 +411,19 @@ void Engine::renderCeilingAndFloor(const world::Sector& sector,
         auto mapX = transformedZ * angleCos + transformedX * angleSin + player.x + renderQueue.front().offsetX;
         auto mapY = transformedZ * angleSin - transformedX * angleCos + player.y + renderQueue.front().offsetY;
 
+        auto distance = std::hypot(player.x - mapX, player.y - mapY, player.z - (isCeiling ? sector.ceiling : sector.floor));
+        if (distance > zBuffer[index]) continue;
+
         int textureWidth = (isCeiling ? ceilingTexture : floorTexture).width;
         int textureHeight = (isCeiling ? ceilingTexture : floorTexture).height;
 
         auto tX = (int)std::abs(textureWidth + mapX * textureWidth) % textureWidth;
         auto tY = (int)std::abs(textureHeight + mapY * textureHeight) % textureHeight;
 
-        buffer[x + y * c::renderWidth] = shadeRgb((isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth],
-                                                  lighting.calculateSurfaceLighting(mapX, mapY, isCeiling ? ceilingLightMap : floorLightMap));;
+
+        buffer[index] = shadeRgb((isCeiling ? ceilingTexture : floorTexture).pixels()[tX + tY * textureWidth],
+                                 lighting.calculateSurfaceLighting(mapX, mapY, isCeiling ? ceilingLightMap : floorLightMap));
+        zBuffer[index] = distance;
     }
 }
 
