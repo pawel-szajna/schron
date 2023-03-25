@@ -48,14 +48,14 @@ private:
 
     GameMode mode{GameMode::Init};
 
-    ModesMap modes{};
-
     sdl::Window window{"Schron", c::windowWidth, c::windowHeight, 0};
     sdl::Renderer renderer{window};
 
     std::unique_ptr<world::World> world;
     std::unique_ptr<ui::UI> ui;
     std::unique_ptr<scripting::Scripting> scripting;
+
+    ModesMap modes{};
 
     int noiseLevel{13};
     engine::Noise noise{renderer, noiseLevel};

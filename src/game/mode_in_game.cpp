@@ -12,6 +12,7 @@
 #include "ui/text.hpp"
 #include "world/world.hpp"
 
+#include <fstream>
 #include <SDL3/SDL_scancode.h>
 #include <spdlog/spdlog.h>
 
@@ -52,8 +53,7 @@ void ModeInGame::exit()
     ui.clear();
     subMode.reset();
 
-    scripting.unbind("dialogue_start");
-    scripting.unbind("dialogue_end");
+    scripting.unbind("dialogue_start", "dialogue_end");
 }
 
 void ModeInGame::startDialogue()
@@ -69,6 +69,25 @@ void ModeInGame::startDialogue()
 void ModeInGame::endDialogue()
 {
     subMode.reset();
+}
+
+void ModeInGame::save(const std::string& filename) const
+{
+    if (subMode != nullptr)
+    {
+        spdlog::info("Cannot save while inside a sub-mode");
+        return;
+    }
+
+    std::ofstream file{filename};
+    save(file);
+    spdlog::info("Game saved");
+}
+
+void ModeInGame::save(std::ostream& os) const
+{
+    player.save(os);
+    scripting.save(os);
 }
 
 void ModeInGame::event(const sdl::event::Event& event)
@@ -97,6 +116,13 @@ void ModeInGame::event(const sdl::event::Event& event)
         case SDL_SCANCODE_RIGHTBRACKET:
             player.modSanity(1);
             spdlog::info("sanity = {}", player.getSanity());
+            break;
+        case SDL_SCANCODE_F5:
+            save("save.lua");
+            break;
+        case SDL_SCANCODE_F9:
+            scripting.run("save.lua");
+            player.setSanity(player.getSanity());
             break;
         case SDL_SCANCODE_RETURN:
             if (tooltipWidget)

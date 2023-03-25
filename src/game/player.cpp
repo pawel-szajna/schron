@@ -2,6 +2,7 @@
 
 #include "scripting/scripting.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
+#include "util/format.hpp"
 #include "world/level.hpp"
 
 #include <algorithm>
@@ -41,20 +42,30 @@ Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
     scripting.bind("sanity_set", &Player::setSanity, this);
     scripting.bind("sanity_mod", &Player::modSanity, this);
 
-    scripting.bind("item_add", &Player::addItem, this);
-    scripting.bind("item_check", &Player::checkItem, this);
+    scripting.bind("item_add",    &Player::addItem, this);
+    scripting.bind("item_check",  &Player::checkItem, this);
     scripting.bind("item_remove", &Player::removeItem, this);
+
+    scripting.bind("player_place", &Player::place, this);
 
     setSanity(100);
 }
 
-Player::~Player() = default; // Intentionally not unbinding functions bound in the c-tor, as the Player is
-                             // destructed after the Scripting destructor. This does, however, sound like a poor
-                             // design and should probably be addressed in future.
+Player::~Player()
+{
+    scripting.unbind("sanity_set", "sanity_mod",
+                     "item_add", "item_check", "item_remove",
+                     "player_place");
+}
 
 const Position& Player::getPosition() const
 {
     return position;
+}
+
+void Player::place(int sector, double x, double y, double z, double a, double fovH, double fovV)
+{
+    position = {sector, x, y, z, a, fovH, fovV};
 }
 
 void Player::setSanity(int value)
@@ -306,5 +317,11 @@ void Player::frame(const world::Level& level, double frameTime)
             position.fovV = diff(fovAnimation->fovV);
         }
     }
+}
+
+void Player::save(std::ostream& os) const
+{
+    os << std::format("player_place({},{},{},{},{},{},{})\n",
+                      position.sector, position.x, position.y, position.z, position.angle, position.fovH, position.fovV);
 }
 }

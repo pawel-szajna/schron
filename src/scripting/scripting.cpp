@@ -112,4 +112,31 @@ void Scripting::runFunctionIfExists(const std::string& function)
         }
     }
 }
+
+void Scripting::save(std::ostream& os) const
+{
+    for (auto [name, value] : lua)
+    {
+        switch (value.get_type())
+        {
+        case sol::type::boolean:
+            os << std::format("{}={}\n", name.as<std::string>(), value.as<bool>());
+            break;
+        case sol::type::number:
+            os << std::format("{}={}\n", name.as<std::string>(), value.as<double>());
+            break;
+        case sol::type::string:
+            os << std::format("{}=\"{}\"\n", name.as<std::string>(), value.as<std::string>());
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+void Scripting::unbind(const std::string& name)
+{
+    lua[name] = sol::lua_nil;
+}
+
 }

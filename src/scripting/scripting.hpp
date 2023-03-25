@@ -35,6 +35,13 @@ public:
     void runAsCoroutine(const std::string& script);
     void resume();
 
+    void unbind(const std::string& name);
+
+    void sectorEntry(int x, int y, int z);
+    void sanityChange();
+
+    void save(std::ostream& os) const;
+
     template<typename... Args>
     void bind(const std::string& name, Args&& ...args)
     {
@@ -47,9 +54,11 @@ public:
         bind(name, sol::yielding(fn), std::forward<Args>(args)...);
     }
 
-    void unbind(const std::string& name)
+    template<typename... Args>
+    void unbind(const std::string& name, Args&& ...args)
     {
-        lua[name] = sol::lua_nil;
+        unbind(name);
+        unbind(std::forward<Args>(args)...);
     }
 
     template<typename T>
@@ -57,9 +66,6 @@ public:
     {
         lua[name] = t;
     }
-
-    void sectorEntry(int x, int y, int z);
-    void sanityChange();
 
 private:
 

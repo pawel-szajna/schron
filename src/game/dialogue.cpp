@@ -40,9 +40,7 @@ Dialogue::~Dialogue()
         ui.remove(*widget);
     }
 
-    scripting.unbind("choice");
-    scripting.unbind("text");
-    scripting.unbind("speech");
+    scripting.unbind("choice", "text", "speech");
 
     player.animateFov(c::renderHeight * 0.65, c::renderWidth * 0.22, 400);
 

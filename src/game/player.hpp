@@ -86,10 +86,14 @@ public:
     [[nodiscard]] int checkItem(const std::string& name) const;
     void removeItem(int id);
 
+    void save(std::ostream& os) const;
+
 private:
 
     void acquireMove();
     double enterable(const world::Level& level, double x, double y) const;
+
+    void place(int sector, double x, double y, double z, double a, double fovH, double fovV);
 
     Position position;
     Position target;

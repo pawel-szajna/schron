@@ -60,6 +60,9 @@ private:
     void startDialogue();
     void endDialogue();
 
+    void save(const std::string& filename) const;
+    void save(std::ostream& os) const;
+
     std::unique_ptr<engine::Engine> engine;
 
     ui::UI& ui;
