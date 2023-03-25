@@ -9,6 +9,7 @@
 #include <cmath>
 #include <numbers>
 #include <queue>
+#include <set>
 #include <vector>
 
 namespace ui
@@ -31,7 +32,6 @@ struct MapSector
 {
     int id;
     int recursion;
-    int caller;
     double transformX;
     double transformY;
 };
@@ -110,14 +110,24 @@ void MiniMap::render(sdl::Renderer& renderer)
 
     sectorQueue.push({.id = position.sector,
                       .recursion = 5,
-                      .caller = -1,
                       .transformX = 0,
                       .transformY = 0});
+
+    using Transform = std::tuple<double, double>;
+    using SectorEntry = std::tuple<int, Transform>;
+    std::set<SectorEntry> history{};
 
     while (not sectorQueue.empty())
     {
         auto current = sectorQueue.front();
         sectorQueue.pop();
+
+        SectorEntry entry{current.id, {current.transformX, current.transformY}};
+        if (history.contains(entry))
+        {
+            continue;
+        }
+        history.emplace(std::move(entry));
 
         const auto& sector = level.sector(current.id);
         vertices.clear();
@@ -143,7 +153,7 @@ void MiniMap::render(sdl::Renderer& renderer)
         {
             for (const auto& wall : sector.walls)
             {
-                if (wall.portal.has_value() and wall.portal->sector != current.caller)
+                if (wall.portal.has_value())
                 {
                     double newTransformX = current.transformX;
                     double newTransformY = current.transformY;
@@ -154,7 +164,6 @@ void MiniMap::render(sdl::Renderer& renderer)
                     }
                     sectorQueue.push({.id = wall.portal->sector,
                                       .recursion = current.recursion - 1,
-                                      .caller = current.id,
                                       .transformX = newTransformX,
                                       .transformY = newTransformY});
                 }
