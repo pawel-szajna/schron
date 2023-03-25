@@ -71,7 +71,7 @@ void Player::place(int sector, double x, double y, double z, double a, double fo
 void Player::setSanity(int value)
 {
     sanity = std::clamp(value, 0, 100);
-    noiseLevel = 23 - (sanity / 10);
+    noiseLevel = 18 - (sanity / 20);
     scripting.set("sanity", sanity);
     scripting.sanityChange();
 }
