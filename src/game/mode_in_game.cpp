@@ -71,17 +71,17 @@ void ModeInGame::endDialogue()
     subMode.reset();
 }
 
-void ModeInGame::save(const std::string& filename) const
+void ModeInGame::save(const std::string& filename)
 {
     if (subMode != nullptr)
     {
-        spdlog::info("Cannot save while inside a sub-mode");
+        notify(5000, "Saving disabled!");
         return;
     }
 
     std::ofstream file{filename};
     save(file);
-    spdlog::info("Game saved");
+    notify(3000, "Game saved");
 }
 
 void ModeInGame::save(std::ostream& os) const
@@ -118,7 +118,7 @@ void ModeInGame::event(const sdl::event::Event& event)
             spdlog::info("sanity = {}", player.getSanity());
             break;
         case SDL_SCANCODE_F5:
-            save("save.lua");
+            shouldSave = true;
             break;
         case SDL_SCANCODE_F9:
             scripting.run("save.lua");
@@ -136,9 +136,29 @@ void ModeInGame::event(const sdl::event::Event& event)
     }
 }
 
+void ModeInGame::notify(uint64_t timeout, const std::string& message)
+{
+    auto widgetId = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight);
+    auto& widget = ui.get_as<ui::Text>(widgetId);
+    widget.move(32, 32);
+    widget.write(message, "KellySlab", 20);
+    enqueue(timeout, [widgetId, &ui = ui]() { ui.remove(widgetId); });
+}
+
+void ModeInGame::enqueue(uint64_t timeout, TimedFunction fn)
+{
+    timers.push({sdl::currentTime() + timeout, std::move(fn)});
+}
+
 std::optional<GameMode> ModeInGame::frame(double frameTime)
 {
     const uint8_t* keys = sdl::keyboard();
+
+    if (shouldSave and player.standing())
+    {
+        save("save.lua");
+        shouldSave = false;
+    }
 
     if (keys[SDL_SCANCODE_Q] or keys[SDL_SCANCODE_ESCAPE])
     {
@@ -158,6 +178,12 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     }
 
     player.frame(world.level(1), frameTime);
+
+    if (not timers.empty() and timers.top().time <= sdl::currentTime())
+    {
+        timers.top().function();
+        timers.pop();
+    }
 
     if (subMode != nullptr)
     {
@@ -185,7 +211,7 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
                 if (not tooltipWidget or tooltipWidget->second != *script)
                 {
                     tooltipWidget = { ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script };
-                    auto& text = dynamic_cast<ui::Text&>(ui.get(tooltipWidget->first));
+                    auto& text = ui.get_as<ui::Text>(tooltipWidget->first);
                     const static std::string interactionPrompt = "Press [Enter] to interact";
                     text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
                               c::windowHeight * 3 / 4);

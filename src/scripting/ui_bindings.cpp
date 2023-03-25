@@ -29,14 +29,14 @@ int UiBindings::createText()
 void UiBindings::textClear(int id)
 {
     spdlog::debug("UiBindings::textClear(id={})", id);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(id));
+    auto& text = ui.get_as<ui::Text>(id);
     text.clear();
 }
 
 void UiBindings::textWrite(int id, std::string message, std::string font, int speed)
 {
     spdlog::debug("UiBindings::textWrite(id={}, message={}, font={}, speed={})", id, message, font, speed);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(id));
+    auto& text = ui.get_as<ui::Text>(id);
     text.write(std::move(message), std::move(font), speed);
 }
 }

@@ -5,6 +5,7 @@
 #include "sub_mode.hpp"
 
 #include <memory>
+#include <queue>
 #include <string>
 
 namespace engine
@@ -41,6 +42,16 @@ namespace game
 {
 class ModeInGame : public ModeExecutor
 {
+    using TimedFunction = std::function<void(void)>;
+
+    struct TimedExecution
+    {
+        uint64_t time;
+        TimedFunction function;
+
+        bool operator<(const TimedExecution& other) const { return time < other.time; }
+    };
+
 public:
 
     ModeInGame(ui::UI& ui,
@@ -57,10 +68,13 @@ public:
 
 private:
 
+    void notify(uint64_t timeout, const std::string& message);
+    void enqueue(uint64_t timeout, TimedFunction fn);
+
     void startDialogue();
     void endDialogue();
 
-    void save(const std::string& filename) const;
+    void save(const std::string& filename);
     void save(std::ostream& os) const;
 
     std::unique_ptr<engine::Engine> engine;
@@ -75,7 +89,11 @@ private:
     int lastX, lastY, lastZ;
     double lastFrameX, lastFrameY, lastFrameZ, lastFrameAngle;
 
+    bool shouldSave{false};
+
     std::optional<std::pair<int, std::string>> tooltipWidget;
+
+    std::priority_queue<TimedExecution> timers;
 
     std::unique_ptr<SubMode> subMode;
 };

@@ -86,6 +86,11 @@ int Player::getSanity() const
     return sanity;
 }
 
+bool Player::standing() const
+{
+    return moving == 0 and moves.empty();
+}
+
 int Player::addItem(std::string name, std::string description)
 {
     inventory.emplace_back(Item{itemCounter, std::move(name), std::move(description)});

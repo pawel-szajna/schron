@@ -88,6 +88,8 @@ public:
 
     void save(std::ostream& os) const;
 
+    bool standing() const;
+
 private:
 
     void acquireMove();

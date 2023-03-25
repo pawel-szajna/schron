@@ -28,6 +28,13 @@ public:
     void remove(int id);
     void clear();
 
+    template<typename T>
+    requires std::derived_from<T, Object>
+    T& get_as(int id)
+    {
+        return dynamic_cast<T&>(get(id));
+    }
+
     template<typename T, typename... Args>
     requires std::derived_from<T, Object>
     int add(Args&& ...args)

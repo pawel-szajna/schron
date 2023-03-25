@@ -54,7 +54,7 @@ ui::Text& Dialogue::resetTextbox()
         ui.remove(*widget);
     }
     widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
-    auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
+    auto& text = ui.get_as<ui::Text>(*widget);
     text.move(32, c::windowHeight - 64);
     return text;
 }
@@ -156,7 +156,7 @@ void Dialogue::eventSpeech(const sdl::event::Key& key)
     switch (key.scancode)
     {
     case SDL_SCANCODE_RETURN:
-        auto& text = dynamic_cast<ui::Text&>(ui.get(*widget));
+        auto& text = ui.get_as<ui::Text>(*widget);
         if (not text.done())
         {
             text.finish();
