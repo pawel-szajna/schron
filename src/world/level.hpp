@@ -7,6 +7,11 @@
 #include <unordered_map>
 #include <vector>
 
+namespace scripting
+{
+class WorldBindings;
+}
+
 namespace ui::editor
 {
 class Editor;
@@ -17,6 +22,8 @@ namespace world
 class Level
 {
     friend class ui::editor::Editor;
+    friend class scripting::WorldBindings;
+
     struct Interaction { int sector; double x, y; std::string script; };
     using SectorsMap = std::unordered_map<int, Sector>;
 

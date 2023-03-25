@@ -27,7 +27,7 @@ public:
     std::optional<Portal> portal{std::nullopt};
     std::string texture{"wall"};
 
-    [[nodiscard]] std::string toLua() const;
+    [[nodiscard]] std::string toLua(int sectorId) const;
 };
 
 class Sprite

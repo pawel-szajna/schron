@@ -6,17 +6,12 @@ namespace world
 {
 std::string Sector::toLua() const
 {
-    std::string output{};
-    double x1 = walls[0].xStart, y1 = walls[0].yStart;
-    std::string builder = std::format("PolygonalSectorBuilder.new({},{})", x1, y1);
-    builder += std::format(":withId({})", id);
-    builder += std::format(":withCeiling({})", ceiling);
-    builder += std::format(":withFloor({})", floor);
+    std::string output{std::format("sector_create({},{},\"{}\",{},\"{}\")\n",
+                                   id, floor, floorTexture, ceiling, ceilingTexture)};
     for (const auto& wall : walls)
     {
-        builder += wall.toLua();
+        output += wall.toLua(id);
     }
-    output += std::format("world_put({})\n", builder);
     for (const auto& sprite : sprites)
     {
         output += sprite.toLua(id);
@@ -52,10 +47,17 @@ Sector::~Sector() = default;
 
 void Sector::recalculateBounds()
 {
-    boundsLeft   = std::min_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; })->xStart;
-    boundsRight  = std::max_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; })->xEnd;
-    boundsTop    = std::min_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; })->yStart;
-    boundsBottom = std::max_element(walls.begin(), walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; })->yEnd;
+    if (not walls.empty())
+    {
+        boundsLeft = std::min_element(walls.begin(), walls.end(),
+                                      [](const auto& a, const auto& b) { return a.xStart < b.xStart; })->xStart;
+        boundsRight = std::max_element(walls.begin(), walls.end(),
+                                       [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; })->xEnd;
+        boundsTop = std::min_element(walls.begin(), walls.end(),
+                                     [](const auto& a, const auto& b) { return a.yStart < b.yStart; })->yStart;
+        boundsBottom = std::max_element(walls.begin(), walls.end(),
+                                        [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; })->yEnd;
+    }
 }
 
 std::string Sprite::toLua(int sectorId) const
@@ -68,25 +70,28 @@ std::string Light::toLua(int sectorId) const
     return std::format("world_light({},{},{},{},{},{},{})\n", sectorId, x, y, z, r, g, b);
 }
 
-std::string Wall::toLua() const
+std::string Wall::toLua(int sectorId) const
 {
-    std::string output{};
     if (portal.has_value())
     {
         if (portal->transform.has_value())
         {
-            spdlog::error("Transforming portals cannot be exported yet!");
-            return "";
+            return std::format("sector_transform({},\"{}\",{},{},{},{},{},{},{},{},{})\n",
+                               sectorId, texture, xStart, yStart, xEnd, yEnd, portal->sector,
+                               portal->transform->x, portal->transform->y, portal->transform->z,
+                               portal->transform->angle);
         }
         else
         {
-            output += std::format(":withPortal({},{},\"{}\",{})", xEnd, yEnd, texture, portal->sector);
+            return std::format("sector_portal({},\"{}\",{},{},{},{},{})\n",
+                               sectorId, texture, xStart, yStart, xEnd, yEnd, portal->sector);
         }
     }
     else
     {
-        output += std::format(":withWall({},{},\"{}\")", xEnd, yEnd, texture);
+        return std::format("sector_wall({},\"{}\",{},{},{},{})\n",
+                           sectorId, texture, xStart, yStart, xEnd, yEnd);
     }
-    return output;
+    return "";
 }
 }

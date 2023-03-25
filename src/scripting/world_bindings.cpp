@@ -9,46 +9,60 @@
 
 namespace scripting
 {
-WorldBindings::WorldBindings(sol::state&lua, world::World& world) :
+WorldBindings::WorldBindings(sol::state& lua, world::World& world) :
     lua(lua),
     world(world)
 {
-    lua.set_function("world_put", &WorldBindings::put, this);
     lua.set_function("world_sprite", &WorldBindings::sprite, this);
-    lua.set_function("world_light", &WorldBindings::light, this);
+    lua.set_function("world_light",  &WorldBindings::light, this);
+
+    lua.set_function("sector_create",    &WorldBindings::create, this);
+    lua.set_function("sector_wall",      &WorldBindings::addWall, this);
+    lua.set_function("sector_portal",    &WorldBindings::addPortal, this);
+    lua.set_function("sector_transform", &WorldBindings::addTransform, this);
 
     lua.set_function("change_texture", &WorldBindings::changeTexture, this);
 
     lua.set_function("interactive_point", &WorldBindings::interactivePoint, this);
-
-    sol::usertype<world::PolygonalSectorBuilder> polygonalSectorBuilderType =
-        lua.new_usertype<world::PolygonalSectorBuilder>("PolygonalSectorBuilder",
-                                                        sol::constructors<world::PolygonalSectorBuilder(double, double)>());
-    polygonalSectorBuilderType["withId"] = &world::PolygonalSectorBuilder::withId;
-    polygonalSectorBuilderType["withCeiling"] = &world::PolygonalSectorBuilder::withCeiling;
-    polygonalSectorBuilderType["withFloor"] = &world::PolygonalSectorBuilder::withFloor;
-    polygonalSectorBuilderType["withWall"] = &world::PolygonalSectorBuilder::withWall;
-    polygonalSectorBuilderType["withPortal"] = &world::PolygonalSectorBuilder::withPortal;
-    polygonalSectorBuilderType["build"] = &world::PolygonalSectorBuilder::build;
-
-    sol::usertype<world::RectangularSectorBuilder> rectangularSectorBuilderType =
-        lua.new_usertype<world::RectangularSectorBuilder>("RectangularSectorBuilder",
-                                                          sol::constructors<world::RectangularSectorBuilder(int)>());
-    rectangularSectorBuilderType["withDimensions"] = &world::RectangularSectorBuilder::withDimensions;
-    rectangularSectorBuilderType["withCeiling"] = &world::RectangularSectorBuilder::withCeiling;
-    rectangularSectorBuilderType["withFloor"] = &world::RectangularSectorBuilder::withFloor;
-    rectangularSectorBuilderType["withNorthNeighbour"] = &world::RectangularSectorBuilder::withNorthNeighbour;
-    rectangularSectorBuilderType["withEastNeighbour"] = &world::RectangularSectorBuilder::withEastNeighbour;
-    rectangularSectorBuilderType["withSouthNeighbour"] = &world::RectangularSectorBuilder::withSouthNeighbour;
-    rectangularSectorBuilderType["withWestNeighbour"] = &world::RectangularSectorBuilder::withWestNeighbour;
-    rectangularSectorBuilderType["build"] = &world::RectangularSectorBuilder::build;
 }
 
-void WorldBindings::put(world::SectorBuilder& builder)
+void WorldBindings::create(int sectorId,
+                           double floor, std::string floorTexture,
+                           double ceiling, std::string ceilingTexture)
 {
-    auto sector = builder.build();
-    spdlog::debug("WorldBindings::put(sector={{id:{}}})", sector.id);
-    world.level(1).put(sector); // Careful: LUA can garbage collect this sector. A copy is needed!
+    world::Sector sector{sectorId,
+                         {}, {}, {},
+                         ceiling, floor,
+                         std::move(ceilingTexture), std::move(floorTexture)};
+    world.level(1).put(sector);
+}
+
+void WorldBindings::addWall(int sectorId, std::string texture, double x1, double y1, double x2, double y2)
+{
+    auto& sector = world.level(1).map.at(sectorId);
+    sector.walls.push_back({x1, y1, x2, y2, std::nullopt, std::move(texture)});
+    sector.recalculateBounds();
+}
+
+void WorldBindings::addPortal(int sectorId, std::string texture, double x1, double y1, double x2, double y2, int target)
+{
+    auto& sector = world.level(1).map.at(sectorId);
+    sector.walls.push_back({x1, y1, x2, y2, world::Wall::Portal{target, std::nullopt}, std::move(texture)});
+    sector.recalculateBounds();
+}
+
+void WorldBindings::addTransform(int sectorId, std::string texture,
+                                 double x1, double y1, double x2, double y2, int target,
+                                 double transformX, double transformY, double transformZ, double transformAngle)
+{
+    auto& sector = world.level(1).map.at(sectorId);
+    sector.walls.push_back({x1, y1,
+                            x2, y2,
+                            world::Wall::Portal{target,
+                                                world::Wall::Portal::Transformation{transformX, transformY, transformZ,
+                                                                                    transformAngle}},
+                            std::move(texture)});
+    sector.recalculateBounds();
 }
 
 void WorldBindings::sprite(int sectorId, int id,
@@ -60,7 +74,7 @@ void WorldBindings::sprite(int sectorId, int id,
                            bool blocking)
 {
     spdlog::debug("WorldBindings::sprite(sectorId={}, id={}, texture={}, ...)", sectorId, id, texture);
-    auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
+    auto& sector = world.level(1).map.at(sectorId);
     sector.sprites.push_back(world::Sprite{.id = id,
                                            .texture = std::move(texture),
                                            .x = x,
@@ -77,7 +91,7 @@ void WorldBindings::sprite(int sectorId, int id,
 void WorldBindings::changeTexture(int sectorId, int spriteId, std::string texture)
 try
 {
-    auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
+    auto& sector = world.level(1).map.at(sectorId);
     sector.sprites.at(spriteId).texture = std::move(texture);
 }
 catch (std::exception& e)
@@ -87,7 +101,7 @@ catch (std::exception& e)
 
 void WorldBindings::light(int sectorId, double x, double y, double z, double r, double g, double b)
 {
-    auto& sector = const_cast<world::Sector&>(world.level(1).sector(sectorId));
+    auto& sector = world.level(1).map.at(sectorId);
     sector.lights.push_back(world::Light{x, y, z, r, g, b});
 }
 
