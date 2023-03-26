@@ -62,12 +62,23 @@ void Sector::recalculateBounds()
 
 std::string Sprite::toLua(int sectorId) const
 {
-    return std::format("world_sprite({},{},\"{}\",{},{},{},{},{},{},{})\n", sectorId, id, texture(0), x, y, z, offset, shadows, lightCenter, blocking);
+    std::string output{std::format("  sprite_create({},{},\"{}\",{},{},{},{},{},{},{})\n",
+                                   sectorId, id, texture(0), x, y, z, offset, shadows, lightCenter, blocking)};
+    for (const auto& [angle, texture] : textures)
+    {
+        if (angle <= 0)
+        {
+            continue;
+        }
+        output += std::format("    sprite_texture({},{},{},\"{}\")\n",
+                              sectorId, id, angle, texture);
+    }
+    return output;
 }
 
 std::string Light::toLua(int sectorId) const
 {
-    return std::format("world_light({},{},{},{},{},{},{})\n", sectorId, x, y, z, r, g, b);
+    return std::format("  light_create({},{},{},{},{},{},{})\n", sectorId, x, y, z, r, g, b);
 }
 
 std::string Wall::toLua(int sectorId) const
@@ -76,27 +87,29 @@ std::string Wall::toLua(int sectorId) const
     {
         if (portal->transform.has_value())
         {
-            return std::format("sector_transform({},\"{}\",{},{},{},{},{},{},{},{},{})\n",
+            return std::format("  sector_transform({},\"{}\",{},{},{},{},{},{},{},{},{})\n",
                                sectorId, texture, xStart, yStart, xEnd, yEnd, portal->sector,
                                portal->transform->x, portal->transform->y, portal->transform->z,
                                portal->transform->angle);
         }
         else
         {
-            return std::format("sector_portal({},\"{}\",{},{},{},{},{})\n",
+            return std::format("  sector_portal({},\"{}\",{},{},{},{},{})\n",
                                sectorId, texture, xStart, yStart, xEnd, yEnd, portal->sector);
         }
     }
     else
     {
-        return std::format("sector_wall({},\"{}\",{},{},{},{})\n",
+        return std::format("  sector_wall({},\"{}\",{},{},{},{})\n",
                            sectorId, texture, xStart, yStart, xEnd, yEnd);
     }
     return "";
 }
 
-const std::string& Sprite::texture(double) const
+const std::string& Sprite::texture(double angle) const
 {
-    return textures[0].texture;
+    auto it = std::find_if(textures.begin(), textures.end(),
+                           [angle](const auto& t) { return t.angle > angle; });
+    return (--it)->texture;
 }
 }

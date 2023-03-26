@@ -13,8 +13,10 @@ WorldBindings::WorldBindings(sol::state& lua, world::World& world) :
     lua(lua),
     world(world)
 {
-    lua.set_function("world_sprite", &WorldBindings::sprite, this);
-    lua.set_function("world_light",  &WorldBindings::light, this);
+    lua.set_function("sprite_create",  &WorldBindings::sprite, this);
+    lua.set_function("sprite_texture", &WorldBindings::spriteTexture, this);
+
+    lua.set_function("light_create", &WorldBindings::light, this);
 
     lua.set_function("sector_create",    &WorldBindings::create, this);
     lua.set_function("sector_wall",      &WorldBindings::addWall, this);
@@ -87,6 +89,11 @@ void WorldBindings::sprite(int sectorId, int id,
                                            .shadows = shadows,
                                            .lightCenter = lightCenter,
                                            .blocking = blocking});
+}
+
+void WorldBindings::spriteTexture(int sectorId, int id, double angle, std::string texture)
+{
+    world.level(1).map.at(sectorId).sprites.at(id).textures.push_back({angle, std::move(texture)});
 }
 
 void WorldBindings::changeTexture(int sectorId, int spriteId, std::string texture)

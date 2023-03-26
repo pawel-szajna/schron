@@ -167,7 +167,10 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     if (keys[SDL_SCANCODE_F1])
     {
-        spdlog::info("Exporting level\n{}", world.level(1).toLua());
+        auto path = std::format("scripts/levels/{}/map.lua", 1);
+        std::ofstream file{path};
+        file << world.level(1).toLua();
+        spdlog::info("File {} updated", path);
     }
 
     if (keys[SDL_SCANCODE_F2])

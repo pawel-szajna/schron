@@ -1,5 +1,6 @@
 #include "level.hpp"
 
+#include <set>
 #include <spdlog/spdlog.h>
 
 namespace world
@@ -23,9 +24,14 @@ void Level::put(Sector sector)
 std::string Level::toLua() const
 {
     std::string output{};
-    for (const auto& [_, sector] : map)
+    std::set<int> sectors{};
+    for (const auto& [id, _] : map)
     {
-        output += sector.toLua();
+        sectors.emplace(id);
+    }
+    for (auto sector : sectors)
+    {
+        output += map.at(sector).toLua();
     }
     return output;
 }
