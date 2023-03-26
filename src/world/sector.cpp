@@ -2,6 +2,8 @@
 
 #include "util/format.hpp"
 
+#include <numbers>
+
 namespace world
 {
 std::string Sector::toLua() const
@@ -108,6 +110,7 @@ std::string Wall::toLua(int sectorId) const
 
 const std::string& Sprite::texture(double angle) const
 {
+    if (angle < 0) angle += std::numbers::pi * 2.0;
     auto it = std::find_if(textures.begin(), textures.end(),
                            [angle](const auto& t) { return t.angle > angle; });
     return (--it)->texture;

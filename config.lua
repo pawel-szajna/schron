@@ -5,7 +5,7 @@ frameLimit = true
 shadowResolution = 16
 
 -- how many neighbour portals should be crossed by light
-shadowDepth = 4
+shadowDepth = 16
 
 -- show rendering statistics
 renderStats = true

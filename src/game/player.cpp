@@ -299,6 +299,9 @@ void Player::frame(const world::Level& level, double frameTime)
         if ((target.angle - position.angle) * rotating < 0)
         {
             position.angle = target.angle;
+            constexpr auto static tau{std::numbers::pi * 2.0};
+            if (position.angle < 0) position.angle += tau;
+            if (position.angle >= tau) position.angle -= tau;
             rotating = 0;
         }
     }

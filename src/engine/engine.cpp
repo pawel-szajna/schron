@@ -457,7 +457,7 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
         }
 
         const auto& sprite = sector.sprites[id];
-        const auto& texture = getTexture(sprite.texture(0));
+        const auto& texture = getTexture(sprite.texture(player.angle));
 
         auto spriteCenterX = sprite.x - player.x - renderParameters.offsetX;
         auto spriteCenterY = sprite.y - player.y - renderParameters.offsetY;
