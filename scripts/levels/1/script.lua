@@ -1,3 +1,7 @@
+load_texture("sprites/food_man")
+load_texture("sprites/food_worms")
+load_texture("sprites/food_rat")
+
 interactive_point(16, 9.5, 5.5, "talk/ola.lua")
 interactive_point(42, 12.5, 19.5, "talk/cook.lua")
 interactive_point(42, 11.5, 19.5, "talk/food.lua")

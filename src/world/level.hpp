@@ -5,7 +5,13 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+
+namespace engine
+{
+class Engine;
+}
 
 namespace scripting
 {
@@ -21,6 +27,7 @@ namespace world
 {
 class Level
 {
+    friend class engine::Engine;
     friend class ui::editor::Editor;
     friend class scripting::WorldBindings;
 
@@ -43,6 +50,7 @@ public:
 private:
 
     std::string name{};
+    std::unordered_set<std::string> additionalTextures{};
     SectorsMap map{};
     std::vector<Interaction> interactions{};
 

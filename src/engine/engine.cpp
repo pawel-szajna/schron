@@ -79,6 +79,8 @@ void Engine::preload()
         std::transform(sector.sprites.begin(), sector.sprites.end(), std::inserter(filenames, filenames.begin()),
                        [](const auto& sprite) { return sprite.texture; });
     }
+    std::copy(level.additionalTextures.begin(), level.additionalTextures.end(),
+              std::inserter(filenames, filenames.end()));
     int i = 0;
     for (const auto& filename : filenames)
     {

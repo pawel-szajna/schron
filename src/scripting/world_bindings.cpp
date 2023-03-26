@@ -22,6 +22,7 @@ WorldBindings::WorldBindings(sol::state& lua, world::World& world) :
     lua.set_function("sector_transform", &WorldBindings::addTransform, this);
 
     lua.set_function("change_texture", &WorldBindings::changeTexture, this);
+    lua.set_function("load_texture",   &WorldBindings::loadTexture, this);
 
     lua.set_function("interactive_point", &WorldBindings::interactivePoint, this);
 }
@@ -97,6 +98,11 @@ try
 catch (std::exception& e)
 {
     spdlog::warn("Failure during texture change: {}", e.what());
+}
+
+void WorldBindings::loadTexture(std::string texture)
+{
+    world.level(1).additionalTextures.emplace(std::move(texture));
 }
 
 void WorldBindings::light(int sectorId, double x, double y, double z, double r, double g, double b)

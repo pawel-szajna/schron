@@ -37,7 +37,9 @@ private:
 
     void sprite(int sectorId, int id, std::string texture, double x, double y, double z, double offset, bool shadows, double lightCenter, bool blocking);
     void light(int sectorId, double x, double y, double z, double r, double g, double b);
+
     void changeTexture(int sectorId, int spriteId, std::string texture);
+    void loadTexture(std::string texture);
 
     void interactivePoint(int sectorId, double x, double y, const std::string& script);
 
