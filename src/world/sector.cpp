@@ -62,7 +62,7 @@ void Sector::recalculateBounds()
 
 std::string Sprite::toLua(int sectorId) const
 {
-    return std::format("world_sprite({},{},\"{}\",{},{},{},{},{},{},{})\n", sectorId, id, texture, x, y, z, offset, shadows, lightCenter, blocking);
+    return std::format("world_sprite({},{},\"{}\",{},{},{},{},{},{},{})\n", sectorId, id, texture(0), x, y, z, offset, shadows, lightCenter, blocking);
 }
 
 std::string Light::toLua(int sectorId) const
@@ -93,5 +93,10 @@ std::string Wall::toLua(int sectorId) const
                            sectorId, texture, xStart, yStart, xEnd, yEnd);
     }
     return "";
+}
+
+const std::string& Sprite::texture(double) const
+{
+    return textures[0].texture;
 }
 }

@@ -32,7 +32,7 @@ WindowSprite::WindowSprite(world::Sector& sector,
     spriteWindow.add<Text>(10, 5, font, std::format("Selected sprite: {}", sprite.id));
 
     spriteWindow.add<Button>(width - 80, 33, 70, 16, font, "Change",
-                             [&]{ openTextureSelector("sprites", [&s](std::string t) { s.texture = std::format("sprites/{}", std::move(t)); }); });
+                             [&]{ openTextureSelector("sprites", [&s](std::string t) { s.textures = {{0, std::format("sprites/{}", std::move(t))}}; }); });
 
     spriteWindow.add<Button>(width - 40, 53, 30, 16, font, "+1", [&s]() { s.x += 1; });
     spriteWindow.add<Button>(width - 75, 53, 30, 16, font, "+0.1", [&s]() { s.x += 0.1; });
@@ -67,7 +67,7 @@ void WindowSprite::move(int x, int y)
 
 void WindowSprite::render(sdl::Renderer& renderer)
 {
-    texture.setCaption(std::format("Texture: {}", sprite.texture));
+    texture.setCaption(std::format("Texture: {}", sprite.texture(0)));
     x.setCaption(std::format("x = {:.1f}", sprite.x));
     y.setCaption(std::format("y = {:.1f}", sprite.y));
     z.setCaption(std::format("z = {:.1f}", sprite.z));

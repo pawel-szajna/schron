@@ -32,10 +32,16 @@ public:
 
 class Sprite
 {
+    struct Texture
+    {
+        double angle;
+        std::string texture;
+    };
+
 public:
 
     int id;
-    std::string texture;
+    std::vector<Texture> textures;
     double x, y, z{0.5};
     double w{1.0}, h{1.0};
     double offset{0};
@@ -44,6 +50,7 @@ public:
     bool blocking{true};
 
     [[nodiscard]] std::string toLua(int sectorId) const;
+    const std::string& texture(double angle) const;
 };
 
 class Light

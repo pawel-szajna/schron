@@ -74,10 +74,15 @@ void Engine::preload()
     {
         filenames.emplace(sector.ceilingTexture);
         filenames.emplace(sector.floorTexture);
-        std::transform(sector.walls.begin(), sector.walls.end(), std::inserter(filenames, filenames.begin()),
+        std::transform(sector.walls.begin(), sector.walls.end(),
+                       std::inserter(filenames, filenames.begin()),
                        [](const auto& wall) { return wall.texture; });
-        std::transform(sector.sprites.begin(), sector.sprites.end(), std::inserter(filenames, filenames.begin()),
-                       [](const auto& sprite) { return sprite.texture; });
+        for (const auto& sprite : sector.sprites)
+        {
+            std::transform(sprite.textures.begin(), sprite.textures.end(),
+                           std::inserter(filenames, filenames.begin()),
+                           [](const auto& texture) { return texture.texture; });
+        }
     }
     std::copy(level.additionalTextures.begin(), level.additionalTextures.end(),
               std::inserter(filenames, filenames.end()));
@@ -452,7 +457,7 @@ void Engine::renderSprites(const world::Sector& sector, const game::Position& pl
         }
 
         const auto& sprite = sector.sprites[id];
-        const auto& texture = getTexture(sprite.texture);
+        const auto& texture = getTexture(sprite.texture(0));
 
         auto spriteCenterX = sprite.x - player.x - renderParameters.offsetX;
         auto spriteCenterY = sprite.y - player.y - renderParameters.offsetY;

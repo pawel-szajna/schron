@@ -368,7 +368,7 @@ void Lighting::addLight(LightPoint& target,
 
     auto castsShadows = [](const world::Sprite& sprite) { return sprite.shadows; };
 
-    auto playerShadow = world::Sprite{-1, "sprites/shadow", player.x, player.y, player.z, 1.0, 1.0, 0, true};
+    auto playerShadow = world::Sprite{-1, {{0, "sprites/shadow"}}, player.x, player.y, player.z, 1.0, 1.0, 0, true};
     (void)playerShadow;
 
     std::vector<std::reference_wrapper<const world::Sprite>> sprites{/*std::ref(playerShadow)*/};
@@ -409,7 +409,7 @@ void Lighting::addLight(LightPoint& target,
                 continue;
             }
 
-            const auto& texture = this->getTexture(sprite.texture);
+            const auto& texture = this->getTexture(sprite.texture(0));
             int spriteX = std::clamp((int)((intersectionX - c.x + intersectionY - c.y) * (texture.width - 1) / (d.x - c.x + d.y - c.y)), 0, texture.width - 1);
             int spriteY = std::clamp((int)((sprite.h * (spriteTop - intersectionZ) / (spriteTop - spriteBottom)) * (texture.height - 1)), 0, texture.height - 1);
 

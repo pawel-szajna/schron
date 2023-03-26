@@ -601,7 +601,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
                                          {
                                              const auto& src = sector.sprites[*selectedSprite];
                                              sector.sprites.emplace_back(world::Sprite{sector.sprites.back().id + 1,
-                                                                                       src.texture,
+                                                                                       {{0, src.texture(0)}},
                                                                                        src.x + 0.5, src.y + 0.5, src.z,
                                                                                        src.w, src.h,
                                                                                        src.offset,

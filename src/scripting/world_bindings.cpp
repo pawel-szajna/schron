@@ -77,7 +77,7 @@ void WorldBindings::sprite(int sectorId, int id,
     spdlog::debug("WorldBindings::sprite(sectorId={}, id={}, texture={}, ...)", sectorId, id, texture);
     auto& sector = world.level(1).map.at(sectorId);
     sector.sprites.push_back(world::Sprite{.id = id,
-                                           .texture = std::move(texture),
+                                           .textures = {{0, std::move(texture)}},
                                            .x = x,
                                            .y = y,
                                            .z = z,
@@ -93,7 +93,7 @@ void WorldBindings::changeTexture(int sectorId, int spriteId, std::string textur
 try
 {
     auto& sector = world.level(1).map.at(sectorId);
-    sector.sprites.at(spriteId).texture = std::move(texture);
+    sector.sprites.at(spriteId).textures[0].texture = std::move(texture);
 }
 catch (std::exception& e)
 {
