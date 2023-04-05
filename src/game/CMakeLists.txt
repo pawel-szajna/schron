@@ -1,18 +1,24 @@
-add_library(
-        game
-        STATIC
+add_module(
+    NAME game
+    TYPE STATIC
+    SOURCES
         dialogue.cpp
         game.cpp
         mode_main_menu.cpp
         mode_in_game.cpp
         player.cpp
-)
-
-target_include_directories(
-        game
-        PRIVATE
+    INCLUDES
         ../../lib/sol2/include
+        ../../lib/SDL/include # TODO: nothing should depend on SDL outside of sdlwrapper lib
         ${LUA_INCLUDE_DIR}
+    DEPENDENCIES
+        scripting
+        ui
+        util
+        world
+    PUBLIC_DEPENDENCIES
+        engine
+        sdlwrapper
 )
 
 if(NOT MSVC)
@@ -22,12 +28,3 @@ if(NOT MSVC)
         -Wall -Werror -pedantic -O3
     )
 endif()
-
-target_link_libraries(
-        game
-        PUBLIC
-        engine
-        scripting
-        ui
-        world
-)

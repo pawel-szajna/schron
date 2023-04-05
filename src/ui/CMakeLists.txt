@@ -1,6 +1,7 @@
-add_library(
-        ui
-        STATIC
+add_module(
+    NAME ui
+    TYPE STATIC
+    SOURCES
         fonts.cpp
         editor/editor.cpp
         editor/widgets.cpp
@@ -10,6 +11,10 @@ add_library(
         mini_map.cpp
         text.cpp
         ui.cpp
+    DEPENDENCIES
+        game
+        sdlwrapper
+        world
 )
 
 if(NOT MSVC)
@@ -19,9 +24,3 @@ if(NOT MSVC)
         -Wall -Werror -pedantic -O3
     )
 endif()
-
-target_link_libraries(
-        ui
-        PUBLIC
-        sdlwrapper
-)

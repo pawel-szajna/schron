@@ -1,10 +1,18 @@
-add_library(
-        world
-        STATIC
+add_module(
+    NAME world
+    TYPE STATIC
+    SOURCES
         builders.cpp
         level.cpp
         sector.cpp
         world.cpp
+    INCLUDES
+        ${LUA_INCLUDE_DIR}
+    DEPENDENCIES
+        ${LUA_LIBRARIES}
+        scripting
+        sol2
+        util
 )
 
 if(NOT MSVC)
@@ -14,16 +22,3 @@ if(NOT MSVC)
         -Wall -Werror -pedantic -O3
     )
 endif()
-
-target_include_directories(
-        world
-        PUBLIC
-        ${LUA_INCLUDE_DIR}
-)
-
-target_link_libraries(
-        world
-        PUBLIC
-        sol2
-        ${LUA_LIBRARIES}
-)

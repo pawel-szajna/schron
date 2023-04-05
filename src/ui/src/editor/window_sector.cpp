@@ -1,7 +1,7 @@
-#include "window_sector.hpp"
+#include "editor/window_sector.hpp"
 
 #include "util/format.hpp"
-#include "window_texture.hpp"
+#include "editor/window_texture.hpp"
 #include "world/sector.hpp"
 
 namespace ui::editor

@@ -1,4 +1,4 @@
-#include "widgets.hpp"
+#include "editor/widgets.hpp"
 
 #include "sdlwrapper/texture.hpp"
 

@@ -1,4 +1,4 @@
-#include "window_sprite.hpp"
+#include "editor/window_sprite.hpp"
 
 #include "world/sector.hpp"
 

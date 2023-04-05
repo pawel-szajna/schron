@@ -1,6 +1,7 @@
-add_library(
-        sdlwrapper
-        STATIC
+add_module(
+    NAME sdlwrapper
+    TYPE STATIC
+    SOURCES
         converters.cpp
         cursor.cpp
         event.cpp
@@ -11,6 +12,14 @@ add_library(
         texture.cpp
         vertices.cpp
         window.cpp
+    INCLUDES
+        ../../lib/SDL/include
+    DEPENDENCIES
+        SDL3-shared
+        SDL3_ttf
+        SDL3_image
+    PUBLIC_DEPENDENCIES
+        util
 )
 
 if(NOT MSVC)
@@ -20,18 +29,3 @@ if(NOT MSVC)
         -Wall -Werror -pedantic -O3
     )
 endif()
-
-target_include_directories(
-        sdlwrapper
-        PUBLIC
-        ../../lib/SDL/include
-)
-
-target_link_libraries(
-        sdlwrapper
-        PUBLIC
-        SDL3-shared
-        SDL3_ttf
-        SDL3_image
-        util
-)

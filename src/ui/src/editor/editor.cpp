@@ -1,9 +1,9 @@
-#include "editor.hpp"
+#include "editor/editor.hpp"
 
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "util/constants.hpp"
-#include "widgets.hpp"
+#include "editor/widgets.hpp"
 #include "world/builders.hpp"
 #include "world/level.hpp"
 

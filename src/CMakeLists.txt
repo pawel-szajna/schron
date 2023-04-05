@@ -11,14 +11,13 @@ add_subdirectory(ui)
 add_subdirectory(util)
 add_subdirectory(world)
 
-add_executable(
-        schron
+add_module(
+    NAME schron
+    TYPE EXECUTABLE
+    SOURCES
         main.cpp
-)
-
-target_link_libraries(
-        schron
-        PRIVATE
+    DEPENDENCIES
         game
+        sdlwrapper
         util
 )

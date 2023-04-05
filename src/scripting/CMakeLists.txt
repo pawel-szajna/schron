@@ -1,20 +1,18 @@
-add_library(
-        scripting
-        STATIC
+add_module(
+    NAME scripting
+    TYPE STATIC
+    SOURCES
         scripting.cpp
         ui_bindings.cpp
         world_bindings.cpp
-)
-
-target_include_directories(
-        scripting
-        PUBLIC
+    INCLUDES
         ${LUA_INCLUDE_DIR}
-)
-
-target_link_directories(
-        scripting
-        PUBLIC
+    DEPENDENCIES
+        ${LUA_LIBRARIES}
+        sdlwrapper
+        sol2
+        ui
+        world
 )
 
 if(NOT MSVC)
@@ -24,11 +22,3 @@ if(NOT MSVC)
         -Wall -Werror -pedantic -O3
     )
 endif()
-
-target_link_libraries(
-        scripting
-        PRIVATE
-        sol2
-        ${LUA_LIBRARIES}
-        ui
-)

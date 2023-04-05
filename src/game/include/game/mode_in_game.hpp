@@ -4,6 +4,7 @@
 #include "player.hpp"
 #include "sub_mode.hpp"
 
+#include <functional>
 #include <memory>
 #include <queue>
 #include <string>
