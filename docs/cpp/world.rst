@@ -1,0 +1,4 @@
+``world`` module
+================
+
+.. doxygennamespace:: world

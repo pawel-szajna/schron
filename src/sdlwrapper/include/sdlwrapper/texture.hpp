@@ -11,6 +11,12 @@ namespace sdl
 {
 class Renderer;
 
+/**
+ * @class Texture
+ * @brief A texture object.
+ *
+ * Wraps a SDL_Texture.
+ */
 class Texture : public Wrapped<SDL_Texture>
 {
 public:

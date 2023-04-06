@@ -41,7 +41,7 @@ add_custom_command(
     OUTPUT
         ${DOXYGEN_INDEX}
     DEPENDS
-        ${HEADERS}
+        ${ALL_HPP_FILES}
     COMMAND
         ${DOXYGEN_EXECUTABLE}
         ${DOCS_INTERMEDIATE_DIRECTORY}/Doxyfile
@@ -58,7 +58,7 @@ add_custom_command(
         ${DOXYGEN_INDEX}
     COMMAND
         ${BREATHE_APIDOC_EXECUTABLE}
-        -o ${SPHINX_DIRECTORY}
+        -fmqo ${SPHINX_DIRECTORY}
         ${DOXYGEN_OUTPUT}/xml
 )
 

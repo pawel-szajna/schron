@@ -6,6 +6,7 @@ Welcome to Schron's documentation!
    :caption: Table of contents
 
    lua_api/index
+   cpp/index
    cppcode
 
 

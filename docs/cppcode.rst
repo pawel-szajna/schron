@@ -1,5 +1,5 @@
-Schron C++ code documentation
-=============================
+Auto-generated C++ code documentation
+=====================================
 
 .. toctree::
 

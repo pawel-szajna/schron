@@ -10,6 +10,14 @@ namespace sdl
 {
 constexpr int Success{0};
 
+/**
+ * @class Wrapped
+ * @brief Wraps a C-style SDL type.
+ * @tparam T Name of wrapped type.
+ *
+ * This class template is intended to be used a base class for concrete wrappers
+ * for SDL structures, as it does not itself provide any functionality.
+ */
 template<typename T>
 class Wrapped
 {
@@ -29,6 +37,14 @@ public:
 
 protected:
 
+    /**
+     * @brief Assigns the wrapped element.
+     *
+     * Intended to be called in the derived class constructor.
+     *
+     * @param element Pointer to the created element.
+     * @param name Human-readable name of the wrapped type.
+     */
     void assign(T* element, std::string_view name = "wrapped element")
     {
         if (element == nullptr)
