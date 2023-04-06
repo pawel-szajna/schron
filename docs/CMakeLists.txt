@@ -6,6 +6,8 @@ message("
 Documentation is enabled. This requires Doxygen, Sphinx,
 and Breathe up and running in your system. If you do not
 wish to generate the docs, use -DDISABLE_DOCS=ON with cmake.
+
+Additionally, the target docs_pdf requires LaTeX.
 ")
 
 find_package(Doxygen REQUIRED)
@@ -62,16 +64,17 @@ add_custom_command(
 
 set(TARGET_RST_LOCATIONS "")
 foreach(RST_FILE IN LISTS ALL_RST_FILES)
-    get_filename_component(RST_FILE_NAME ${RST_FILE} NAME)
-    set(TARGET_RST "${SPHINX_DIRECTORY}/${RST_FILE_NAME}")
+    string(REPLACE ${CMAKE_CURRENT_SOURCE_DIR} ${SPHINX_DIRECTORY} TARGET_RST ${RST_FILE})
     list(APPEND TARGET_RST_LOCATIONS ${TARGET_RST})
     add_custom_command(
         OUTPUT
             ${TARGET_RST}
         DEPENDS
-            ${RST_FILE_NAME}
+            ${RST_FILE}
         COMMAND
-            ${CMAKE_COMMAND} -E copy_if_different ${RST_FILE} ${SPHINX_DIRECTORY}
+            ${CMAKE_COMMAND} -E copy_if_different ${RST_FILE} ${TARGET_RST}
+        COMMENT
+            "Prepare RST source ${RST_FILE} in build directory"
     )
 endforeach()
 

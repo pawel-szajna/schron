@@ -2,7 +2,7 @@ project = 'Schron'
 copyright = '2023 Schron development team'
 author = 'Schron development team'
 
-extensions = ['breathe']
+extensions = ['breathe', 'sphinxcontrib.luadomain']
 breathe_default_project = 'schron'
 
 templates_path = ['templates']

@@ -3,8 +3,9 @@ Welcome to Schron's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Table of contents
 
+   lua_api/index
    cppcode
 
 
