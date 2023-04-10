@@ -26,5 +26,6 @@ if(NOT MSVC)
         game
         PRIVATE
         -Wall -Werror -pedantic -O3
+        -Wno-error=deprecated-declarations # TODO: needs removal after refactoring
     )
 endif()
