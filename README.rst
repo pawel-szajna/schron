@@ -5,6 +5,10 @@ Schron
     :target: https://schron.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+    :target: LICENSE
+    :alt: License: CC BY-NC-SA 4.0
+
 **Schron** is a yet-undetermined-genre (a mix of adventure, dungeon
 crawling, horror, and who knows what more) game. Irregardless of the
 genre, the player is put inside a shelter and his sanity is quickly
