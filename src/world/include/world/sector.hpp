@@ -150,8 +150,16 @@ public:
            std::string floorTexture);
     ~Sector();
 
-    double boundsTop{}, boundsLeft{}, boundsRight{}, boundsBottom{};
+    /**
+     * @brief Calculate outer bounds of the Sector.
+     *
+     * The member fields boundsTop, boundsLeft, boundsRight, boundsBottom will
+     * point to the, respectively, topmost Y (northmost), leftmost X (westmost),
+     * rightmost X (eastmost), and bottommost Y (southmost) vertices of sector
+     * walls.
+     */
     void recalculateBounds();
+    double boundsTop{}, boundsLeft{}, boundsRight{}, boundsBottom{};
 
     [[nodiscard]] std::string toLua() const;
 };

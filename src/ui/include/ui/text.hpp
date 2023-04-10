@@ -12,6 +12,9 @@ namespace ui
 {
 class Fonts;
 
+/**
+ * @brief An animated text widget.
+ */
 class Text : public Object
 {
 public:
