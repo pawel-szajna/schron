@@ -1,6 +1,10 @@
 Schron
 ======
 
+.. image:: https://github.com/pawel-szajna/schron/actions/workflows/cmake.yml/badge.svg
+    :target: https://github.com/pawel-szajna/schron/actions/workflows/cmake.yml
+    :alt: Build status
+
 .. image:: https://readthedocs.org/projects/schron/badge/?version=latest
     :target: https://schron.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
