@@ -1,0 +1,31 @@
+name: CMake
+on:
+    push:
+        branches: [ "master" ]
+    pull_request:
+        branches: [ "master" ]
+
+env:
+    BUILD_TYPE: Release
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                submodules: 'recursive'
+            - name: Dependencies
+              run: |
+                sudo apt-get update
+                sudo apt-get install ninja-build liblua5.3-dev gcc-12 g++-12
+                cmake --version
+                ninja --version
+                g++-12 --version
+            - name: Configure CMake
+              env:
+                CC: gcc-12
+                CXX: g++-12
+              run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
+            - name: Build
+              run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
