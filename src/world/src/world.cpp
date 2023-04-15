@@ -26,4 +26,4 @@ void World::loadLevel(int id, scripting::Scripting& scripting)
     scripting.run(std::format("scripts/levels/{}/map.lua", id));
     scripting.run(std::format("scripts/levels/{}/script.lua", id));
 }
-}
+} // namespace world

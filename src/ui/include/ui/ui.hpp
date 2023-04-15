@@ -10,7 +10,7 @@ namespace sdl
 {
 class Font;
 class Renderer;
-}
+} // namespace sdl
 
 namespace ui
 {
@@ -90,7 +90,7 @@ public:
      */
     template<typename T, typename... Args>
     requires std::derived_from<T, Object>
-    int add(Args&& ...args)
+    int add(Args&&... args)
     {
         return add(std::make_unique<T>(std::forward<Args>(args)...));
     }
@@ -106,4 +106,4 @@ private:
     std::vector<std::unique_ptr<Object>> objects;
     int counter{0};
 };
-}
+} // namespace ui

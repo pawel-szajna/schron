@@ -23,7 +23,7 @@ namespace ui
 {
 class Text;
 class UI;
-}
+} // namespace ui
 
 namespace game
 {
@@ -40,10 +40,7 @@ class Dialogue : public SubMode
 
 public:
 
-    explicit Dialogue(Player& player,
-                      sdl::Renderer& renderer,
-                      scripting::Scripting& scripting,
-                      ui::UI& ui);
+    explicit Dialogue(Player& player, sdl::Renderer& renderer, scripting::Scripting& scripting, ui::UI& ui);
     virtual ~Dialogue();
 
     void event(const sdl::event::Event& event) override;
@@ -75,4 +72,4 @@ private:
 
     size_t currentChoice{};
 };
-}
+} // namespace game

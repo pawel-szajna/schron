@@ -5,7 +5,10 @@ namespace world
 
 namespace
 {
-void addWall(double wx1, double wy1, double wx2, double wy2,
+void addWall(double wx1,
+             double wy1,
+             double wx2,
+             double wy2,
              const std::optional<RectangularSectorBuilder::NeighbourParams>& neighbour,
              decltype(Sector::walls)& walls)
 {
@@ -15,8 +18,7 @@ void addWall(double wx1, double wy1, double wx2, double wy2,
         return;
     }
 
-    if (neighbour->x1 == wx1 and neighbour->y1 == wy2 and
-        neighbour->x2 == wx2 and neighbour->y2 == wy2)
+    if (neighbour->x1 == wx1 and neighbour->y1 == wy2 and neighbour->x2 == wx2 and neighbour->y2 == wy2)
     {
         walls.push_back(Wall{wx1, wy1, wx2, wy2, neighbour->portal});
         return;
@@ -34,12 +36,13 @@ void addWall(double wx1, double wy1, double wx2, double wy2,
         walls.push_back(Wall{neighbour->x2, neighbour->y2, wx2, wy2, std::nullopt});
     }
 }
-}
+} // namespace
 
-PolygonalSectorBuilder::PolygonalSectorBuilder(double x1, double y1) :
-    lastX(x1),
-    lastY(y1)
-{}
+PolygonalSectorBuilder::PolygonalSectorBuilder(double x1, double y1)
+    : lastX(x1)
+    , lastY(y1)
+{
+}
 
 PolygonalSectorBuilder& PolygonalSectorBuilder::withId(int id)
 {
@@ -107,33 +110,29 @@ RectangularSectorBuilder& RectangularSectorBuilder::withFloor(double floor)
     return *this;
 }
 
-RectangularSectorBuilder& RectangularSectorBuilder::withNorthNeighbour(int id,
-                                                                       double x1, double y1,
-                                                                       double x2, double y2)
+RectangularSectorBuilder&
+RectangularSectorBuilder::withNorthNeighbour(int id, double x1, double y1, double x2, double y2)
 {
     north = {x1, y1, x2, y2, {id}};
     return *this;
 }
 
-RectangularSectorBuilder& RectangularSectorBuilder::withEastNeighbour(int id,
-                                                                      double x1, double y1,
-                                                                      double x2, double y2)
+RectangularSectorBuilder&
+RectangularSectorBuilder::withEastNeighbour(int id, double x1, double y1, double x2, double y2)
 {
     east = {x1, y1, x2, y2, {id}};
     return *this;
 }
 
-RectangularSectorBuilder& RectangularSectorBuilder::withSouthNeighbour(int id,
-                                                                       double x1, double y1,
-                                                                       double x2, double y2)
+RectangularSectorBuilder&
+RectangularSectorBuilder::withSouthNeighbour(int id, double x1, double y1, double x2, double y2)
 {
     south = {x1, y1, x2, y2, {id}};
     return *this;
 }
 
-RectangularSectorBuilder& RectangularSectorBuilder::withWestNeighbour(int id,
-                                                                      double x1, double y1,
-                                                                      double x2, double y2)
+RectangularSectorBuilder&
+RectangularSectorBuilder::withWestNeighbour(int id, double x1, double y1, double x2, double y2)
 {
     west = {x1, y1, x2, y2, {id}};
     return *this;
@@ -148,4 +147,4 @@ Sector RectangularSectorBuilder::build()
     addWall(sx1, sy2, sx1, sy1, west, walls);
     return Sector{sid, std::move(walls), {}, {}, sCeiling, sFloor, "ceiling", "floor"};
 }
-}
+} // namespace world

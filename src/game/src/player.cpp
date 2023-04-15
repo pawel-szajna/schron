@@ -18,32 +18,36 @@ constexpr auto movementSpeed{1.8};
 
 bool overlap(double x1, double x2, double y1, double y2)
 {
-    return std::min(x1, x2) <= std::max(y1, y2) and
-           std::min(y1, y2) <= std::max(x1, x2);
+    return std::min(x1, x2) <= std::max(y1, y2) and std::min(y1, y2) <= std::max(x1, x2);
 }
 
-bool intersect(double box1x1, double box1y1, double box1x2, double box1y2,
-               double box2x1, double box2y1, double box2x2, double box2y2)
+bool intersect(double box1x1,
+               double box1y1,
+               double box1x2,
+               double box1y2,
+               double box2x1,
+               double box2y1,
+               double box2x2,
+               double box2y2)
 {
-    return overlap(box1x1, box1x2, box2x1, box2x2) and
-           overlap(box1y1, box1y2, box2y1, box2y2);
+    return overlap(box1x1, box1x2, box2x1, box2x2) and overlap(box1y1, box1y2, box2y1, box2y2);
 }
 
 double side(double px, double py, double x1, double y1, double x2, double y2)
 {
     return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
 }
-}
+} // namespace
 
-Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
-    scripting(scripting),
-    noiseLevel(noiseLevel)
+Player::Player(scripting::Scripting& scripting, int& noiseLevel)
+    : scripting(scripting)
+    , noiseLevel(noiseLevel)
 {
     scripting.bind("sanity_set", &Player::setSanity, this);
     scripting.bind("sanity_mod", &Player::modSanity, this);
 
-    scripting.bind("item_add",    &Player::addItem, this);
-    scripting.bind("item_check",  &Player::checkItem, this);
+    scripting.bind("item_add", &Player::addItem, this);
+    scripting.bind("item_check", &Player::checkItem, this);
     scripting.bind("item_remove", &Player::removeItem, this);
 
     scripting.bind("player_place", &Player::place, this);
@@ -53,9 +57,7 @@ Player::Player(scripting::Scripting& scripting, int& noiseLevel) :
 
 Player::~Player()
 {
-    scripting.unbind("sanity_set", "sanity_mod",
-                     "item_add", "item_check", "item_remove",
-                     "player_place");
+    scripting.unbind("sanity_set", "sanity_mod", "item_add", "item_check", "item_remove", "player_place");
 }
 
 const Position& Player::getPosition() const
@@ -70,7 +72,7 @@ void Player::place(int sector, double x, double y, double z, double a, double fo
 
 void Player::setSanity(int value)
 {
-    sanity = std::clamp(value, 0, 100);
+    sanity     = std::clamp(value, 0, 100);
     noiseLevel = 18 - (sanity / 20);
     scripting.set("sanity", sanity);
     scripting.sanityChange();
@@ -99,8 +101,8 @@ int Player::addItem(std::string name, std::string description)
 
 int Player::checkItem(const std::string& name) const
 {
-    auto item = std::find_if(inventory.cbegin(), inventory.cend(),
-                             [&name](const auto& item) { return item.name == name; });
+    auto item =
+        std::find_if(inventory.cbegin(), inventory.cend(), [&name](const auto& item) { return item.name == name; });
     if (item == inventory.cend())
     {
         return -1;
@@ -110,8 +112,7 @@ int Player::checkItem(const std::string& name) const
 
 void Player::removeItem(int id)
 {
-    inventory.erase(std::find_if(inventory.begin(), inventory.end(),
-                                 [id](const auto& item) { return item.id == id; }));
+    inventory.erase(std::find_if(inventory.begin(), inventory.end(), [id](const auto& item) { return item.id == id; }));
 }
 
 void Player::move(const world::Level& level, Direction direction)
@@ -164,25 +165,25 @@ void Player::acquireMove()
     if (moving == 0 and not moves.empty())
     {
         auto& nextMove = moves.front();
-        target.x = nextMove.x;
-        target.y = nextMove.y;
-        target.z = nextMove.z;
-        moving = nextMove.factor;
+        target.x       = nextMove.x;
+        target.y       = nextMove.y;
+        target.z       = nextMove.z;
+        moving         = nextMove.factor;
         moves.pop();
     }
 }
 
 void Player::animateFov(double targetFovH, double targetFovV, uint64_t length)
 {
-    fovAnimation = { { position.fovH, targetFovH },
-                     { position.fovV, targetFovV },
-                     { sdl::currentTime(), sdl::currentTime() + length } };
+    fovAnimation = {{position.fovH, targetFovH},
+                    {position.fovV, targetFovV},
+                    {sdl::currentTime(), sdl::currentTime() + length}};
 }
 
 double Player::enterable(const world::Level& level, double x, double y) const
 {
-    constexpr static auto canEnter = -1.0;
-    constexpr static auto wallBump = 0.77;
+    constexpr static auto canEnter   = -1.0;
+    constexpr static auto wallBump   = 0.77;
     constexpr static auto spriteBump = 0.45;
 
     const auto& sector = level.sector(position.sector);
@@ -222,7 +223,7 @@ void Player::rotate(Rotation rotation)
 
     target = position;
 
-    switch(rotation)
+    switch (rotation)
     {
     case Rotation::Left:
         target.angle -= std::numbers::pi / 2;
@@ -240,7 +241,7 @@ void Player::frame(const world::Level& level, double frameTime)
     acquireMove();
 
     const auto& sector = level.sector(position.sector);
-    auto targetZ = sector.floor + 0.6;
+    auto targetZ       = sector.floor + 0.6;
     if (position.z != targetZ)
     {
         position.z = std::clamp(targetZ, position.z - frameTime, position.z + frameTime * 2);
@@ -253,15 +254,21 @@ void Player::frame(const world::Level& level, double frameTime)
 
         for (const auto& wall : sector.walls)
         {
-            if (intersect(position.x, position.y, position.x + deltaX, position.y + deltaY,
-                          wall.xStart, wall.yStart, wall.xEnd, wall.yEnd))
+            if (intersect(position.x,
+                          position.y,
+                          position.x + deltaX,
+                          position.y + deltaY,
+                          wall.xStart,
+                          wall.yStart,
+                          wall.xEnd,
+                          wall.yEnd))
             {
                 if (side(position.x + deltaX, position.y + deltaY, wall.xStart, wall.yStart, wall.xEnd, wall.yEnd) < 0)
                 {
                     if (wall.portal.has_value())
                     {
                         const auto& portal = *wall.portal;
-                        position.sector = portal.sector;
+                        position.sector    = portal.sector;
                         if (portal.transform.has_value())
                         {
                             spdlog::debug("Portal - old: {} {} {}", position.x, position.y, position.z);
@@ -287,7 +294,7 @@ void Player::frame(const world::Level& level, double frameTime)
         {
             position.x = target.x;
             position.y = target.y;
-            moving = 0;
+            moving     = 0;
             acquireMove();
         }
     }
@@ -299,9 +306,15 @@ void Player::frame(const world::Level& level, double frameTime)
         if ((target.angle - position.angle) * rotating < 0)
         {
             position.angle = target.angle;
-            constexpr auto static tau{std::numbers::pi * 2.0};
-            if (position.angle < 0) position.angle += tau;
-            if (position.angle >= tau) position.angle -= tau;
+            constexpr static auto tau{std::numbers::pi * 2.0};
+            if (position.angle < 0)
+            {
+                position.angle += tau;
+            }
+            if (position.angle >= tau)
+            {
+                position.angle -= tau;
+            }
             rotating = 0;
         }
     }
@@ -319,8 +332,8 @@ void Player::frame(const world::Level& level, double frameTime)
         {
             auto passed = now - fovAnimation->time.old;
             auto length = 1.0 / (double)(fovAnimation->time.target - fovAnimation->time.old);
-            auto diff = [length, passed] (const auto& field)
-                        { return field.old + passed * (field.target - field.old) * length; };
+            auto diff   = [length, passed](const auto& field)
+            { return field.old + passed * (field.target - field.old) * length; };
             position.fovH = diff(fovAnimation->fovH);
             position.fovV = diff(fovAnimation->fovV);
         }
@@ -330,6 +343,12 @@ void Player::frame(const world::Level& level, double frameTime)
 void Player::save(std::ostream& os) const
 {
     os << std::format("player_place({},{},{},{},{},{},{})\n",
-                      position.sector, position.x, position.y, position.z, position.angle, position.fovH, position.fovV);
+                      position.sector,
+                      position.x,
+                      position.y,
+                      position.z,
+                      position.angle,
+                      position.fovH,
+                      position.fovV);
 }
-}
+} // namespace game

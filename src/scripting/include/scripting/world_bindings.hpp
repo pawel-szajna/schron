@@ -17,7 +17,7 @@ namespace world
 class SectorBuilder;
 class Sprite;
 class World;
-}
+} // namespace world
 
 namespace scripting
 {
@@ -32,10 +32,28 @@ private:
     void create(int sectorId, double floor, std::string floorTexture, double ceiling, std::string ceilingTexture);
     void addWall(int sectorId, std::string texture, double x1, double y1, double x2, double y2);
     void addPortal(int sectorId, std::string texture, double x1, double y1, double x2, double y2, int target);
-    void addTransform(int sectorId, std::string texture, double x1, double y1, double x2, double y2, int target,
-                      double transformX, double transformY, double transformZ, double transformAngle);
+    void addTransform(int sectorId,
+                      std::string texture,
+                      double x1,
+                      double y1,
+                      double x2,
+                      double y2,
+                      int target,
+                      double transformX,
+                      double transformY,
+                      double transformZ,
+                      double transformAngle);
 
-    void sprite(int sectorId, int id, std::string texture, double x, double y, double z, double offset, bool shadows, double lightCenter, bool blocking);
+    void sprite(int sectorId,
+                int id,
+                std::string texture,
+                double x,
+                double y,
+                double z,
+                double offset,
+                bool shadows,
+                double lightCenter,
+                bool blocking);
     void spriteTexture(int sectorId, int id, double angle, std::string texture);
     void light(int sectorId, double x, double y, double z, double r, double g, double b);
 
@@ -47,4 +65,4 @@ private:
     [[maybe_unused]] sol::state& lua;
     world::World& world;
 };
-}
+} // namespace scripting

@@ -9,7 +9,7 @@ namespace world
 {
 class Sector;
 class Sprite;
-}
+} // namespace world
 
 namespace ui::editor
 {
@@ -23,7 +23,8 @@ public:
                  int spriteId,
                  sdl::Font& font,
                  std::optional<WindowTexture>& textureSelector,
-                 int x, int y,
+                 int x,
+                 int y,
                  SpriteAction duplicate,
                  SpriteAction destroy,
                  SpriteAction block);
@@ -51,4 +52,4 @@ private:
     SpriteAction destroy;
     SpriteAction block;
 };
-}
+} // namespace ui::editor

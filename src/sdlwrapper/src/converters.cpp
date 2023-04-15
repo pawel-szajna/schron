@@ -20,4 +20,4 @@ SDL_BlendMode BlendMode_to_SDL_BlendMode(BlendMode blendMode)
         throw std::invalid_argument{"unsupported sdl::BlendMode value"};
     }
 }
-}
+} // namespace sdl::convert

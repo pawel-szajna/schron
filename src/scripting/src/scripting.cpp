@@ -2,23 +2,34 @@
 
 #include "ui/ui.hpp"
 #include "ui_bindings.hpp"
-#include "world_bindings.hpp"
 #include "world/world.hpp"
+#include "world_bindings.hpp"
 
 #include <spdlog/spdlog.h>
 
 namespace
 {
-void debug(const std::string& msg) { spdlog::debug(msg); }
-void info(const std::string& msg) { spdlog::info(msg); }
-void warning(const std::string& msg) { spdlog::warn(msg); }
+void debug(const std::string& msg)
+{
+    spdlog::debug(msg);
 }
+
+void info(const std::string& msg)
+{
+    spdlog::info(msg);
+}
+
+void warning(const std::string& msg)
+{
+    spdlog::warn(msg);
+}
+} // namespace
 
 namespace scripting
 {
-Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
-    ui(ui),
-    world(world)
+Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer)
+    : ui(ui)
+    , world(world)
 {
     lua.open_libraries(sol::lib::base, sol::lib::table);
 
@@ -26,7 +37,7 @@ Scripting::Scripting(ui::UI& ui, world::World& world, sdl::Renderer& renderer) :
     bind("info", info);
     bind("warn", warning);
 
-    uiBindings = std::make_unique<UiBindings>(lua, ui, renderer);
+    uiBindings    = std::make_unique<UiBindings>(lua, ui, renderer);
     worldBindings = std::make_unique<WorldBindings>(lua, world);
 }
 
@@ -47,7 +58,7 @@ void Scripting::runAsCoroutine(const std::string& script)
 try
 {
     spdlog::info("Running interactive script: {}", script);
-    sol::thread thread = sol::thread::create(lua);
+    sol::thread thread       = sol::thread::create(lua);
     sol::coroutine coroutine = thread.state().load_file(script);
     coroutines.emplace(std::move(thread), std::move(coroutine));
     resume();
@@ -139,4 +150,4 @@ void Scripting::unbind(const std::string& name)
     lua[name] = sol::lua_nil;
 }
 
-}
+} // namespace scripting

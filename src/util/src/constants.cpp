@@ -14,14 +14,14 @@ void assign(sol::state& lua, const std::string& name, T& value)
         spdlog::debug("Read value from config: {}={}", name, value);
     }
 }
-}
+} // namespace
 
 namespace c
 {
-bool renderStats = false;
-bool frameLimit = true;
+bool renderStats        = false;
+bool frameLimit         = true;
 double shadowResolution = 16;
-int shadowDepth = 4;
+int shadowDepth         = 4;
 
 void loadConfig()
 {
@@ -36,9 +36,9 @@ void loadConfig()
         assign(lua, "shadowResolution", shadowResolution);
         assign(lua, "shadowDepth", shadowDepth);
     }
-    catch(std::exception& e)
+    catch (std::exception& e)
     {
         spdlog::warn("Could not load config: {}. Falling back to defaults", e.what());
     }
 }
-}
+} // namespace c

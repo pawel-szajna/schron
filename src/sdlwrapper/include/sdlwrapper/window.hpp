@@ -30,6 +30,5 @@ public:
     ~Window();
 
     void setTitle(const std::string& title) noexcept;
-
 };
-}
+} // namespace sdl

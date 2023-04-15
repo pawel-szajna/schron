@@ -72,8 +72,7 @@ public:
      *
      * This calls SDL_BlitSurface.
      */
-    void render(Surface& target,
-                std::optional<Rectangle> where = std::nullopt);
+    void render(Surface& target, std::optional<Rectangle> where = std::nullopt);
 
     /**
      * @brief Renders this surface onto another Surface, applying scaling.
@@ -92,4 +91,4 @@ public:
 
     int width, height;
 };
-}
+} // namespace sdl

@@ -59,4 +59,4 @@ void showCursor();
  * @brief Hides the mouse cursor.
  */
 void hideCursor();
-}
+} // namespace sdl

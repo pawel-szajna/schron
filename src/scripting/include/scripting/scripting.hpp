@@ -82,7 +82,7 @@ public:
      * @param args The function to bind, optionally with argument values to bind
      */
     template<typename... Args>
-    void bind(const std::string& name, Args&& ...args)
+    void bind(const std::string& name, Args&&... args)
     {
         lua.set_function(name, std::forward<Args>(args)...);
     }
@@ -98,13 +98,13 @@ public:
      * calling the Scripting::resume function.
      */
     template<typename Fn, typename... Args>
-    void bindYielding(const std::string& name, Fn&& fn, Args&& ...args)
+    void bindYielding(const std::string& name, Fn&& fn, Args&&... args)
     {
         bind(name, sol::yielding(fn), std::forward<Args>(args)...);
     }
 
     template<typename... Args>
-    void unbind(const std::string& name, Args&& ...args)
+    void unbind(const std::string& name, Args&&... args)
     {
         unbind(name);
         unbind(std::forward<Args>(args)...);
@@ -129,6 +129,5 @@ private:
 
     [[maybe_unused]] ui::UI& ui;
     [[maybe_unused]] world::World& world;
-
 };
-}
+} // namespace scripting

@@ -23,16 +23,24 @@ class Wrapped
 {
 public:
 
-    Wrapped() = default;
-    Wrapped(const Wrapped<T>&) = delete;
+    Wrapped()                                = default;
+    Wrapped(const Wrapped<T>&)               = delete;
     Wrapped<T>& operator=(const Wrapped<T>&) = delete;
 
     Wrapped(Wrapped<T>&& other) noexcept { std::swap(wrapped, other.wrapped); }
-    Wrapped<T>& operator=(Wrapped<T>&& other) noexcept { std::swap(wrapped, other.wrapped); return *this; }
+
+    Wrapped<T>& operator=(Wrapped<T>&& other) noexcept
+    {
+        std::swap(wrapped, other.wrapped);
+        return *this;
+    }
 
     T* operator*() { return wrapped; }
+
     T* operator->() { return wrapped; }
+
     const T* operator*() const { return wrapped; }
+
     const T* operator->() const { return wrapped; }
 
 protected:
@@ -56,4 +64,4 @@ protected:
 
     T* wrapped{nullptr};
 };
-}
+} // namespace sdl

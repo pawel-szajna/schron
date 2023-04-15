@@ -37,8 +37,10 @@ public:
 private:
 
     using DiffApplier = std::function<void(double)>;
-    template<typename T> using VertexGetter = std::function<std::optional<std::tuple<double, double, double, double>>(const T&)>;
-    template<typename T> bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
+    template<typename T>
+    using VertexGetter = std::function<std::optional<std::tuple<double, double, double, double>>(const T&)>;
+    template<typename T>
+    bool mouseWithin(const T& vertices, VertexGetter<T> vg) const;
 
     void enqueue(int length, double startValue, double targetValue, DiffApplier applier);
 
@@ -97,4 +99,4 @@ private:
     sdl::Cursor cursorVertical{8};
     sdl::Cursor cursorMove{9};
 };
-}
+} // namespace ui::editor

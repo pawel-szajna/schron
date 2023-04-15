@@ -11,7 +11,7 @@ class SectorBuilder
 public:
 
     virtual ~SectorBuilder() = default;
-    virtual Sector build() = 0;
+    virtual Sector build()   = 0;
 };
 
 class PolygonalSectorBuilder : public SectorBuilder
@@ -68,4 +68,4 @@ private:
     std::optional<NeighbourParams> south{};
     std::optional<NeighbourParams> west{};
 };
-}
+} // namespace world

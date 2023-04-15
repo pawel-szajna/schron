@@ -12,9 +12,9 @@ class Quit;
 class Key;
 class Mouse;
 
-using None = std::monostate;
+using None  = std::monostate;
 using Event = std::variant<None, Quit, Key, Mouse>;
-}
+} // namespace event
 
 /**
  * @brief Checks for an yet-unhandled event.
@@ -25,4 +25,4 @@ using Event = std::variant<None, Quit, Key, Mouse>;
  * events have been encountered, an Event value of None is used.
  */
 event::Event pollEvent();
-}
+} // namespace sdl

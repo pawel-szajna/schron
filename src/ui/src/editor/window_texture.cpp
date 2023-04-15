@@ -17,19 +17,19 @@ constexpr auto previewSize{128};
 constexpr auto previewMargin{8};
 constexpr auto previewSpacingX{5};
 constexpr auto previewSpacingY{16};
-}
+} // namespace
 
 namespace ui::editor
 {
 WindowTexture::WindowTexture(sdl::Font& font,
                              const std::string& category,
                              TextureChoiceCallback onChoice,
-                             std::optional<WindowTexture>& container) :
-    textureWindow(windowX, windowY, windowWidth, windowHeight),
-    container(container),
-    onChoice(std::move(onChoice)),
-    font(font),
-    category(category)
+                             std::optional<WindowTexture>& container)
+    : textureWindow(windowX, windowY, windowWidth, windowHeight)
+    , container(container)
+    , onChoice(std::move(onChoice))
+    , font(font)
+    , category(category)
 {
     auto path = std::format("res/gfx/{}", category);
 
@@ -50,12 +50,15 @@ WindowTexture::~WindowTexture() = default;
 void WindowTexture::fillWindow()
 {
     int currentColumn = 0;
-    int currentRow = 0;
-    int skipped = scrollPosition * 6;
+    int currentRow    = 0;
+    int skipped       = scrollPosition * 6;
 
     for (auto texture : textures)
     {
-        if (skipped --> 0) continue;
+        if (skipped-- > 0)
+        {
+            continue;
+        }
         textureWindow.add<Button>(3 + currentColumn * (previewSpacingX + previewSize),
                                   3 + currentRow * (previewSpacingY + previewSize),
                                   previewSize,
@@ -64,7 +67,8 @@ void WindowTexture::fillWindow()
                                   texture,
                                   [&, texture] { onChoice(texture); });
         textureWindow.add<Image>(3 + currentColumn * (previewSpacingX + previewSize) + previewMargin,
-                                 3 + currentRow * (previewSpacingY + previewSize) + previewMargin + previewSpacingY - previewSpacingX,
+                                 3 + currentRow * (previewSpacingY + previewSize) + previewMargin + previewSpacingY -
+                                     previewSpacingX,
                                  previewSize - previewMargin * 2,
                                  previewSize - previewMargin * 2,
                                  std::format("res/gfx/{}/{}.png", category, texture));
@@ -80,7 +84,9 @@ void WindowTexture::fillWindow()
         }
     }
 
-    textureWindow.add<Text>(3, windowHeight - 24, font,
+    textureWindow.add<Text>(3,
+                            windowHeight - 24,
+                            font,
                             std::format("Showing {} textures {} to {} of {}",
                                         category,
                                         scrollPosition * 6 + 1,
@@ -116,4 +122,4 @@ void WindowTexture::scroll(int rows)
     textureWindow.clear();
     fillWindow();
 }
-}
+} // namespace ui::editor

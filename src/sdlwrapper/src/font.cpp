@@ -10,8 +10,7 @@ namespace sdl
 {
 Font::Font(const std::string& file, int size)
 {
-    assign(TTF_OpenFont(file.c_str(), size),
-           std::format("SDL TTF font ({})", TTF_GetError()));
+    assign(TTF_OpenFont(file.c_str(), size), std::format("SDL TTF font ({})", TTF_GetError()));
 }
 
 Font::~Font()
@@ -55,4 +54,4 @@ std::pair<int, int> Font::size(const std::string& text)
     TTF_SizeUTF8(wrapped, text.c_str(), &w, &h);
     return {w, h};
 }
-}
+} // namespace sdl

@@ -8,10 +8,11 @@
 
 namespace game
 {
-ModeMainMenu::ModeMainMenu(scripting::Scripting& scripting, ui::UI& ui) :
-    scripting(scripting),
-    ui(ui)
-{}
+ModeMainMenu::ModeMainMenu(scripting::Scripting& scripting, ui::UI& ui)
+    : scripting(scripting)
+    , ui(ui)
+{
+}
 
 void ModeMainMenu::entry()
 {
@@ -24,10 +25,8 @@ std::optional<GameMode> ModeMainMenu::frame(double frameTime)
     return GameMode::InGame;
 }
 
-void ModeMainMenu::event(const sdl::event::Event& event)
-{}
+void ModeMainMenu::event(const sdl::event::Event& event) {}
 
-void ModeMainMenu::exit()
-{}
+void ModeMainMenu::exit() {}
 
-}
+} // namespace game

@@ -7,8 +7,8 @@
 
 namespace ui
 {
-UI::UI(sdl::Renderer& renderer) :
-    renderer(renderer)
+UI::UI(sdl::Renderer& renderer)
+    : renderer(renderer)
 {
     spdlog::debug("UI initialized");
 }
@@ -58,4 +58,4 @@ void UI::event(const sdl::event::Event& event)
         }
     }
 }
-}
+} // namespace ui

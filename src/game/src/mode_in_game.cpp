@@ -8,8 +8,8 @@
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/editor/editor.hpp"
 #include "ui/mini_map.hpp"
-#include "ui/ui.hpp"
 #include "ui/text.hpp"
+#include "ui/ui.hpp"
 #include "world/world.hpp"
 
 #include <fstream>
@@ -18,17 +18,15 @@
 
 namespace game
 {
-ModeInGame::ModeInGame(ui::UI& ui,
-                       world::World& world,
-                       sdl::Renderer& renderer,
-                       scripting::Scripting& scripting,
-                       int& noiseLevel) :
-    ui(ui),
-    world(world),
-    renderer(renderer),
-    scripting(scripting),
-    player(scripting, noiseLevel)
-{}
+ModeInGame::ModeInGame(
+    ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting, int& noiseLevel)
+    : ui(ui)
+    , world(world)
+    , renderer(renderer)
+    , scripting(scripting)
+    , player(scripting, noiseLevel)
+{
+}
 
 ModeInGame::~ModeInGame() = default;
 
@@ -139,7 +137,7 @@ void ModeInGame::event(const sdl::event::Event& event)
 void ModeInGame::notify(uint64_t timeout, const std::string& message)
 {
     auto widgetId = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight);
-    auto& widget = ui.get_as<ui::Text>(widgetId);
+    auto& widget  = ui.get_as<ui::Text>(widgetId);
     widget.move(32, 32);
     widget.write(message, "KellySlab", 20);
     enqueue(timeout, [widgetId, &ui = ui]() { ui.remove(widgetId); });
@@ -194,10 +192,22 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
     }
     else
     {
-        if (keys[SDL_SCANCODE_DOWN]) player.move(world.level(1), Player::Direction::Backward);
-        if (keys[SDL_SCANCODE_UP]) player.move(world.level(1), Player::Direction::Forward);
-        if (keys[SDL_SCANCODE_LEFT]) player.rotate(Player::Rotation::Left);
-        if (keys[SDL_SCANCODE_RIGHT]) player.rotate(Player::Rotation::Right);
+        if (keys[SDL_SCANCODE_DOWN])
+        {
+            player.move(world.level(1), Player::Direction::Backward);
+        }
+        if (keys[SDL_SCANCODE_UP])
+        {
+            player.move(world.level(1), Player::Direction::Forward);
+        }
+        if (keys[SDL_SCANCODE_LEFT])
+        {
+            player.rotate(Player::Rotation::Left);
+        }
+        if (keys[SDL_SCANCODE_RIGHT])
+        {
+            player.rotate(Player::Rotation::Right);
+        }
 
         if (player.getPosition().x != lastFrameX or player.getPosition().y != lastFrameY or
             player.getPosition().z != lastFrameZ or player.getPosition().angle != lastFrameAngle)
@@ -213,8 +223,8 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
                 }
                 if (not tooltipWidget or tooltipWidget->second != *script)
                 {
-                    tooltipWidget = { ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script };
-                    auto& text = ui.get_as<ui::Text>(tooltipWidget->first);
+                    tooltipWidget = {ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script};
+                    auto& text    = ui.get_as<ui::Text>(tooltipWidget->first);
                     const static std::string interactionPrompt = "Press [Enter] to interact";
                     text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
                               c::windowHeight * 3 / 4);
@@ -232,9 +242,9 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
                 }
             }
 
-            lastFrameX = player.getPosition().x;
-            lastFrameY = player.getPosition().y;
-            lastFrameZ = player.getPosition().z;
+            lastFrameX     = player.getPosition().x;
+            lastFrameY     = player.getPosition().y;
+            lastFrameZ     = player.getPosition().z;
             lastFrameAngle = player.getPosition().angle;
         }
 
@@ -256,4 +266,4 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
 
     return noChange;
 }
-}
+} // namespace game

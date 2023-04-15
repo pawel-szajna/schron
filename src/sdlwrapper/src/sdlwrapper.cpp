@@ -18,7 +18,7 @@ void initialize()
     auto drivers = SDL_GetNumVideoDrivers();
     for (int i = 0; i < drivers; ++i)
     {
-           spdlog::debug("Available driver #{}: {}", i, SDL_GetVideoDriver(i));
+        spdlog::debug("Available driver #{}: {}", i, SDL_GetVideoDriver(i));
     }
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -81,4 +81,4 @@ void hideCursor()
 {
     SDL_HideCursor();
 }
-}
+} // namespace sdl

@@ -27,17 +27,18 @@ class Renderer;
 namespace ui
 {
 class UI;
+
 namespace editor
 {
 class Editor;
 }
-}
+} // namespace ui
 
 namespace world
 {
 class Level;
 class World;
-}
+} // namespace world
 
 namespace game
 {
@@ -55,11 +56,8 @@ class ModeInGame : public ModeExecutor
 
 public:
 
-    ModeInGame(ui::UI& ui,
-               world::World& world,
-               sdl::Renderer& renderer,
-               scripting::Scripting& scripting,
-               int& noiseLevel);
+    ModeInGame(
+        ui::UI& ui, world::World& world, sdl::Renderer& renderer, scripting::Scripting& scripting, int& noiseLevel);
     virtual ~ModeInGame();
 
     void entry() override;
@@ -98,4 +96,4 @@ private:
 
     std::unique_ptr<SubMode> subMode;
 };
-}
+} // namespace game

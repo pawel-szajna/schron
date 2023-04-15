@@ -21,7 +21,6 @@ public:
 private:
 
     int count;
-    SDL_Vertex *vertices;
-
+    SDL_Vertex* vertices;
 };
-}
+} // namespace sdl

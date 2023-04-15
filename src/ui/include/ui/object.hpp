@@ -14,9 +14,8 @@ class Object
 {
 public:
 
-    virtual ~Object() = default;
-    virtual void render(sdl::Renderer& target) = 0;
+    virtual ~Object()                                  = default;
+    virtual void render(sdl::Renderer& target)         = 0;
     virtual void event(const sdl::event::Event& event) = 0;
-
 };
-}
+} // namespace ui

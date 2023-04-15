@@ -6,8 +6,7 @@ namespace sdl
 {
 Cursor::Cursor(int id)
 {
-    assign(SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(id)),
-           "SDL system cursor");
+    assign(SDL_CreateSystemCursor(static_cast<SDL_SystemCursor>(id)), "SDL system cursor");
 }
 
 Cursor::~Cursor()
@@ -22,4 +21,4 @@ void Cursor::activate() const
 {
     SDL_SetCursor(wrapped);
 }
-}
+} // namespace sdl

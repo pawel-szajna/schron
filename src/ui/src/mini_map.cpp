@@ -16,12 +16,12 @@ namespace ui
 {
 namespace
 {
-constexpr auto mapWidth = 300;
+constexpr auto mapWidth  = 300;
 constexpr auto mapHeight = 240;
 constexpr auto mapMargin = 32;
-constexpr auto mapTop = mapMargin;
-constexpr auto mapLeft = c::windowWidth - mapWidth - mapMargin;
-constexpr auto mapScale = 32;
+constexpr auto mapTop    = mapMargin;
+constexpr auto mapLeft   = c::windowWidth - mapWidth - mapMargin;
+constexpr auto mapScale  = 32;
 
 constexpr sdl::Vertex grayVertex(float x, float y, uint8_t intensity, uint8_t alpha)
 {
@@ -35,22 +35,21 @@ struct MapSector
     double transformX;
     double transformY;
 };
-}
+} // namespace
 
-MiniMap::MiniMap(sdl::Renderer& renderer, const world::Level& level, const game::Player& player) :
-    level(level),
-    player(player),
-    surface(mapWidth, mapHeight),
-    surfaceRenderer(surface),
-    texture(renderer, sdl::Texture::Access::Streaming, mapWidth, mapHeight)
+MiniMap::MiniMap(sdl::Renderer& renderer, const world::Level& level, const game::Player& player)
+    : level(level)
+    , player(player)
+    , surface(mapWidth, mapHeight)
+    , surfaceRenderer(surface)
+    , texture(renderer, sdl::Texture::Access::Streaming, mapWidth, mapHeight)
 {
     texture.setBlendMode(sdl::BlendMode::Add);
 }
 
 MiniMap::~MiniMap() = default;
 
-void MiniMap::event(const sdl::event::Event& event)
-{}
+void MiniMap::event(const sdl::event::Event& event) {}
 
 void MiniMap::render(sdl::Renderer& renderer)
 {
@@ -61,10 +60,10 @@ void MiniMap::render(sdl::Renderer& renderer)
 
     constexpr static auto boxColor = 204;
     constexpr static auto boxAlpha = 80;
-    const static std::vector<sdl::Vertex> box{grayVertex(       0,         0, boxColor, boxAlpha),
-                                              grayVertex(mapWidth,         0, boxColor, boxAlpha),
+    const static std::vector<sdl::Vertex> box{grayVertex(0, 0, boxColor, boxAlpha),
+                                              grayVertex(mapWidth, 0, boxColor, boxAlpha),
                                               grayVertex(mapWidth, mapHeight, boxColor, boxAlpha),
-                                              grayVertex(       0, mapHeight, boxColor, boxAlpha)};
+                                              grayVertex(0, mapHeight, boxColor, boxAlpha)};
     surfaceRenderer.clear();
     surfaceRenderer.renderGeometry(box);
 
@@ -108,12 +107,9 @@ void MiniMap::render(sdl::Renderer& renderer)
         }
     }
 
-    sectorQueue.push({.id = position.sector,
-                      .recursion = 5,
-                      .transformX = 0,
-                      .transformY = 0});
+    sectorQueue.push({.id = position.sector, .recursion = 5, .transformX = 0, .transformY = 0});
 
-    using Transform = std::tuple<double, double>;
+    using Transform   = std::tuple<double, double>;
     using SectorEntry = std::tuple<int, Transform>;
     std::set<SectorEntry> history{};
 
@@ -162,8 +158,8 @@ void MiniMap::render(sdl::Renderer& renderer)
                         newTransformX += wall.portal->transform->x;
                         newTransformY += wall.portal->transform->y;
                     }
-                    sectorQueue.push({.id = wall.portal->sector,
-                                      .recursion = current.recursion - 1,
+                    sectorQueue.push({.id         = wall.portal->sector,
+                                      .recursion  = current.recursion - 1,
                                       .transformX = newTransformX,
                                       .transformY = newTransformY});
                 }
@@ -171,25 +167,21 @@ void MiniMap::render(sdl::Renderer& renderer)
         }
     }
 
-    const static std::vector<sdl::Vertex> playerArrow
-    {
+    const static std::vector<sdl::Vertex> playerArrow{
         sdl::Vertex{mapWidth / 2 - mapScale / 5, mapHeight / 2 + mapScale / 5, 255, 192, 192, 90, 0, 0},
         sdl::Vertex{mapWidth / 2, mapHeight / 2 - mapScale / 5, 255, 192, 192, 90, 0, 0},
-        sdl::Vertex{mapWidth / 2 + mapScale / 5, mapHeight / 2 + mapScale / 5, 255, 192, 192, 90, 0, 0}
-    };
+        sdl::Vertex{mapWidth / 2 + mapScale / 5, mapHeight / 2 + mapScale / 5, 255, 192, 192, 90, 0, 0}};
     surfaceRenderer.renderGeometry(playerArrow);
-
 
     surfaceRenderer.present();
 
     auto font = sdl::Font("res/font/KellySlab.ttf", 18);
-    auto text = font.render(std::format("[{}] x={:.1f} y={:.1f} z={:.1f}",
-                                        position.sector,
-                                        position.x, position.y, position.z),
-                            sdl::Color{255, 255, 255, 200});
+    auto text =
+        font.render(std::format("[{}] x={:.1f} y={:.1f} z={:.1f}", position.sector, position.x, position.y, position.z),
+                    sdl::Color{255, 255, 255, 200});
     text.render(surface, sdl::Rectangle{0, mapHeight - text.height});
 
     surface.render(texture);
     renderer.copy(texture, std::nullopt, sdl::FRectangle{mapLeft, mapTop, mapWidth, mapHeight});
 }
-}
+} // namespace ui

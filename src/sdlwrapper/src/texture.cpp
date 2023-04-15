@@ -13,7 +13,7 @@ namespace
 {
 int convertAccess(Texture::Access access)
 {
-    switch(access)
+    switch (access)
     {
     case Texture::Access::Static:
         return SDL_TEXTUREACCESS_STATIC;
@@ -25,13 +25,12 @@ int convertAccess(Texture::Access access)
         throw std::invalid_argument{"invalid enum value in Texture::Access converter"};
     }
 }
-}
+} // namespace
 
-Texture::Texture(Renderer& renderer, Access access, int width, int height) :
-    width(width)
+Texture::Texture(Renderer& renderer, Access access, int width, int height)
+    : width(width)
 {
-    assign(SDL_CreateTexture(*renderer, SDL_PIXELFORMAT_ARGB8888, convertAccess(access), width, height),
-           "SDL texture");
+    assign(SDL_CreateTexture(*renderer, SDL_PIXELFORMAT_ARGB8888, convertAccess(access), width, height), "SDL texture");
 }
 
 Texture::~Texture()
@@ -59,4 +58,4 @@ void Texture::update(uint32_t* pixels)
         throw std::runtime_error{std::format("could not update texture: {}", SDL_GetError())};
     }
 }
-}
+} // namespace sdl

@@ -31,7 +31,13 @@ class Level
     friend class ui::editor::Editor;
     friend class scripting::WorldBindings;
 
-    struct Interaction { int sector; double x, y; std::string script; };
+    struct Interaction
+    {
+        int sector;
+        double x, y;
+        std::string script;
+    };
+
     using SectorsMap = std::unordered_map<int, Sector>;
 
 public:
@@ -39,7 +45,9 @@ public:
     Level(int id, std::string name);
 
     void put(Sector sector);
+
     [[nodiscard]] const Sector& sector(int id) const { return map.at(id); }
+
     [[nodiscard]] const SectorsMap& sectors() const { return map; }
 
     void interaction(int sector, double x, double y, const std::string& script);
@@ -53,6 +61,5 @@ private:
     std::unordered_set<std::string> additionalTextures{};
     SectorsMap map{};
     std::vector<Interaction> interactions{};
-
 };
-}
+} // namespace world

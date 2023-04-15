@@ -39,4 +39,4 @@ private:
 
     int width;
 };
-}
+} // namespace sdl

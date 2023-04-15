@@ -1,9 +1,9 @@
 #include "editor/editor.hpp"
 
+#include "editor/widgets.hpp"
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "util/constants.hpp"
-#include "editor/widgets.hpp"
 #include "world/builders.hpp"
 #include "world/level.hpp"
 
@@ -12,9 +12,9 @@
 
 namespace ui::editor
 {
-Editor::Editor(world::Level& level, sdl::Font& font) :
-    level(level),
-    font(font)
+Editor::Editor(world::Level& level, sdl::Font& font)
+    : level(level)
+    , font(font)
 {
     sdl::showCursor();
 }
@@ -29,13 +29,13 @@ void Editor::event(const sdl::event::Event& event)
     if (std::holds_alternative<sdl::event::Mouse>(event))
     {
         auto& mouse = std::get<sdl::event::Mouse>(event);
-        mouseX = mouse.x;
-        mouseY = mouse.y;
+        mouseX      = mouse.x;
+        mouseY      = mouse.y;
         if (not dragging and mouse.button.has_value() and *mouse.button == 1)
         {
             dragX = btnX = mouseX;
             dragY = btnY = mouseY;
-            dragging = true;
+            dragging     = true;
         }
         if (mouse.button.has_value() and *mouse.button == -1)
         {
@@ -111,8 +111,8 @@ void Editor::updateMouse()
 {
     if (dragged)
     {
-        mapX = mapX - (mouseX - dragX);
-        mapY = mapY - (mouseY - dragY);
+        mapX  = mapX - (mouseX - dragX);
+        mapY  = mapY - (mouseY - dragY);
         dragX = mouseX;
         dragY = mouseY;
     }
@@ -144,14 +144,16 @@ void Editor::updateMouse()
                     clicked = false;
                     for (const auto& sprite : sector.sprites)
                     {
-                        std::vector<sdl::Vertex> spriteVertices =
-                           {{(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY)},
+                        std::vector<sdl::Vertex> spriteVertices = {
+                            {(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY)},
                             {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2))},
                             {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY)},
-                            {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY + (mapScale / 2))}};
+                            {(float)(mapScale * sprite.x - mapX),
+                             (float)(mapScale * sprite.y - mapY + (mapScale / 2))}};
                         if (mouseWithin<std::vector<sdl::Vertex>>(
                                 spriteVertices,
-                                [n = (size_t)0](const std::vector<sdl::Vertex>& vertices) mutable -> VertexGetter<sdl::Vertex>::result_type
+                                [n = (size_t)0](const std::vector<sdl::Vertex>& vertices) mutable
+                                -> VertexGetter<sdl::Vertex>::result_type
                                 {
                                     if (n >= vertices.size())
                                     {
@@ -164,7 +166,7 @@ void Editor::updateMouse()
                                                            vertices[(n + 1) % vertices.size()].y);
                                 }))
                         {
-                            selectedSprite = sprite.id;
+                            selectedSprite       = sprite.id;
                             selectedSpriteWindow = std::nullopt;
                             break;
                         }
@@ -172,24 +174,26 @@ void Editor::updateMouse()
                 }
                 if (not selectedSector or *selectedSector != id)
                 {
-                    selectedSector = id;
+                    selectedSector       = id;
                     selectedSectorWindow = std::nullopt;
-                    selectedSprite = std::nullopt;
+                    selectedSprite       = std::nullopt;
                     selectedSpriteWindow = std::nullopt;
-                    enqueue(1200, 0, 1199,
-                            [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture]
-                            (double time)
+                    enqueue(1200,
+                            0,
+                            1199,
+                            [&, id = id, originalFloor = sector.floorTexture, originalCeiling = sector.ceilingTexture](
+                                double time)
                             {
                                 auto& s = level.map.at(id);
-                                if ((int) (time) % 400 < 200)
+                                if ((int)(time) % 400 < 200)
                                 {
                                     s.ceilingTexture = "highlight";
-                                    s.floorTexture = "highlight";
+                                    s.floorTexture   = "highlight";
                                 }
                                 else
                                 {
                                     s.ceilingTexture = originalCeiling;
-                                    s.floorTexture = originalFloor;
+                                    s.floorTexture   = originalFloor;
                                 }
                             });
                     clicked = false;
@@ -204,16 +208,16 @@ void Editor::updateMouse()
         selectedSector = std::nullopt;
         if (modCtrl)
         {
-            int newId = 1;
+            int newId   = 1;
             double newX = std::floor((mouseX + mapX) / mapScale);
             double newY = std::floor((mouseY + mapY) / mapScale);
-            while (level.map.contains(newId)) ++newId;
-            level.put(world::RectangularSectorBuilder(newId)
-                        .withCeiling(1.0)
-                        .withFloor(0.0)
-                        .build());
+            while (level.map.contains(newId))
+            {
+                ++newId;
+            }
+            level.put(world::RectangularSectorBuilder(newId).withCeiling(1.0).withFloor(0.0).build());
             resizeSector(newId, newX, newX + 1, newY, newY + 1);
-            selectedSector = newId;
+            selectedSector       = newId;
             selectedSectorWindow = std::nullopt;
         }
         clicked = false;
@@ -232,7 +236,8 @@ void Editor::processMapUpdates()
 
     for (const auto& diff : diffs)
     {
-        diff.applier(diff.startValue + (now - diff.startTime) * (diff.targetValue - diff.startValue) / (diff.targetTime - diff.startTime));
+        diff.applier(diff.startValue + (now - diff.startTime) * (diff.targetValue - diff.startValue) /
+                                           (diff.targetTime - diff.startTime));
     }
 }
 
@@ -250,10 +255,19 @@ void Editor::drawMap(sdl::Renderer& renderer)
                            float vertexX = wall.xStart * mapScale - mapX;
                            float vertexY = wall.yStart * mapScale - mapY;
                            uint8_t color = 100;
-                           if (sectorUnderMouse == id) color = 150;
-                           if (selectedSector == id) color = 170;
-                           return sdl::Vertex{vertexX, vertexY,
-                                              color, color, color,
+                           if (sectorUnderMouse == id)
+                           {
+                               color = 150;
+                           }
+                           if (selectedSector == id)
+                           {
+                               color = 170;
+                           }
+                           return sdl::Vertex{vertexX,
+                                              vertexY,
+                                              color,
+                                              color,
+                                              color,
                                               selectedSector == id ? (uint8_t)255 : (uint8_t)220};
                        });
         renderer.renderGeometry(vertices);
@@ -279,22 +293,32 @@ void Editor::drawMap(sdl::Renderer& renderer)
             {
                 a = 255;
             }
-            renderer.renderLine(mapScale * wall.xStart - mapX, mapScale * wall.yStart - mapY,
-                                mapScale * wall.xEnd - mapX, mapScale * wall.yEnd - mapY,
-                                r, g, b, a);
+            renderer.renderLine(mapScale * wall.xStart - mapX,
+                                mapScale * wall.yStart - mapY,
+                                mapScale * wall.xEnd - mapX,
+                                mapScale * wall.yEnd - mapY,
+                                r,
+                                g,
+                                b,
+                                a);
         }
         for (const auto& sprite : sector.sprites)
         {
             uint8_t r = 140, g = 170, b = 190, a = 200;
-            if (selectedSector and *selectedSector == id and
-                selectedSprite and *selectedSprite == sprite.id)
+            if (selectedSector and *selectedSector == id and selectedSprite and *selectedSprite == sprite.id)
             {
                 r = 120, g = 180, b = 230, a = 230;
             }
-            vertices = {{(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
-                        {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2)), r, g, b, a},
-                        {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
-                        {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY + (mapScale / 2)), r, g, b, a}};
+            vertices = {
+                {(float)(mapScale * sprite.x - mapX - (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
+                {(float)(mapScale * sprite.x - mapX), (float)(mapScale * sprite.y - mapY - (mapScale / 2)), r, g, b, a},
+                {(float)(mapScale * sprite.x - mapX + (mapScale / 2)), (float)(mapScale * sprite.y - mapY), r, g, b, a},
+                {(float)(mapScale * sprite.x - mapX),
+                 (float)(mapScale * sprite.y - mapY + (mapScale / 2)),
+                 r,
+                 g,
+                 b,
+                 a}};
             renderer.renderGeometry(vertices);
         }
     }
@@ -327,26 +351,38 @@ void Editor::resizeSector(int id, double left, double right, double top, double 
 
 void Editor::resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse)
 {
-    spdlog::debug("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})", id, left, right, top, bottom, recurse);
-    auto& sector = level.map.at(id);
+    spdlog::debug("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})",
+                  id,
+                  left,
+                  right,
+                  top,
+                  bottom,
+                  recurse);
+    auto& sector       = level.map.at(id);
     using Intersection = std::tuple<int, double, double>;
     std::vector<Intersection> xsTop, xsRight, xsBottom, xsLeft;
     std::vector<std::tuple<int, double, double, double, double>> toResize{};
     for (auto& [otherId, other] : level.map)
     {
-        if (otherId == id or
-            other.ceiling < sector.floor or
-            other.floor > sector.ceiling)
+        if (otherId == id or other.ceiling < sector.floor or other.floor > sector.ceiling)
         {
             continue;
         }
-        auto wallLeftX =   *std::min_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
-        auto wallRightX =  *std::max_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
-        auto wallTopY =    *std::min_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
-        auto wallBottomY = *std::max_element(other.walls.begin(), other.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
-        auto otherLeft = wallLeftX.xStart;
-        auto otherRight = wallRightX.xEnd;
-        auto otherTop = wallTopY.yStart;
+        auto wallLeftX   = *std::min_element(other.walls.begin(),
+                                           other.walls.end(),
+                                           [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
+        auto wallRightX  = *std::max_element(other.walls.begin(),
+                                            other.walls.end(),
+                                            [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
+        auto wallTopY    = *std::min_element(other.walls.begin(),
+                                          other.walls.end(),
+                                          [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+        auto wallBottomY = *std::max_element(other.walls.begin(),
+                                             other.walls.end(),
+                                             [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
+        auto otherLeft   = wallLeftX.xStart;
+        auto otherRight  = wallRightX.xEnd;
+        auto otherTop    = wallTopY.yStart;
         auto otherBottom = wallBottomY.yEnd;
 
         auto enqueue = [&, otherId = otherId]()
@@ -377,37 +413,46 @@ void Editor::resizeSingleSector(int id, double left, double right, double top, d
             xsLeft.emplace_back(otherId, otherBottom, otherTop);
             enqueue();
         }
-        else if (std::any_of(other.walls.begin(), other.walls.end(),
+        else if (std::any_of(other.walls.begin(),
+                             other.walls.end(),
                              [id](const auto& wall) { return wall.portal and wall.portal->sector == id; }))
         {
             enqueue();
         }
     }
-    std::sort(xsTop.begin(), xsTop.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
-    std::sort(xsRight.begin(), xsRight.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
-    std::sort(xsBottom.begin(), xsBottom.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
-    std::sort(xsLeft.begin(), xsLeft.end(), [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
+    std::sort(xsTop.begin(),
+              xsTop.end(),
+              [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
+    std::sort(xsRight.begin(),
+              xsRight.end(),
+              [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) < std::get<1>(xs2); });
+    std::sort(xsBottom.begin(),
+              xsBottom.end(),
+              [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
+    std::sort(xsLeft.begin(),
+              xsLeft.end(),
+              [](const auto& xs1, const auto& xs2) { return std::get<1>(xs1) > std::get<1>(xs2); });
 
     sector.walls.clear();
-    auto addHWall = [&](double x1, double x2, double y, std::optional<world::Wall::Portal> portal)
-    {
+    auto addHWall = [&](double x1, double x2, double y, std::optional<world::Wall::Portal> portal) {
         sector.walls.emplace_back(world::Wall{x1, y, x2, y, portal, "wall"});
     };
-    auto addVWall = [&](double y1, double y2, double x, std::optional<world::Wall::Portal> portal)
-    {
+    auto addVWall = [&](double y1, double y2, double x, std::optional<world::Wall::Portal> portal) {
         sector.walls.emplace_back(world::Wall{x, y1, x, y2, portal, "wall"});
     };
     auto segmentize = [](const std::vector<Intersection>& intersections,
-                         double init, double limit, double constant,
+                         double init,
+                         double limit,
+                         double constant,
                          std::function<void(double, double, double, std::optional<world::Wall::Portal>)> builder,
                          auto comparator = std::less<>())
     {
         double x = init;
         for (const auto& xs : intersections)
         {
-            int neighbourId = std::get<0>(xs);
+            int neighbourId       = std::get<0>(xs);
             double neighbourStart = std::max(std::get<1>(xs), x, comparator);
-            double neighbourEnd = std::min(std::get<2>(xs), limit, comparator);
+            double neighbourEnd   = std::min(std::get<2>(xs), limit, comparator);
             if (comparator(x, neighbourStart))
             {
                 builder(x, neighbourStart, constant, std::nullopt);
@@ -444,21 +489,27 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         return;
     }
 
-    auto& sector = level.map.at(*selectedSector);
-    auto wallLeftX =   *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
-    auto wallRightX =  *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
-    auto wallTopY =    *std::min_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
-    auto wallBottomY = *std::max_element(sector.walls.begin(), sector.walls.end(), [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
+    auto& sector     = level.map.at(*selectedSector);
+    auto wallLeftX   = *std::min_element(sector.walls.begin(),
+                                       sector.walls.end(),
+                                       [](const auto& a, const auto& b) { return a.xStart < b.xStart; });
+    auto wallRightX  = *std::max_element(sector.walls.begin(),
+                                        sector.walls.end(),
+                                        [](const auto& a, const auto& b) { return a.xEnd < b.xEnd; });
+    auto wallTopY    = *std::min_element(sector.walls.begin(),
+                                      sector.walls.end(),
+                                      [](const auto& a, const auto& b) { return a.yStart < b.yStart; });
+    auto wallBottomY = *std::max_element(sector.walls.begin(),
+                                         sector.walls.end(),
+                                         [](const auto& a, const auto& b) { return a.yEnd < b.yEnd; });
 
-    double leftX = wallLeftX.xStart * mapScale - mapX;
-    double rightX = wallRightX.xEnd * mapScale - mapX;
-    double topY = wallTopY.yStart * mapScale - mapY;
+    double leftX   = wallLeftX.xStart * mapScale - mapX;
+    double rightX  = wallRightX.xEnd * mapScale - mapX;
+    double topY    = wallTopY.yStart * mapScale - mapY;
     double bottomY = wallBottomY.yEnd * mapScale - mapY;
 
     auto mouseInBox = [&](double x1, double y1, double x2, double y2)
-    {
-        return mouseX >= x1 and mouseX <= x2 and mouseY >= y1 and mouseY <= y2;
-    };
+    { return mouseX >= x1 and mouseX <= x2 and mouseY >= y1 and mouseY <= y2; };
 
     if (not drag)
     {
@@ -468,7 +519,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             cursorVertical.activate();
             if (draggingStarted)
             {
-                drag = DragOperation::WallTop;
+                drag    = DragOperation::WallTop;
                 dragged = false;
             }
         }
@@ -477,7 +528,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             cursorVertical.activate();
             if (draggingStarted)
             {
-                drag = DragOperation::WallBottom;
+                drag    = DragOperation::WallBottom;
                 dragged = false;
             }
         }
@@ -486,7 +537,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             cursorHorizontal.activate();
             if (draggingStarted)
             {
-                drag = DragOperation::WallLeft;
+                drag    = DragOperation::WallLeft;
                 dragged = false;
             }
         }
@@ -495,7 +546,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             cursorHorizontal.activate();
             if (draggingStarted)
             {
-                drag = DragOperation::WallRight;
+                drag    = DragOperation::WallRight;
                 dragged = false;
             }
         }
@@ -504,7 +555,7 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             cursorMove.activate();
             if (draggingStarted)
             {
-                drag = DragOperation::Sector;
+                drag    = DragOperation::Sector;
                 dragged = false;
             }
         }
@@ -523,12 +574,15 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
         }
         else
         {
-            auto left = wallLeftX.xStart;
-            auto right = wallRightX.xEnd;
-            auto top = wallTopY.yStart;
+            auto left   = wallLeftX.xStart;
+            auto right  = wallRightX.xEnd;
+            auto top    = wallTopY.yStart;
             auto bottom = wallBottomY.yEnd;
-            auto step = 1.0;
-            if (modShift) step /= 10;
+            auto step   = 1.0;
+            if (modShift)
+            {
+                step /= 10;
+            }
             if (drag == DragOperation::Sector)
             {
                 if (mouseX < dragX - mapScale * step / 2)
@@ -558,23 +612,47 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
             }
             if (drag == DragOperation::WallTop)
             {
-                if (mouseY < topY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top - step, bottom);
-                else if (mouseY > topY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top + step, bottom);
+                if (mouseY < topY - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top - step, bottom);
+                }
+                else if (mouseY > topY + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top + step, bottom);
+                }
             }
             else if (drag == DragOperation::WallBottom)
             {
-                if (mouseY < bottomY - mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom - step);
-                else if (mouseY > bottomY + mapScale * step / 2) resizeSector(*selectedSector, left, right, top, bottom + step);
+                if (mouseY < bottomY - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top, bottom - step);
+                }
+                else if (mouseY > bottomY + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right, top, bottom + step);
+                }
             }
             else if (drag == DragOperation::WallLeft)
             {
-                if (mouseX < leftX - mapScale * step / 2) resizeSector(*selectedSector, left - step, right, top, bottom);
-                else if (mouseX > leftX + mapScale * step / 2) resizeSector(*selectedSector, left + step, right, top, bottom);
+                if (mouseX < leftX - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left - step, right, top, bottom);
+                }
+                else if (mouseX > leftX + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left + step, right, top, bottom);
+                }
             }
             else if (drag == DragOperation::WallRight)
             {
-                if (mouseX < rightX - mapScale * step / 2) resizeSector(*selectedSector, left, right - step, top, bottom);
-                else if (mouseX > rightX + mapScale * step / 2) resizeSector(*selectedSector, left, right + step, top, bottom);
+                if (mouseX < rightX - mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right - step, top, bottom);
+                }
+                else if (mouseX > rightX + mapScale * step / 2)
+                {
+                    resizeSector(*selectedSector, left, right + step, top, bottom);
+                }
             }
             dragged = false;
         }
@@ -582,10 +660,13 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
 
     if (not selectedSectorWindow)
     {
-        selectedSectorWindow.emplace(sector, font,
-                                     [&](double diff, double& field) { enqueue(500, field, field + diff, [&](auto v) { field = v; }); },
-                                     textureWindow,
-                                     rightX + 16, topY);
+        selectedSectorWindow.emplace(
+            sector,
+            font,
+            [&](double diff, double& field) { enqueue(500, field, field + diff, [&](auto v) { field = v; }); },
+            textureWindow,
+            rightX + 16,
+            topY);
     }
 
     clicked = selectedSectorWindow->consumeClick(clicked, mouseX, mouseY);
@@ -596,39 +677,46 @@ void Editor::drawSelectedSector(sdl::Renderer& renderer)
     {
         if (not selectedSpriteWindow)
         {
-            selectedSpriteWindow.emplace(sector, *selectedSprite, font, textureWindow, rightX + 312, topY,
-                                         [&, this] ()
-                                         {
-                                             const auto& src = sector.sprites[*selectedSprite];
-                                             sector.sprites.emplace_back(world::Sprite{sector.sprites.back().id + 1,
-                                                                                       {{0, src.texture(0)}},
-                                                                                       src.x + 0.5, src.y + 0.5, src.z,
-                                                                                       src.w, src.h,
-                                                                                       src.offset,
-                                                                                       src.shadows,
-                                                                                       src.lightCenter,
-                                                                                       src.blocking});
-                                         },
-                                         [&, this] ()
-                                         {
-                                             sector.sprites.erase(std::find_if(sector.sprites.begin(),
-                                                                               sector.sprites.end(),
-                                                                               [this](const world::Sprite& sprite)
-                                                                               {
-                                                                                   return sprite.id == *selectedSprite;
-                                                                               }));
-                                             selectedSprite.reset();
-                                             int counter = 0;
-                                             for (auto& sprite : sector.sprites)
-                                             {
-                                                 sprite.id = counter++;
-                                             }
-                                         },
-                                         [&, this] ()
-                                         {
-                                             auto& sprite = sector.sprites[*selectedSprite];
-                                             sprite.blocking = not sprite.blocking;
-                                         });
+            selectedSpriteWindow.emplace(
+                sector,
+                *selectedSprite,
+                font,
+                textureWindow,
+                rightX + 312,
+                topY,
+                [&, this]()
+                {
+                    const auto& src = sector.sprites[*selectedSprite];
+                    sector.sprites.emplace_back(world::Sprite{sector.sprites.back().id + 1,
+                                                              {{0, src.texture(0)}},
+                                                              src.x + 0.5,
+                                                              src.y + 0.5,
+                                                              src.z,
+                                                              src.w,
+                                                              src.h,
+                                                              src.offset,
+                                                              src.shadows,
+                                                              src.lightCenter,
+                                                              src.blocking});
+                },
+                [&, this]()
+                {
+                    sector.sprites.erase(std::find_if(sector.sprites.begin(),
+                                                      sector.sprites.end(),
+                                                      [this](const world::Sprite& sprite)
+                                                      { return sprite.id == *selectedSprite; }));
+                    selectedSprite.reset();
+                    int counter = 0;
+                    for (auto& sprite : sector.sprites)
+                    {
+                        sprite.id = counter++;
+                    }
+                },
+                [&, this]()
+                {
+                    auto& sprite    = sector.sprites[*selectedSprite];
+                    sprite.blocking = not sprite.blocking;
+                });
         }
 
         clicked = selectedSpriteWindow->consumeClick(clicked, mouseX, mouseY);
@@ -647,7 +735,8 @@ void Editor::drawGrid(sdl::Renderer& renderer) const
             auto step = mapScale / 10;
             for (int i = 1; i < 10; ++i)
             {
-                renderer.renderLine(x + (int)(step * i), 0, x + (int)(step * i), c::windowHeight - 1, 255, 255, 255, 32);
+                renderer
+                    .renderLine(x + (int)(step * i), 0, x + (int)(step * i), c::windowHeight - 1, 255, 255, 255, 32);
             }
         }
     }
@@ -685,4 +774,4 @@ void Editor::render(sdl::Renderer& renderer)
     }
     updateMouse();
 }
-}
+} // namespace ui::editor

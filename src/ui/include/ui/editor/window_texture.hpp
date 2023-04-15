@@ -35,4 +35,4 @@ private:
     std::vector<std::string> textures;
     int scrollPosition;
 };
-}
+} // namespace ui::editor

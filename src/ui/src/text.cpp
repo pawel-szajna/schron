@@ -10,12 +10,16 @@
 
 namespace ui
 {
-Text::Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x, int y) :
-    width(width), height(height),
-    x(x), y(y), lastX(x), lastY(y),
-    buffer(c::windowWidth, c::windowHeight),
-    texture(renderer.createTexture(sdl::Texture::Access::Streaming, c::windowWidth, c::windowHeight)),
-    fonts(fonts)
+Text::Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x, int y)
+    : width(width)
+    , height(height)
+    , x(x)
+    , y(y)
+    , lastX(x)
+    , lastY(y)
+    , buffer(c::windowWidth, c::windowHeight)
+    , texture(renderer.createTexture(sdl::Texture::Access::Streaming, c::windowWidth, c::windowHeight))
+    , fonts(fonts)
 {
     texture.setBlendMode(sdl::BlendMode::Blend);
 }
@@ -35,8 +39,7 @@ void Text::render(sdl::Renderer& target)
     processQueue();
 }
 
-void Text::event(const sdl::event::Event& event)
-{}
+void Text::event(const sdl::event::Event& event) {}
 
 void Text::clear()
 {
@@ -94,12 +97,12 @@ void Text::advance()
         return;
     }
 
-    auto now = sdl::currentTime();
-    auto passed = now - current->lastLetterAdded;
+    auto now             = sdl::currentTime();
+    auto passed          = now - current->lastLetterAdded;
     auto lettersToAppend = static_cast<std::string::size_type>(passed * current->request.charsPerSecond / 1000);
 
     const auto& text = current->request.text;
-    auto remaining = text.size() - current->position;
+    auto remaining   = text.size() - current->position;
 
     lettersToAppend = std::min(lettersToAppend, remaining);
 
@@ -120,10 +123,10 @@ void Text::advance()
     {
         if (current->position + lettersToAppend > current->verified)
         {
-            auto nextBreak = std::min(text.find(' ', current->position + 1), text.find('\n', current->position + 1));
-            auto length = std::min(nextBreak - current->position, remaining);
+            auto nextBreak   = std::min(text.find(' ', current->position + 1), text.find('\n', current->position + 1));
+            auto length      = std::min(nextBreak - current->position, remaining);
             std::string next = text.substr(current->position, length);
-            auto [w, h] = font.size(next);
+            auto [w, h]      = font.size(next);
 
             if (current->x + w > x + width or text[current->position] == '\n')
             {
@@ -151,14 +154,15 @@ void Text::advance()
 
         if (lettersToAppend > 0)
         {
-            auto length = std::min(current->verified - current->position, lettersToAppend);
+            auto length    = std::min(current->verified - current->position, lettersToAppend);
             auto substring = text.substr(current->position, length);
-            auto [w, _] = font.size(substring);
+            auto [w, _]    = font.size(substring);
             current->position += length;
             current->lastLetterAdded = now;
-            auto rendered = font.renderOutlined(substring,
-                                                sdl::Color{current->request.color, current->request.color, current->request.color, 255},
-                                                sdl::Color{64, 64, 64, 255});
+            auto rendered            = font.renderOutlined(
+                substring,
+                sdl::Color{current->request.color, current->request.color, current->request.color, 255},
+                sdl::Color{64, 64, 64, 255});
             rendered.render(current->flashed, sdl::Rectangle{current->x, current->y, 0, 0});
             current->x += w;
             lettersToAppend -= length;
@@ -170,8 +174,8 @@ void Text::advance()
 
     if (current->position >= current->request.text.size())
     {
-        lastX = current->x;
-        lastY = current->y;
+        lastX   = current->x;
+        lastY   = current->y;
         current = std::nullopt;
     }
 
@@ -183,4 +187,4 @@ void Text::move(int x, int y)
     lastX = x;
     lastY = y;
 }
-}
+} // namespace ui

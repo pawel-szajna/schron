@@ -15,14 +15,11 @@
 
 namespace game
 {
-Dialogue::Dialogue(Player& player,
-                   sdl::Renderer& renderer,
-                   scripting::Scripting& scripting,
-                   ui::UI& ui) :
-    player(player),
-    renderer(renderer),
-    scripting(scripting),
-    ui(ui)
+Dialogue::Dialogue(Player& player, sdl::Renderer& renderer, scripting::Scripting& scripting, ui::UI& ui)
+    : player(player)
+    , renderer(renderer)
+    , scripting(scripting)
+    , ui(ui)
 {
     spdlog::debug("Entering dialogue mode, binding LUA functions");
 
@@ -53,7 +50,7 @@ ui::Text& Dialogue::resetTextbox()
     {
         ui.remove(*widget);
     }
-    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
+    widget     = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
     auto& text = ui.get_as<ui::Text>(*widget);
     text.move(32, c::windowHeight - 64);
     return text;
@@ -77,21 +74,21 @@ void Dialogue::choice(std::vector<std::array<std::string, 2>> choices)
         spdlog::error("Empty choices map provided");
         return;
     }
-    currentChoice = 1;
+    currentChoice  = 1;
     currentChoices = std::move(choices);
     redrawChoiceWithHighlight();
 }
 
 void Dialogue::text(std::string caption)
 {
-    state = State::Speech;
+    state      = State::Speech;
     auto& text = resetTextbox();
     text.write(std::move(caption), "KellySlab", 64);
 }
 
 void Dialogue::speech(std::string person, std::string caption)
 {
-    state = State::Speech;
+    state      = State::Speech;
     auto& text = resetTextbox();
     text.write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
     text.write(std::move(caption), "KellySlab", 64);
@@ -199,4 +196,4 @@ void Dialogue::frame()
         scripting.resume();
     }
 }
-}
+} // namespace game

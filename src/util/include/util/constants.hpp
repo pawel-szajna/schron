@@ -13,4 +13,4 @@ constexpr auto windowWidth{1024};
 constexpr auto windowHeight{768};
 
 void loadConfig();
-}
+} // namespace c

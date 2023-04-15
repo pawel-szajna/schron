@@ -5,9 +5,8 @@
 
 namespace world
 {
-Level::Level(int id,
-             std::string name) :
-     name(std::move(name))
+Level::Level(int id, std::string name)
+    : name(std::move(name))
 {
     spdlog::info("Loading level #{}", id);
 }
@@ -38,10 +37,11 @@ std::string Level::toLua() const
 
 void Level::interaction(int sector, double x, double y, const std::string& script)
 {
-    interactions.erase(std::remove_if(interactions.begin(), interactions.end(),
-                                      [sector, x, y] (const auto& i)
-                                      {
-                                          return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1;
+    interactions.erase(std::remove_if(interactions.begin(),
+                                      interactions.end(),
+                                      [sector, x, y](const auto& i) {
+                                          return i.sector == sector and std::abs(i.x - x) < 0.1 and
+                                                 std::abs(i.y - y) < 0.1;
                                       }),
                        interactions.end());
     interactions.emplace_back(Interaction{sector, x, y, script});
@@ -49,11 +49,11 @@ void Level::interaction(int sector, double x, double y, const std::string& scrip
 
 std::optional<std::string> Level::checkScript(int sector, double x, double y) const
 {
-    auto maybeScript = std::find_if(interactions.begin(), interactions.end(),
-                                    [sector, x, y] (const auto& i)
-                                    {
-                                        return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1;
-                                    });
+    auto maybeScript =
+        std::find_if(interactions.begin(),
+                     interactions.end(),
+                     [sector, x, y](const auto& i)
+                     { return i.sector == sector and std::abs(i.x - x) < 0.1 and std::abs(i.y - y) < 0.1; });
 
     if (maybeScript == interactions.end())
     {
@@ -62,4 +62,4 @@ std::optional<std::string> Level::checkScript(int sector, double x, double y) co
 
     return maybeScript->script;
 }
-}
+} // namespace world

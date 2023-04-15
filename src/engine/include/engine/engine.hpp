@@ -27,7 +27,7 @@ namespace world
 class Level;
 class Sector;
 class Wall;
-}
+} // namespace world
 
 namespace engine
 {
@@ -57,23 +57,30 @@ private:
     void renderWall(const world::Sector& sector,
                     const world::Wall& wall,
                     const game::Position& player,
-                    double angleSin, double angleCos,
+                    double angleSin,
+                    double angleCos,
                     const OffsetLightMap& ceilingLightMap,
                     const OffsetLightMap& floorLightMap);
     void renderCeilingAndFloor(const world::Sector& sector,
                                const game::Position& player,
-                               int x, int wallTop, int wallBottom,
-                               double ceilingY, double floorY,
-                               double angleSin, double angleCos,
+                               int x,
+                               int wallTop,
+                               int wallBottom,
+                               double ceilingY,
+                               double floorY,
+                               double angleSin,
+                               double angleCos,
                                const OffsetLightMap& ceilingLightMap,
                                const OffsetLightMap& floorLightMap);
-    void renderSprites(const world::Sector& sector,
-                       const game::Position& player,
-                       double angleSin, double angleCos);
-    void lightedLine(int x, double xProgress,
-                     int wallTop, int wallBottom,
-                     int visibleWallTop, int visibleWallBottom,
-                     sdl::Surface& texture, int textureX,
+    void renderSprites(const world::Sector& sector, const game::Position& player, double angleSin, double angleCos);
+    void lightedLine(int x,
+                     double xProgress,
+                     int wallTop,
+                     int wallBottom,
+                     int visibleWallTop,
+                     int visibleWallBottom,
+                     sdl::Surface& texture,
+                     int textureX,
                      double distance,
                      const LightMap& lightMap);
 
@@ -95,4 +102,4 @@ private:
 extern uint64_t lightingTime;
 extern uint64_t geometryTime;
 extern uint64_t spritesTime;
-}
+} // namespace engine

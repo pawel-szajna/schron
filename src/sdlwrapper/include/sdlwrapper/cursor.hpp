@@ -28,4 +28,4 @@ public:
      */
     void activate() const;
 };
-}
+} // namespace sdl

@@ -19,6 +19,5 @@ public:
 private:
 
     std::map<std::string, sdl::Font> fonts;
-
 };
-}
+} // namespace ui

@@ -29,6 +29,7 @@ namespace world
 class Wall
 {
 public:
+
     /**
      * @struct Portal
      * @brief A portal to another Sector.
@@ -58,6 +59,7 @@ public:
             double z;
             double angle;
         };
+
         int sector;
         std::optional<Transformation> transform{std::nullopt};
     };
@@ -103,6 +105,7 @@ public:
 class Light
 {
 public:
+
     double x, y, z;
     double r, g, b;
 
@@ -163,4 +166,4 @@ public:
 
     [[nodiscard]] std::string toLua() const;
 };
-}
+} // namespace world

@@ -36,6 +36,5 @@ private:
     sol::state& lua;
     ui::UI& ui;
     sdl::Renderer& renderer;
-
 };
-}
+} // namespace scripting

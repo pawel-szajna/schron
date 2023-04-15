@@ -23,6 +23,7 @@ namespace game
 class Position
 {
 public:
+
     int sector{1};
     double x{0.5}, y{0.5}, z{0.6}, angle{std::numbers::pi / 2};
     double fovH = c::renderHeight * 0.65;
@@ -40,8 +41,15 @@ class Player
     struct FovAnimation
     {
     private:
-        template<typename T> struct Change { T old, target; };
+
+        template<typename T>
+        struct Change
+        {
+            T old, target;
+        };
+
     public:
+
         Change<double> fovH, fovV;
         Change<uint64_t> time;
     };
@@ -114,4 +122,4 @@ private:
 
     int sanity{100};
 };
-}
+} // namespace game

@@ -16,15 +16,16 @@ class Widget
 {
 public:
 
-    Widget() = default;
-    Widget(const Widget&) = delete;
-    Widget(Widget&&) = default;
+    Widget()                         = default;
+    Widget(const Widget&)            = delete;
+    Widget(Widget&&)                 = default;
     Widget& operator=(const Widget&) = delete;
-    Widget& operator=(Widget&&) = default;
+    Widget& operator=(Widget&&)      = default;
 
     virtual ~Widget() = default;
-    virtual void render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) = 0;
-    virtual bool consumeClick(int mouseX, int mouseY) = 0;
+    virtual void
+    render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) = 0;
+    virtual bool consumeClick(int mouseX, int mouseY)                                                   = 0;
 };
 
 class Group : public Widget
@@ -58,7 +59,7 @@ public:
     Image(int width, int height, const std::string& filename);
     ~Image();
 
-    void render(sdl::Renderer &renderer, sdl::Surface &target, int absX, int absY, int offsetX, int offsetY) override;
+    void render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) override;
     bool consumeClick(int mouseX, int mouseY) override;
 
 private:
@@ -94,7 +95,7 @@ public:
     Button(int width, int height, sdl::Font& font, const std::string& caption, std::function<void(void)> onClick);
     virtual ~Button();
 
-    void render(sdl::Renderer &renderer, sdl::Surface &target, int absX, int absY, int offsetX, int offsetY) override;
+    void render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int absY, int offsetX, int offsetY) override;
     bool consumeClick(int mouseX, int mouseY) override;
 
     void setCaption(const std::string& text);
@@ -126,4 +127,4 @@ private:
     sdl::Surface buffer;
 };
 
-}
+} // namespace ui::editor

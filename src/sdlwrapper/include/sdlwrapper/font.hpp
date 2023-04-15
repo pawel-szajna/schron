@@ -62,4 +62,4 @@ public:
      */
     std::pair<int, int> size(const std::string& text);
 };
-}
+} // namespace sdl

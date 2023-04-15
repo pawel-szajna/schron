@@ -9,10 +9,10 @@
 
 namespace scripting
 {
-UiBindings::UiBindings(sol::state& lua, ui::UI& ui, sdl::Renderer& renderer) :
-    lua(lua),
-    ui(ui),
-    renderer(renderer)
+UiBindings::UiBindings(sol::state& lua, ui::UI& ui, sdl::Renderer& renderer)
+    : lua(lua)
+    , ui(ui)
+    , renderer(renderer)
 {
     lua.set_function("ui_createText", &UiBindings::createText, this);
     lua.set_function("ui_textClear", &UiBindings::textClear, this);
@@ -22,7 +22,8 @@ UiBindings::UiBindings(sol::state& lua, ui::UI& ui, sdl::Renderer& renderer) :
 int UiBindings::createText()
 {
     spdlog::debug("UiBindings::createText()");
-    auto text = std::make_unique<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, 192, 32, c::windowHeight - 192 - 32);
+    auto text =
+        std::make_unique<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, 192, 32, c::windowHeight - 192 - 32);
     return ui.add(std::move(text));
 }
 
@@ -39,4 +40,4 @@ void UiBindings::textWrite(int id, std::string message, std::string font, int sp
     auto& text = ui.get_as<ui::Text>(id);
     text.write(std::move(message), std::move(font), speed);
 }
-}
+} // namespace scripting

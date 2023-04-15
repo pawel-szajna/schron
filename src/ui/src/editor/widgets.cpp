@@ -37,10 +37,9 @@ void Group::clear()
     children.clear();
 }
 
-Text::Text(sdl::Font& font,
-           const std::string& text) :
-    font(font),
-    buffer(0, 0)
+Text::Text(sdl::Font& font, const std::string& text)
+    : font(font)
+    , buffer(0, 0)
 {
     setCaption(text);
 }
@@ -51,7 +50,7 @@ void Text::setCaption(const std::string& text)
 {
     if (text != caption)
     {
-        buffer = font.render(text, sdl::Color{0, 0, 0, 255});
+        buffer  = font.render(text, sdl::Color{0, 0, 0, 255});
         caption = text;
     }
 }
@@ -71,14 +70,13 @@ bool Text::consumeClick(int mouseX, int mouseY)
     return true;
 }
 
-Button::Button(int width, int height,
-               sdl::Font& font,
-               const std::string& caption,
-               std::function<void(void)> onClick) :
-    width(width), height(height),
-    caption(font, caption),
-    onClick(std::move(onClick))
-{}
+Button::Button(int width, int height, sdl::Font& font, const std::string& caption, std::function<void(void)> onClick)
+    : width(width)
+    , height(height)
+    , caption(font, caption)
+    , onClick(std::move(onClick))
+{
+}
 
 Button::~Button() = default;
 
@@ -105,11 +103,14 @@ void Button::setCaption(const std::string& text)
     caption.setCaption(text);
 }
 
-Window::Window(int x, int y, int width, int height) :
-    x(x), y(y),
-    width(width), height(height),
-    buffer(width, height)
-{}
+Window::Window(int x, int y, int width, int height)
+    : x(x)
+    , y(y)
+    , width(width)
+    , height(height)
+    , buffer(width, height)
+{
+}
 
 Window::~Window() = default;
 
@@ -150,10 +151,12 @@ void Window::move(int x, int y)
     this->y = y;
 }
 
-Image::Image(int width, int height, const std::string& filename) :
-    width(width), height(height),
-    buffer(filename)
-{}
+Image::Image(int width, int height, const std::string& filename)
+    : width(width)
+    , height(height)
+    , buffer(filename)
+{
+}
 
 Image::~Image() = default;
 
@@ -166,4 +169,4 @@ void Image::render(sdl::Renderer& renderer, sdl::Surface& target, int absX, int 
 {
     buffer.renderScaled(target, sdl::Rectangle{offsetX, offsetY, width, height});
 }
-}
+} // namespace ui::editor

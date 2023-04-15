@@ -8,31 +8,43 @@ WindowSprite::WindowSprite(world::Sector& sector,
                            int spriteId,
                            sdl::Font& font,
                            std::optional<WindowTexture>& textureSelector,
-                           int x, int y,
+                           int x,
+                           int y,
                            SpriteAction duplicate,
                            SpriteAction destroy,
-                           SpriteAction block) :
-        width(280),
-        height(170),
-        textureSelector(textureSelector),
-        font(font),
-        sprite(sector.sprites[spriteId]),
-        spriteWindow(x, y, width, height),
-        texture(spriteWindow.add<Text>(10, 30, font, "Texture")),
-        x(spriteWindow.add<Text>(10, 50, font, "X")),
-        y(spriteWindow.add<Text>(10, 70, font, "Y")),
-        z(spriteWindow.add<Text>(10, 90, font, "Z")),
-        blocking(spriteWindow.add<Button>(30, 150, width - 60, 16, font, "Switch", block)),
-        duplicate(std::move(duplicate)),
-        destroy(std::move(destroy)),
-        block(std::move(block))
+                           SpriteAction block)
+    : width(280)
+    , height(170)
+    , textureSelector(textureSelector)
+    , font(font)
+    , sprite(sector.sprites[spriteId])
+    , spriteWindow(x, y, width, height)
+    , texture(spriteWindow.add<Text>(10, 30, font, "Texture"))
+    , x(spriteWindow.add<Text>(10, 50, font, "X"))
+    , y(spriteWindow.add<Text>(10, 70, font, "Y"))
+    , z(spriteWindow.add<Text>(10, 90, font, "Z"))
+    , blocking(spriteWindow.add<Button>(30, 150, width - 60, 16, font, "Switch", block))
+    , duplicate(std::move(duplicate))
+    , destroy(std::move(destroy))
+    , block(std::move(block))
 {
     auto& s = this->sprite;
 
     spriteWindow.add<Text>(10, 5, font, std::format("Selected sprite: {}", sprite.id));
 
-    spriteWindow.add<Button>(width - 80, 33, 70, 16, font, "Change",
-                             [&]{ openTextureSelector("sprites", [&s](std::string t) { s.textures = {{0, std::format("sprites/{}", std::move(t))}}; }); });
+    spriteWindow.add<Button>(width - 80,
+                             33,
+                             70,
+                             16,
+                             font,
+                             "Change",
+                             [&]
+                             {
+                                 openTextureSelector("sprites",
+                                                     [&s](std::string t) {
+                                                         s.textures = {{0, std::format("sprites/{}", std::move(t))}};
+                                                     });
+                             });
 
     spriteWindow.add<Button>(width - 40, 53, 30, 16, font, "+1", [&s]() { s.x += 1; });
     spriteWindow.add<Button>(width - 75, 53, 30, 16, font, "+0.1", [&s]() { s.x += 0.1; });
@@ -80,4 +92,4 @@ void WindowSprite::openTextureSelector(const std::string& category, WindowTextur
 {
     textureSelector.emplace(font, category, std::move(onChoice), textureSelector);
 }
-}
+} // namespace ui::editor

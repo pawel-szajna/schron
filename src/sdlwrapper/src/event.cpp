@@ -9,36 +9,36 @@ namespace event
 {
 namespace
 {
-Event createKeyEvent(const SDL_Event &event)
+Event createKeyEvent(const SDL_Event& event)
 {
     return Key{.direction = event.type == SDL_EVENT_KEY_DOWN ? Key::Direction::Down : Key::Direction::Up,
-            .scancode  = event.key.keysym.scancode};
+               .scancode  = event.key.keysym.scancode};
 }
 
-Event createMouseEvent(const SDL_Event &event)
+Event createMouseEvent(const SDL_Event& event)
 {
     Mouse mouseEvent{};
     switch (event.type)
     {
-        case SDL_EVENT_MOUSE_MOTION:
-            mouseEvent.x = event.motion.x;
-            mouseEvent.y = event.motion.y;
-            break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        case SDL_EVENT_MOUSE_BUTTON_UP:
-            mouseEvent.x = event.button.x;
-            mouseEvent.y = event.button.y;
-            mouseEvent.button = event.button.button * event.type == SDL_EVENT_MOUSE_BUTTON_UP ? -1 : 1;
-            break;
-        case SDL_EVENT_MOUSE_WHEEL:
-            mouseEvent.x = event.wheel.mouseX;
-            mouseEvent.y = event.wheel.mouseY;
-            mouseEvent.scroll = event.wheel.y;
+    case SDL_EVENT_MOUSE_MOTION:
+        mouseEvent.x = event.motion.x;
+        mouseEvent.y = event.motion.y;
+        break;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+        mouseEvent.x      = event.button.x;
+        mouseEvent.y      = event.button.y;
+        mouseEvent.button = event.button.button * event.type == SDL_EVENT_MOUSE_BUTTON_UP ? -1 : 1;
+        break;
+    case SDL_EVENT_MOUSE_WHEEL:
+        mouseEvent.x      = event.wheel.mouseX;
+        mouseEvent.y      = event.wheel.mouseY;
+        mouseEvent.scroll = event.wheel.y;
     }
     return mouseEvent;
 }
-}
-}
+} // namespace
+} // namespace event
 
 event::Event pollEvent()
 {
@@ -64,4 +64,4 @@ event::Event pollEvent()
 
     return event::None{};
 }
-}
+} // namespace sdl

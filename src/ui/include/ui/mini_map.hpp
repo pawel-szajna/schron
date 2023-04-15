@@ -37,4 +37,4 @@ private:
     sdl::Renderer surfaceRenderer;
     sdl::Texture texture;
 };
-}
+} // namespace ui

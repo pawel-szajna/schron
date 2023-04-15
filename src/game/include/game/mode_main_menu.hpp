@@ -31,4 +31,4 @@ private:
     scripting::Scripting& scripting;
     ui::UI& ui;
 };
-}
+} // namespace game

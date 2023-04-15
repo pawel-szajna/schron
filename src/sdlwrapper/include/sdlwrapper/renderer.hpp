@@ -100,4 +100,4 @@ public:
      */
     Texture createTexture(Texture::Access access, int width, int height);
 };
-}
+} // namespace sdl

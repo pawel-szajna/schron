@@ -20,7 +20,8 @@ public:
                  sdl::Font& font,
                  std::function<void(double, double&)> animator,
                  std::optional<WindowTexture>& textureSelector,
-                 int x, int y);
+                 int x,
+                 int y);
     ~WindowSector();
 
     bool consumeClick(bool clicked, int mouseX, int mouseY);
@@ -44,4 +45,4 @@ private:
     Text& textureFloor;
     Group& walls;
 };
-}
+} // namespace ui::editor

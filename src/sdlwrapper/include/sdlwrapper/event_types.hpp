@@ -30,4 +30,4 @@ public:
     std::optional<int> button;
     std::optional<int> scroll;
 };
-}
+} // namespace sdl::event

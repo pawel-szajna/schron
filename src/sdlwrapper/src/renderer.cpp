@@ -21,8 +21,7 @@ Renderer::Renderer(Window& window, uint32_t flags)
     {
         flags |= SDL_RENDERER_PRESENTVSYNC;
     }
-    assign(SDL_CreateRenderer(*window, nullptr, flags),
-           "SDL renderer");
+    assign(SDL_CreateRenderer(*window, nullptr, flags), "SDL renderer");
     SDL_RendererInfo info;
     SDL_GetRendererInfo(wrapped, &info);
     spdlog::debug("Created renderer, type: {}, flags: {}", info.name, info.flags);
@@ -30,22 +29,28 @@ Renderer::Renderer(Window& window, uint32_t flags)
     SDL_GetRenderOutputSize(wrapped, &renderWidth, &renderHeight);
     if (renderWidth != c::windowWidth or renderHeight != c::windowHeight)
     {
-        auto scaleWidth = static_cast<float>(renderWidth) / static_cast<float>(c::windowWidth);
+        auto scaleWidth  = static_cast<float>(renderWidth) / static_cast<float>(c::windowWidth);
         auto scaleHeight = static_cast<float>(renderHeight) / static_cast<float>(c::windowHeight);
         spdlog::debug("Requested resolution: {}x{}, actual resolution: {}x{}, applying {}x/{}x scaling factor",
-                      c::windowWidth, c::windowHeight, renderWidth, renderHeight, scaleWidth, scaleHeight);
+                      c::windowWidth,
+                      c::windowHeight,
+                      renderWidth,
+                      renderHeight,
+                      scaleWidth,
+                      scaleHeight);
         if (SDL_SetRenderScale(wrapped, scaleWidth, scaleHeight) != Success)
         {
             spdlog::warn("Could not apply render scale factor of {}x/{}x, possible UI scaling issues: {}",
-                         scaleWidth, scaleHeight, SDL_GetError());
+                         scaleWidth,
+                         scaleHeight,
+                         SDL_GetError());
         }
     }
 }
 
 Renderer::Renderer(Surface& surface)
 {
-    assign(SDL_CreateSoftwareRenderer(*surface),
-           "SDL software renderer");
+    assign(SDL_CreateSoftwareRenderer(*surface), "SDL software renderer");
 }
 
 Renderer::~Renderer()
@@ -109,7 +114,7 @@ void Renderer::renderGeometry(const std::vector<Vertex>& vertices)
     for (auto vertex = 1u; vertex < vertices.size() - 1; ++vertex)
     {
         auto converted = sdl::Vertices({vertices[0], vertices[vertex], vertices[vertex + 1]});
-        auto result = SDL_RenderGeometry(wrapped, nullptr, converted.data(), converted.size(), nullptr, 0);
+        auto result    = SDL_RenderGeometry(wrapped, nullptr, converted.data(), converted.size(), nullptr, 0);
         if (result != Success)
         {
             throw std::runtime_error{std::format("render failed: {}", SDL_GetError())};
@@ -130,4 +135,4 @@ void Renderer::renderBox(int x, int y, int width, int height, uint8_t r, uint8_t
     SDL_FRect fRect{(float)x, (float)y, (float)width, (float)height};
     SDL_RenderRect(wrapped, &fRect);
 }
-}
+} // namespace sdl

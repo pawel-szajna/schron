@@ -6,11 +6,7 @@ namespace sdl
 {
 Window::Window(const std::string& title, int width, int height, uint32_t flags)
 {
-    assign(SDL_CreateWindow(title.c_str(),
-                            width,
-                            height,
-                            flags),
-           "SDL window");
+    assign(SDL_CreateWindow(title.c_str(), width, height, flags), "SDL window");
 }
 
 Window::~Window()
@@ -25,4 +21,4 @@ void Window::setTitle(const std::string& title) noexcept
 {
     SDL_SetWindowTitle(wrapped, title.c_str());
 }
-}
+} // namespace sdl

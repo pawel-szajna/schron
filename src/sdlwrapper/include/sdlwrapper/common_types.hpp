@@ -37,4 +37,4 @@ enum class BlendMode
     Add,
     Mod,
 };
-}
+} // namespace sdl

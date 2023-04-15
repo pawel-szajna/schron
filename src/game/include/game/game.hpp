@@ -60,4 +60,4 @@ private:
     int noiseLevel{13};
     engine::Noise noise{renderer, noiseLevel};
 };
-}
+} // namespace game

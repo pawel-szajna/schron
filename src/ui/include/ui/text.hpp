@@ -50,11 +50,13 @@ private:
 
     struct Typing
     {
-        explicit Typing(Request&& request, int x, int y) :
-            request(request),
-            x(x), y(y),
-            flashed(c::windowWidth, c::windowHeight)
-        {}
+        explicit Typing(Request&& request, int x, int y)
+            : request(request)
+            , x(x)
+            , y(y)
+            , flashed(c::windowWidth, c::windowHeight)
+        {
+        }
 
         Request request;
         std::string::size_type position{};
@@ -77,4 +79,4 @@ private:
 
     Fonts& fonts;
 };
-}
+} // namespace ui

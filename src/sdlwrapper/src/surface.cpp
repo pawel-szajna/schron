@@ -8,12 +8,11 @@
 
 namespace sdl
 {
-Surface::Surface(int width, int height) :
-    width(width),
-    height(height)
+Surface::Surface(int width, int height)
+    : width(width)
+    , height(height)
 {
-    assign(SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888),
-           "SDL surface");
+    assign(SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888), "SDL surface");
 }
 
 Surface::Surface(const std::string& filename)
@@ -25,20 +24,19 @@ Surface::Surface(const std::string& filename)
     }
     auto format = SDL_CreatePixelFormat(SDL_PIXELFORMAT_ARGB8888);
 
-    assign(SDL_ConvertSurface(image, format),
-           std::format("SDL surface from loaded image: {}", SDL_GetError()));
+    assign(SDL_ConvertSurface(image, format), std::format("SDL surface from loaded image: {}", SDL_GetError()));
 
     SDL_DestroyPixelFormat(format);
     SDL_DestroySurface(image);
 
-    width = wrapped->w;
+    width  = wrapped->w;
     height = wrapped->h;
 }
 
 Surface::Surface(SDL_Surface* surfacePtr)
 {
     assign(surfacePtr, "surface from an externally provided pointer");
-    width = wrapped->w;
+    width  = wrapped->w;
     height = wrapped->h;
 }
 
@@ -50,12 +48,12 @@ Surface::~Surface()
     }
 }
 
-Surface::Surface(Surface &&other) noexcept
+Surface::Surface(Surface&& other) noexcept
 {
     operator=(std::move(other));
 }
 
-Surface &Surface::operator=(Surface&& other) noexcept
+Surface& Surface::operator=(Surface&& other) noexcept
 {
     std::swap(wrapped, other.wrapped);
     std::swap(width, other.width);
@@ -75,10 +73,7 @@ void Surface::render(Texture& target)
 
 void Surface::render(Surface& target, std::optional<Rectangle> where)
 {
-    SDL_BlitSurface(wrapped,
-                    nullptr,
-                    *target,
-                    where.has_value() ? reinterpret_cast<SDL_Rect*>(&(*where)) : nullptr);
+    SDL_BlitSurface(wrapped, nullptr, *target, where.has_value() ? reinterpret_cast<SDL_Rect*>(&(*where)) : nullptr);
 }
 
 void Surface::renderScaled(Surface& target, Rectangle where)
@@ -100,4 +95,4 @@ uint32_t& Surface::operator[](int index)
 {
     return (pixels()[index]);
 }
-}
+} // namespace sdl

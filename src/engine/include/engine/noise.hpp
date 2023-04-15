@@ -35,4 +35,4 @@ private:
 
     std::array<sdl::Pixel, noiseWidth * noiseHeight> buffer{};
 };
-}
+} // namespace engine

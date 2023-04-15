@@ -20,4 +20,4 @@ sdl::Font& Fonts::get(const std::string& name, int size)
     }
     return fonts.at(fontId);
 }
-}
+} // namespace ui

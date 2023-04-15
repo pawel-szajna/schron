@@ -8,11 +8,11 @@ int main()
 try
 #endif
 {
-#   if defined(RELEASE_BUILD)
-        spdlog::set_level(spdlog::level::info);
-#   else
-        spdlog::set_level(spdlog::level::debug);
-#   endif
+#if defined(RELEASE_BUILD)
+    spdlog::set_level(spdlog::level::info);
+#else
+    spdlog::set_level(spdlog::level::debug);
+#endif
     spdlog::info("Starting Schron!");
 
     c::loadConfig();
@@ -30,7 +30,7 @@ try
     return 0;
 }
 #if defined(RELEASE_BUILD)
-catch(std::exception& e)
+catch (std::exception& e)
 {
     spdlog::critical("Unhandled {}: {}", typeid(e).name(), e.what());
     throw;

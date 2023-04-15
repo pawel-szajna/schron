@@ -23,6 +23,7 @@ public:
     void loadLevel(int id, scripting::Scripting& scripting);
 
 private:
+
     LevelsMap levels{};
 };
-}
+} // namespace world
