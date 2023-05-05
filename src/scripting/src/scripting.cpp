@@ -11,17 +11,17 @@ namespace
 {
 void debug(const std::string& msg)
 {
-    spdlog::debug(msg);
+    SPDLOG_DEBUG(msg);
 }
 
 void info(const std::string& msg)
 {
-    spdlog::info(msg);
+    SPDLOG_INFO(msg);
 }
 
 void warning(const std::string& msg)
 {
-    spdlog::warn(msg);
+    SPDLOG_WARN(msg);
 }
 } // namespace
 
@@ -46,18 +46,18 @@ Scripting::~Scripting() = default;
 void Scripting::run(const std::string& script)
 try
 {
-    spdlog::info("Running script: {}", script);
+    SPDLOG_INFO("Running script: {}", script);
     lua.script_file(script);
 }
 catch (std::runtime_error& exception)
 {
-    spdlog::error("LUA error: {}", exception.what());
+    SPDLOG_ERROR("LUA error: {}", exception.what());
 }
 
 void Scripting::runAsCoroutine(const std::string& script)
 try
 {
-    spdlog::info("Running interactive script: {}", script);
+    SPDLOG_INFO("Running interactive script: {}", script);
     sol::thread thread       = sol::thread::create(lua);
     sol::coroutine coroutine = thread.state().load_file(script);
     coroutines.emplace(std::move(thread), std::move(coroutine));
@@ -65,32 +65,32 @@ try
 }
 catch (std::runtime_error& exception)
 {
-    spdlog::error("LUA error: {}", exception.what());
+    SPDLOG_ERROR("LUA error: {}", exception.what());
 }
 
 void Scripting::resume()
 {
     if (coroutines.empty())
     {
-        spdlog::warn("Tried to resume not existing execution");
+        SPDLOG_WARN("Tried to resume not existing execution");
         return;
     }
 
-    spdlog::debug("Resume called on current script");
+    SPDLOG_DEBUG("Resume called on current script");
 
     auto result = std::get<sol::coroutine>(coroutines.top())();
     if (result.valid())
     {
         if (result.status() != sol::call_status::yielded)
         {
-            spdlog::debug("Popping coroutine due to execution result: {}", std::to_underlying(result.status()));
+            SPDLOG_DEBUG("Popping coroutine due to execution result: {}", std::to_underlying(result.status()));
             coroutines.pop();
         }
     }
     else
     {
         sol::error err = result;
-        spdlog::warn("LUA error: {}", err.what());
+        SPDLOG_WARN("LUA error: {}", err.what());
         coroutines.pop();
     }
 }
@@ -119,7 +119,7 @@ void Scripting::runFunctionIfExists(const std::string& function)
         }
         catch (std::exception& e)
         {
-            spdlog::warn("Failed script execution: {}", e.what());
+            SPDLOG_WARN("Failed script execution: {}", e.what());
         }
     }
 }

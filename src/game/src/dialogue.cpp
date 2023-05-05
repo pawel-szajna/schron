@@ -21,7 +21,7 @@ Dialogue::Dialogue(Player& player, sdl::Renderer& renderer, scripting::Scripting
     , scripting(scripting)
     , ui(ui)
 {
-    spdlog::debug("Entering dialogue mode, binding LUA functions");
+    SPDLOG_DEBUG("Entering dialogue mode, binding LUA functions");
 
     scripting.bindYielding("choice", &Dialogue::choice, this);
     scripting.bindYielding("text", &Dialogue::text, this);
@@ -41,7 +41,7 @@ Dialogue::~Dialogue()
 
     player.animateFov(c::renderHeight * 0.65, c::renderWidth * 0.22, 400);
 
-    spdlog::debug("Dialogue mode finished");
+    SPDLOG_DEBUG("Dialogue mode finished");
 }
 
 ui::Text& Dialogue::resetTextbox()
@@ -71,7 +71,7 @@ void Dialogue::choice(std::vector<std::array<std::string, 2>> choices)
     state = State::Choice;
     if (choices.empty())
     {
-        spdlog::error("Empty choices map provided");
+        SPDLOG_ERROR("Empty choices map provided");
         return;
     }
     currentChoice  = 1;

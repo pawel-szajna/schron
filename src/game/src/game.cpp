@@ -28,7 +28,7 @@ Game::Game()
     modes.emplace(GameMode::InGame, std::make_unique<ModeInGame>(*ui, *world, renderer, *scripting, noiseLevel));
     modes.emplace(GameMode::Quit, std::make_unique<DummyMode>());
 
-    spdlog::debug("Game initialization complete");
+    SPDLOG_DEBUG("Game initialization complete");
 }
 
 Game::~Game() = default;
@@ -43,7 +43,7 @@ void Game::switchMode(GameMode target)
 {
     if (not modes.contains(target))
     {
-        spdlog::warn("Mode change requested, but no mode handler found");
+        SPDLOG_WARN("Mode change requested, but no mode handler found");
         return;
     }
 

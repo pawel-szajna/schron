@@ -21,7 +21,7 @@ UiBindings::UiBindings(sol::state& lua, ui::UI& ui, sdl::Renderer& renderer)
 
 int UiBindings::createText()
 {
-    spdlog::debug("UiBindings::createText()");
+    SPDLOG_DEBUG("UiBindings::createText()");
     auto text =
         std::make_unique<ui::Text>(renderer, ui.fonts, c::windowWidth - 64, 192, 32, c::windowHeight - 192 - 32);
     return ui.add(std::move(text));
@@ -29,14 +29,14 @@ int UiBindings::createText()
 
 void UiBindings::textClear(int id)
 {
-    spdlog::debug("UiBindings::textClear(id={})", id);
+    SPDLOG_DEBUG("UiBindings::textClear(id={})", id);
     auto& text = ui.get_as<ui::Text>(id);
     text.clear();
 }
 
 void UiBindings::textWrite(int id, std::string message, std::string font, int speed)
 {
-    spdlog::debug("UiBindings::textWrite(id={}, message={}, font={}, speed={})", id, message, font, speed);
+    SPDLOG_DEBUG("UiBindings::textWrite(id={}, message={}, font={}, speed={})", id, message, font, speed);
     auto& text = ui.get_as<ui::Text>(id);
     text.write(std::move(message), std::move(font), speed);
 }

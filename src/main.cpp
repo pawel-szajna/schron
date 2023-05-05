@@ -13,7 +13,7 @@ try
 #else
     spdlog::set_level(spdlog::level::debug);
 #endif
-    spdlog::info("Starting Schron!");
+    SPDLOG_INFO("Starting Schron!");
 
     c::loadConfig();
 
@@ -25,14 +25,14 @@ try
     }
 
     sdl::teardown();
-    spdlog::info("Done");
+    SPDLOG_INFO("Done");
 
     return 0;
 }
 #if defined(RELEASE_BUILD)
 catch (std::exception& e)
 {
-    spdlog::critical("Unhandled {}: {}", typeid(e).name(), e.what());
+    SPDLOG_CRITICAL("Unhandled {}: {}", typeid(e).name(), e.what());
     throw;
 }
 #endif

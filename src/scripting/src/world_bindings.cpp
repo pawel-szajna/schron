@@ -85,7 +85,6 @@ void WorldBindings::sprite(int sectorId,
                            double lightCenter,
                            bool blocking)
 {
-    spdlog::debug("WorldBindings::sprite(sectorId={}, id={}, texture={}, ...)", sectorId, id, texture);
     auto& sector = world.level(1).map.at(sectorId);
     sector.sprites.push_back(world::Sprite{.id          = id,
                                            .textures    = {{0, std::move(texture)}},
@@ -113,7 +112,7 @@ try
 }
 catch (std::exception& e)
 {
-    spdlog::warn("Failure during texture change: {}", e.what());
+    SPDLOG_WARN("Failure during texture change: {}", e.what());
 }
 
 void WorldBindings::loadTexture(std::string texture)

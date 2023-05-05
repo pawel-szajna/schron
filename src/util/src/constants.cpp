@@ -11,7 +11,7 @@ void assign(sol::state& lua, const std::string& name, T& value)
     if (lua[name].valid())
     {
         value = lua[name];
-        spdlog::debug("Read value from config: {}={}", name, value);
+        SPDLOG_DEBUG("Read value from config: {}={}", name, value);
     }
 }
 } // namespace
@@ -25,7 +25,7 @@ int shadowDepth         = 4;
 
 void loadConfig()
 {
-    spdlog::debug("Trying to load configuration file");
+    SPDLOG_DEBUG("Trying to load configuration file");
     try
     {
         sol::state lua;
@@ -38,7 +38,7 @@ void loadConfig()
     }
     catch (std::exception& e)
     {
-        spdlog::warn("Could not load config: {}. Falling back to defaults", e.what());
+        SPDLOG_WARN("Could not load config: {}. Falling back to defaults", e.what());
     }
 }
 } // namespace c

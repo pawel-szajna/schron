@@ -351,7 +351,7 @@ void Editor::resizeSector(int id, double left, double right, double top, double 
 
 void Editor::resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse)
 {
-    spdlog::debug("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})",
+    SPDLOG_DEBUG("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})",
                   id,
                   left,
                   right,

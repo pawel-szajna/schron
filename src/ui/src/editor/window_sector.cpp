@@ -25,7 +25,7 @@ WindowSector::WindowSector(world::Sector& sector,
     , textureFloor(sectorWindow.add<Text>(10, 100, font, "Floor texture"))
     , walls(sectorWindow.add<Group>(0, 0))
 {
-    spdlog::debug(this->textureSelector.has_value());
+    SPDLOG_DEBUG(this->textureSelector.has_value());
     sectorWindow.add<Text>(10, 5, font, std::format("Selected sector: {}", sector.id));
 
     auto sectorFieldAnimator = [&](double diff, double& field)

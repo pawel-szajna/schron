@@ -10,7 +10,7 @@ namespace ui
 UI::UI(sdl::Renderer& renderer)
     : renderer(renderer)
 {
-    spdlog::debug("UI initialized");
+    SPDLOG_DEBUG("UI initialized");
 }
 
 UI::~UI() = default;

@@ -8,14 +8,14 @@ namespace world
 Level::Level(int id, std::string name)
     : name(std::move(name))
 {
-    spdlog::info("Loading level #{}", id);
+    SPDLOG_INFO("Loading level #{}", id);
 }
 
 void Level::put(Sector sector)
 {
     if (map.contains(sector.id))
     {
-        spdlog::warn("Duplicate sector {}", sector.id);
+        SPDLOG_WARN("Duplicate sector {}", sector.id);
     }
     map.emplace(sector.id, std::move(sector));
 }

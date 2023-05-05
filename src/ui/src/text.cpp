@@ -93,7 +93,7 @@ void Text::advance()
 {
     if (not current.has_value())
     {
-        spdlog::warn("Tried to advance a text with no current operation");
+        SPDLOG_WARN("Tried to advance a text with no current operation");
         return;
     }
 

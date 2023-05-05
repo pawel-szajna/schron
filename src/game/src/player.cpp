@@ -271,13 +271,13 @@ void Player::frame(const world::Level& level, double frameTime)
                         position.sector    = portal.sector;
                         if (portal.transform.has_value())
                         {
-                            spdlog::debug("Portal - old: {} {} {}", position.x, position.y, position.z);
+                            SPDLOG_DEBUG("Portal - old: {} {} {}", position.x, position.y, position.z);
                             position.x += portal.transform->x;
                             position.y += portal.transform->y;
                             position.z += portal.transform->z;
                             target.x += portal.transform->x;
                             target.y += portal.transform->y;
-                            spdlog::debug("Portal - new: {} {} {}", position.x, position.y, position.z);
+                            SPDLOG_DEBUG("Portal - new: {} {} {}", position.x, position.y, position.z);
                             position.angle += portal.transform->angle;
                         }
                         break;

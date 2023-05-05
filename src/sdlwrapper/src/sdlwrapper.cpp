@@ -12,36 +12,36 @@ namespace sdl
 
 void initialize()
 {
-    spdlog::info("SDL initialization");
-    spdlog::debug("SDL main init");
+    SPDLOG_INFO("SDL initialization");
+    SPDLOG_DEBUG("SDL main init");
 
     auto drivers = SDL_GetNumVideoDrivers();
     for (int i = 0; i < drivers; ++i)
     {
-        spdlog::debug("Available driver #{}: {}", i, SDL_GetVideoDriver(i));
+        SPDLOG_DEBUG("Available driver #{}: {}", i, SDL_GetVideoDriver(i));
     }
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL: {}", SDL_GetError())};
     }
-    spdlog::debug("SDL_image init");
+    SPDLOG_DEBUG("SDL_image init");
     if (IMG_Init(IMG_INIT_PNG) == 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL_image: {}", IMG_GetError())};
     }
-    spdlog::debug("SDL_ttf init");
+    SPDLOG_DEBUG("SDL_ttf init");
     if (TTF_Init() != 0)
     {
         throw std::runtime_error{std::format("could not initialize SDL_ttf: {}", TTF_GetError())};
     }
-    spdlog::debug("SDL up and running!");
+    SPDLOG_DEBUG("SDL up and running!");
     hideCursor();
 }
 
 void teardown()
 {
-    spdlog::debug("Quitting SDL");
+    SPDLOG_DEBUG("Quitting SDL");
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

@@ -42,7 +42,7 @@ void ModeInGame::entry()
     scripting.bindYielding("dialogue_start", &ModeInGame::startDialogue, this);
     scripting.bindYielding("dialogue_end", &ModeInGame::endDialogue, this);
 
-    spdlog::info("Ready");
+    SPDLOG_INFO("Ready");
 }
 
 void ModeInGame::exit()
@@ -109,11 +109,11 @@ void ModeInGame::event(const sdl::event::Event& event)
         {
         case SDL_SCANCODE_LEFTBRACKET:
             player.modSanity(-1);
-            spdlog::info("sanity = {}", player.getSanity());
+            SPDLOG_INFO("sanity = {}", player.getSanity());
             break;
         case SDL_SCANCODE_RIGHTBRACKET:
             player.modSanity(1);
-            spdlog::info("sanity = {}", player.getSanity());
+            SPDLOG_INFO("sanity = {}", player.getSanity());
             break;
         case SDL_SCANCODE_F5:
             shouldSave = true;
@@ -168,12 +168,12 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
         auto path = std::format("scripts/levels/{}/map.lua", 1);
         std::ofstream file{path};
         file << world.level(1).toLua();
-        spdlog::info("File {} updated", path);
+        SPDLOG_INFO("File {} updated", path);
     }
 
     if (keys[SDL_SCANCODE_F2])
     {
-        spdlog::info("Activating map editor");
+        SPDLOG_INFO("Activating map editor");
         ui.clear();
         ui.add(std::make_unique<ui::editor::Editor>(world.level(1), ui.fonts.get("TitilliumWeb", 14)));
     }

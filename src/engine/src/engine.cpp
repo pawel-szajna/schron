@@ -68,7 +68,7 @@ Engine::Engine(sdl::Renderer& renderer, world::Level& level)
     , level(level)
     , lighting(level, [&](const std::string& texture) -> sdl::Surface& { return getTexture(texture); })
 {
-    spdlog::info("Initialized engine");
+    SPDLOG_INFO("Initialized engine");
 }
 
 void Engine::preload()
@@ -106,7 +106,7 @@ sdl::Surface& Engine::getTexture(const std::string& name)
 {
     if (not textures.contains(name))
     {
-        spdlog::debug("Texture {} not loaded yet", name);
+        SPDLOG_DEBUG("Loading texture {}", name);
         textures.emplace(name, std::format("res/gfx/{}.png", name));
     }
 
