@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+echo "Formatting code with clang-format..."
+
+: "${CLANG_FORMAT_COMMAND:=clang-format}"
+
+if ! command -v "${CLANG_FORMAT_COMMAND}" > /dev/null; then
+    >&2 echo "-- Error: ${CLANG_FORMAT_COMMAND} not found!"
+    exit 1
+fi
+
+MINIMUM=16
+VERSION=$(clang-format --version | sed 's/^.* \([0-9]*\)\..*$/\1/g')
+
+echo "-- ${CLANG_FORMAT_COMMAND} version is ${VERSION}"
+
+if [ "${VERSION}" -lt "${MINIMUM}" ]; then
+    >&2 echo "-- Warning: This project requires clang format ${MINIMUM}. Output may be invalid!"
+fi
+
+REPO_PATH=$(git rev-parse --show-toplevel)
+
+find "${REPO_PATH}/src" \( -iname '*.hpp' -o -iname '*.cpp' \) \
+     -exec ${CLANG_FORMAT_COMMAND} --style=file:"${REPO_PATH}/.clang-format" -i {} +
+
+echo "-- Code formatting done"

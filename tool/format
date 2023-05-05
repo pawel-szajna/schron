@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+REPO_PATH=$(git rev-parse --show-toplevel)
+
+if [ -z "${REPO_PATH}" ]; then
+    echo "Error: Could not determine repository root. Are you inside the repository?"
+    exit 1
+fi
+
+echo "Executing code formatters, repo root is ${REPO_PATH}"
+
+for FORMATTER in "${REPO_PATH}"/tool/format_*; do
+    $FORMATTER
+done
