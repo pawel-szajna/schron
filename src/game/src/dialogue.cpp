@@ -34,7 +34,7 @@ Dialogue::~Dialogue()
 {
     if (widget)
     {
-        ui.remove(*widget);
+        widget->detach();
     }
 
     scripting.unbind("choice", "text", "speech");
@@ -44,25 +44,23 @@ Dialogue::~Dialogue()
     SPDLOG_DEBUG("Dialogue mode finished");
 }
 
-ui::Text& Dialogue::resetTextbox()
+void Dialogue::resetTextbox()
 {
     if (widget)
     {
-        ui.remove(*widget);
+        widget->detach();
     }
-    widget     = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
-    auto& text = ui.get_as<ui::Text>(*widget);
-    text.move(32, c::windowHeight - 64);
-    return text;
+    widget = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth - 68, c::windowHeight - 64, 32, 0);
+    widget->move(32, c::windowHeight - 64);
 }
 
 void Dialogue::redrawChoiceWithHighlight()
 {
-    auto& text = resetTextbox();
+    resetTextbox();
     for (auto counter = 1u; counter <= currentChoices.size(); ++counter)
     {
-        text.write(std::format("\n{}. ", counter), "RubikDirt", -1, counter == currentChoice ? 255 : 88);
-        text.write(currentChoices[counter - 1][1], "KellySlab", -1, counter == currentChoice ? 255 : 120);
+        widget->write(std::format("\n{}. ", counter), "RubikDirt", -1, counter == currentChoice ? 255 : 88);
+        widget->write(currentChoices[counter - 1][1], "KellySlab", -1, counter == currentChoice ? 255 : 120);
     }
 }
 
@@ -82,16 +80,16 @@ void Dialogue::choice(std::vector<std::array<std::string, 2>> choices)
 void Dialogue::text(std::string caption)
 {
     state      = State::Speech;
-    auto& text = resetTextbox();
-    text.write(std::move(caption), "KellySlab", 64);
+    resetTextbox();
+    widget->write(std::move(caption), "KellySlab", 64);
 }
 
 void Dialogue::speech(std::string person, std::string caption)
 {
-    state      = State::Speech;
-    auto& text = resetTextbox();
-    text.write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
-    text.write(std::move(caption), "KellySlab", 64);
+    state = State::Speech;
+    resetTextbox();
+    widget->write(std::format("{}: ", std::move(person)), "RubikDirt", 48);
+    widget->write(std::move(caption), "KellySlab", 64);
 }
 
 void Dialogue::eventChoice(const sdl::event::Key& key)
@@ -153,10 +151,9 @@ void Dialogue::eventSpeech(const sdl::event::Key& key)
     switch (key.scancode)
     {
     case SDL_SCANCODE_RETURN:
-        auto& text = ui.get_as<ui::Text>(*widget);
-        if (not text.done())
+        if (not widget->done())
         {
-            text.finish();
+            widget->finish();
             return;
         }
         scripting.resume();

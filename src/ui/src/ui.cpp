@@ -8,54 +8,31 @@
 namespace ui
 {
 UI::UI(sdl::Renderer& renderer)
-    : renderer(renderer)
+    : renderer{renderer}
+    , base{std::make_shared<Object>()}
 {
     SPDLOG_DEBUG("UI initialized");
 }
 
 UI::~UI() = default;
 
-int UI::add(std::unique_ptr<Object>&& object)
+void UI::add(Widget widget)
 {
-    objects.push_back(std::move(object));
-    return counter++;
-}
-
-Object& UI::get(int id)
-{
-    return *objects.at(id);
+    base->attach(std::move(widget));
 }
 
 void UI::clear()
 {
-    objects.clear();
-    counter = 0;
-}
-
-void UI::remove(int id)
-{
-    objects[id] = nullptr;
+    base->detachAll();
 }
 
 void UI::render()
 {
-    for (auto& object : objects)
-    {
-        if (object != nullptr)
-        {
-            object->render(renderer);
-        }
-    }
+    base->render(renderer);
 }
 
 void UI::event(const sdl::event::Event& event)
 {
-    for (auto& object : objects)
-    {
-        if (object != nullptr)
-        {
-            object->event(event);
-        }
-    }
+    base->event(event);
 }
 } // namespace ui

@@ -56,7 +56,7 @@ private:
     void eventChoice(const sdl::event::Key& key);
     void eventSpeech(const sdl::event::Key& key);
     void redrawChoiceWithHighlight();
-    ui::Text& resetTextbox();
+    void resetTextbox();
 
     Player& player;
     sdl::Renderer& renderer;
@@ -65,7 +65,7 @@ private:
 
     State state{State::Default};
 
-    std::optional<int> widget;
+    std::shared_ptr<ui::Text> widget;
     std::vector<std::array<std::string, 2>> currentChoices;
 
     uint64_t animationTarget{};

@@ -26,6 +26,7 @@ class Renderer;
 
 namespace ui
 {
+class Text;
 class UI;
 
 namespace editor
@@ -90,7 +91,7 @@ private:
 
     bool shouldSave{false};
 
-    std::optional<std::pair<int, std::string>> tooltipWidget;
+    std::optional<std::pair<std::shared_ptr<ui::Text>, std::string>> tooltipWidget;
 
     std::priority_queue<TimedExecution> timers;
 

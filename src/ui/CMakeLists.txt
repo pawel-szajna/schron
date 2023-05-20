@@ -11,6 +11,7 @@ add_module(
         mini_map.cpp
         text.cpp
         ui.cpp
+        widget.cpp
     DEPENDENCIES
         game
         sdlwrapper

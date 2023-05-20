@@ -26,7 +26,7 @@ public:
     virtual ~MiniMap();
 
     void render(sdl::Renderer& target) override;
-    void event(const sdl::event::Event& event) override;
+    bool event(const sdl::event::Event& event) override;
 
 private:
 

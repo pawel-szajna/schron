@@ -49,7 +49,10 @@ MiniMap::MiniMap(sdl::Renderer& renderer, const world::Level& level, const game:
 
 MiniMap::~MiniMap() = default;
 
-void MiniMap::event(const sdl::event::Event& event) {}
+bool MiniMap::event(const sdl::event::Event& event)
+{
+    return false;
+}
 
 void MiniMap::render(sdl::Renderer& renderer)
 {

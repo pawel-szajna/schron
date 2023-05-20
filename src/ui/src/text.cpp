@@ -39,7 +39,10 @@ void Text::render(sdl::Renderer& target)
     processQueue();
 }
 
-void Text::event(const sdl::event::Event& event) {}
+bool Text::event(const sdl::event::Event& event)
+{
+    return false;
+}
 
 void Text::clear()
 {

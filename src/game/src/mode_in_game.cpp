@@ -58,7 +58,7 @@ void ModeInGame::startDialogue()
 {
     if (tooltipWidget)
     {
-        ui.remove(tooltipWidget->first);
+        tooltipWidget->first->detach();
         tooltipWidget = std::nullopt;
     }
     subMode = std::make_unique<Dialogue>(player, renderer, scripting, ui);
@@ -126,7 +126,7 @@ void ModeInGame::event(const sdl::event::Event& event)
             if (tooltipWidget)
             {
                 scripting.runAsCoroutine(std::format("scripts/levels/1/{}", tooltipWidget->second));
-                ui.remove(tooltipWidget->first);
+                tooltipWidget->first->detach();
                 tooltipWidget = std::nullopt;
             }
             break;
@@ -136,11 +136,10 @@ void ModeInGame::event(const sdl::event::Event& event)
 
 void ModeInGame::notify(uint64_t timeout, const std::string& message)
 {
-    auto widgetId = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight);
-    auto& widget  = ui.get_as<ui::Text>(widgetId);
-    widget.move(32, 32);
-    widget.write(message, "KellySlab", 20);
-    enqueue(timeout, [widgetId, &ui = ui]() { ui.remove(widgetId); });
+    auto text = ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight);
+    text->move(32, 32);
+    text->write(message, "KellySlab", 20);
+    enqueue(timeout, [text = std::move(text)]() { text->detach(); });
 }
 
 void ModeInGame::enqueue(uint64_t timeout, TimedFunction fn)
@@ -219,25 +218,25 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
             {
                 if (tooltipWidget and tooltipWidget->second != *script)
                 {
-                    ui.remove(tooltipWidget->first);
+                    tooltipWidget->first->detach();
                 }
                 if (not tooltipWidget or tooltipWidget->second != *script)
                 {
                     tooltipWidget = {ui.add<ui::Text>(renderer, ui.fonts, c::windowWidth, c::windowHeight), *script};
-                    auto& text    = ui.get_as<ui::Text>(tooltipWidget->first);
+                    auto& text    = tooltipWidget->first;
                     const static std::string interactionPrompt = "Press [Enter] to interact";
-                    text.move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
+                    text->move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
                               c::windowHeight * 3 / 4);
-                    text.write("Press ", "KellySlab", 50, 185);
-                    text.write("[Enter]", "KellySlab", 50, 255);
-                    text.write(" to interact", "KellySlab", 50, 185);
+                    text->write("Press ", "KellySlab", 50, 185);
+                    text->write("[Enter]", "KellySlab", 50, 255);
+                    text->write(" to interact", "KellySlab", 50, 185);
                 }
             }
             else
             {
                 if (tooltipWidget)
                 {
-                    ui.remove(tooltipWidget->first);
+                    tooltipWidget->first->detach();
                     tooltipWidget = std::nullopt;
                 }
             }

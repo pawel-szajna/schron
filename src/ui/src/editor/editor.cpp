@@ -24,7 +24,7 @@ Editor::~Editor()
     sdl::hideCursor();
 }
 
-void Editor::event(const sdl::event::Event& event)
+bool Editor::event(const sdl::event::Event& event)
 {
     if (std::holds_alternative<sdl::event::Mouse>(event))
     {
@@ -69,6 +69,7 @@ void Editor::event(const sdl::event::Event& event)
             modShift = key.direction == sdl::event::Key::Direction::Down;
         }
     }
+    return true;
 }
 
 void Editor::enqueue(int length, double startValue, double targetValue, std::function<void(double)> applier)
