@@ -16,7 +16,7 @@ jobs:
             - name: Dependencies
               run: |
                   choco install ninja
-                  vcpkg install lua
+                  vcpkg install lua:x64-windows
                   cmake --version
                   ninja --version
             - name: Configure CMake
