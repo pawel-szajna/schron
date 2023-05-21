@@ -1,6 +1,7 @@
 #include "object.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <stdexcept>
 
 #include "sdlwrapper/event_types.hpp"
