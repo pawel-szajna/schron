@@ -6,6 +6,7 @@
 #include "world_bindings.hpp"
 
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 
 namespace
 {
@@ -114,7 +115,11 @@ void Scripting::runFunctionIfExists(const std::string& function)
             auto result = lua[function]();
             if (not result.valid())
             {
+#if not(defined(WINDOWS))
                 throw sol::error(std::string(result));
+#else
+                throw std::runtime_error{"Failure"};
+#endif
             }
         }
         catch (std::exception& e)
