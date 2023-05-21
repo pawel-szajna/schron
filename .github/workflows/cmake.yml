@@ -19,9 +19,8 @@ jobs:
                   vcpkg install lua:x64-windows
                   cmake --version
                   ninja --version
+            - uses: ilammy/msvc-dev-cmd@v1
             - name: Configure CMake
-              env:
-                  CXX: msvc
               run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
             - name: Build
               run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
