@@ -40,4 +40,4 @@ jobs:
               uses: actions/upload-artifact@v3
               with:
                   path: ${{github.workspace}}/build/schron/
-                  name: schron-${{ github.event.repository.updated_at}}
+                  name: schron-${{env.hash}}
