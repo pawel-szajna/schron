@@ -57,6 +57,8 @@ jobs:
         - name: Dependencies
           run: |
               choco install ninja
+              choco install boost-msvc-14.3
+              vcpkg install lua:x64-windows
               cmake --version
               ninja --version
         - name: Configure CMake
