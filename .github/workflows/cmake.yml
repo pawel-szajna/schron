@@ -57,8 +57,6 @@ jobs:
         - name: Dependencies
           run: |
               choco install ninja
-              vcpkg install lua:x64-windows
-              vcpkg install boost:x64-windows
               cmake --version
               ninja --version
         - name: Configure CMake
@@ -76,6 +74,7 @@ jobs:
               cp -r ../scripts schron/
               cp ../README.rst schron/
               cp ../LICENSE schron/
+              cp ../config.lua schron/
               7z a schron.zip -r "schron/*"
         - name: Upload
           uses: actions/upload-artifact@v3
