@@ -14,14 +14,14 @@ jobs:
         steps:
             - uses: actions/checkout@v3
               with:
-                submodules: 'recursive'
+                  submodules: 'recursive'
             - name: Dependencies
               run: |
-                sudo apt-get update
-                sudo apt-get install ninja-build liblua5.3-dev gcc-12 g++-12
-                cmake --version
-                ninja --version
-                g++-12 --version
+                  sudo apt-get update
+                  sudo apt-get install ninja-build liblua5.3-dev gcc-12 g++-12
+                  cmake --version
+                  ninja --version
+                  g++-12 --version
             - name: Configure CMake
               env:
                 CC: gcc-12
@@ -33,16 +33,16 @@ jobs:
     build_osx:
         runs-on: macos-latest
         steps:
-          - uses: actions/checkout@v3
-            with:
-              submodules: 'recursive'
-          - name: Dependencies
-            run: |
-              brew install ninja lua@5.3
-              cmake --version
-              ninja --version
-              c++ --version
-          - name: Configure CMake
-            run: cmake -B {{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
-          - name: Build
-            run: cmake --build ${{github.workspace}}/build --config {{$env.BUILD_TYPE}}
+            - uses: actions/checkout@v3
+              with:
+                  submodules: 'recursive'
+            - name: Dependencies
+              run: |
+                  brew install ninja lua
+                  cmake --version
+                  ninja --version
+                  c++ --version
+            - name: Configure CMake
+              run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
+            - name: Build
+              run: cmake --build ${{github.workspace}}/build --config {{$env.BUILD_TYPE}}
