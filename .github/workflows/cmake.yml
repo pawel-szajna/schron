@@ -9,7 +9,7 @@ env:
     BUILD_TYPE: Release
 
 jobs:
-    build:
+    build_linux:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
@@ -46,3 +46,39 @@ jobs:
               run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
             - name: Build
               run: cmake --build ${{github.workspace}}/build --config {{$env.BUILD_TYPE}}
+
+    build_windows:
+      runs-on: windows-latest
+      steps:
+        - uses: actions/checkout@v3
+          with:
+              submodules: 'recursive'
+        - uses: ilammy/msvc-dev-cmd@v1
+        - name: Dependencies
+          run: |
+              choco install ninja
+              vcpkg install lua:x64-windows
+              vcpkg install boost:x64-windows
+              cmake --version
+              ninja --version
+        - name: Configure CMake
+          run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DDISABLE_PARALLELISM=OFF -DDISABLE_DOCS=ON -GNinja
+        - name: Build
+          run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        - name: Package
+          shell: bash
+          working-directory: ${{github.workspace}}/build
+          run: |
+              mkdir schron
+              cp bin/*.exe schron/
+              find . -iname '*.dll' -exec cp {} schron/ \;
+              cp -r ../res schron/
+              cp -r ../scripts schron/
+              cp ../README.rst schron/
+              cp ../LICENSE schron/
+              7z a schron.zip -r "schron/*"
+        - name: Upload
+          uses: actions/upload-artifact@v3
+          with:
+              path: ${{github.workspace}}/build/schron/
+              name: schron-win64
