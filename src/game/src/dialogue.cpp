@@ -5,8 +5,8 @@
 #include "sdlwrapper/event_types.hpp"
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
-#include "ui/text.hpp"
 #include "ui/ui.hpp"
+#include "ui/widgets/text.hpp"
 #include "util/format.hpp"
 
 #include <SDL3/SDL_scancode.h>
@@ -79,7 +79,7 @@ void Dialogue::choice(std::vector<std::array<std::string, 2>> choices)
 
 void Dialogue::text(std::string caption)
 {
-    state      = State::Speech;
+    state = State::Speech;
     resetTextbox();
     widget->write(std::move(caption), "KellySlab", 64);
 }

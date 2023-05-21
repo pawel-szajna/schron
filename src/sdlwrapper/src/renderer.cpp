@@ -32,18 +32,18 @@ Renderer::Renderer(Window& window, uint32_t flags)
         auto scaleWidth  = static_cast<float>(renderWidth) / static_cast<float>(c::windowWidth);
         auto scaleHeight = static_cast<float>(renderHeight) / static_cast<float>(c::windowHeight);
         SPDLOG_DEBUG("Requested resolution: {}x{}, actual resolution: {}x{}, applying {}x/{}x scaling factor",
-                      c::windowWidth,
-                      c::windowHeight,
-                      renderWidth,
-                      renderHeight,
-                      scaleWidth,
-                      scaleHeight);
+                     c::windowWidth,
+                     c::windowHeight,
+                     renderWidth,
+                     renderHeight,
+                     scaleWidth,
+                     scaleHeight);
         if (SDL_SetRenderScale(wrapped, scaleWidth, scaleHeight) != Success)
         {
             SPDLOG_WARN("Could not apply render scale factor of {}x/{}x, possible UI scaling issues: {}",
-                         scaleWidth,
-                         scaleHeight,
-                         SDL_GetError());
+                        scaleWidth,
+                        scaleHeight,
+                        SDL_GetError());
         }
     }
 }

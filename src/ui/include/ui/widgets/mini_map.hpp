@@ -1,6 +1,6 @@
 #pragma once
 
-#include "object.hpp"
+#include "ui/object.hpp"
 
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/surface.hpp"
@@ -37,4 +37,6 @@ private:
     sdl::Renderer surfaceRenderer;
     sdl::Texture texture;
 };
+
+using MiniMapWidget = std::shared_ptr<MiniMap>;
 } // namespace ui

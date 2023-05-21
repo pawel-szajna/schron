@@ -353,12 +353,12 @@ void Editor::resizeSector(int id, double left, double right, double top, double 
 void Editor::resizeSingleSector(int id, double left, double right, double top, double bottom, bool recurse)
 {
     SPDLOG_DEBUG("resizeSingleSector(id={}, left={}, right={}, top={}, bottom={} recurse={})",
-                  id,
-                  left,
-                  right,
-                  top,
-                  bottom,
-                  recurse);
+                 id,
+                 left,
+                 right,
+                 top,
+                 bottom,
+                 recurse);
     auto& sector       = level.map.at(id);
     using Intersection = std::tuple<int, double, double>;
     std::vector<Intersection> xsTop, xsRight, xsBottom, xsLeft;

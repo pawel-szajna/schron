@@ -8,10 +8,10 @@ add_module(
         editor/window_sector.cpp
         editor/window_sprite.cpp
         editor/window_texture.cpp
-        mini_map.cpp
-        text.cpp
         ui.cpp
         widget.cpp
+        widgets/mini_map.cpp
+        widgets/text.cpp
     DEPENDENCIES
         game
         sdlwrapper

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "object.hpp"
 #include "sdlwrapper/surface.hpp"
 #include "sdlwrapper/texture.hpp"
+#include "ui/object.hpp"
 #include "util/constants.hpp"
 
 #include <queue>
@@ -79,4 +79,6 @@ private:
 
     Fonts& fonts;
 };
+
+using TextWidget = std::shared_ptr<Text>;
 } // namespace ui

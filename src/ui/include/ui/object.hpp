@@ -13,7 +13,7 @@ class Renderer;
 namespace ui
 {
 class Object;
-using Widget = std::shared_ptr<Object>;
+using Widget  = std::shared_ptr<Object>;
 using Widgets = std::vector<Widget>;
 
 class Object

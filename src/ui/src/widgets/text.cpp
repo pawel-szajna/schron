@@ -1,4 +1,4 @@
-#include "text.hpp"
+#include "widgets/text.hpp"
 
 #include "fonts.hpp"
 #include "sdlwrapper/renderer.hpp"

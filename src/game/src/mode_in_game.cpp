@@ -7,9 +7,9 @@
 #include "sdlwrapper/renderer.hpp"
 #include "sdlwrapper/sdlwrapper.hpp"
 #include "ui/editor/editor.hpp"
-#include "ui/mini_map.hpp"
-#include "ui/text.hpp"
 #include "ui/ui.hpp"
+#include "ui/widgets/mini_map.hpp"
+#include "ui/widgets/text.hpp"
 #include "world/world.hpp"
 
 #include <fstream>
@@ -226,7 +226,7 @@ std::optional<GameMode> ModeInGame::frame(double frameTime)
                     auto& text    = tooltipWidget->first;
                     const static std::string interactionPrompt = "Press [Enter] to interact";
                     text->move(c::windowWidth / 2 - ui.fonts.get("KellySlab", 32).size(interactionPrompt).first / 2,
-                              c::windowHeight * 3 / 4);
+                               c::windowHeight * 3 / 4);
                     text->write("Press ", "KellySlab", 50, 185);
                     text->write("[Enter]", "KellySlab", 50, 255);
                     text->write(" to interact", "KellySlab", 50, 185);

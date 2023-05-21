@@ -1,4 +1,4 @@
-#include "mini_map.hpp"
+#include "widgets/mini_map.hpp"
 
 #include "game/player.hpp"
 #include "sdlwrapper/font.hpp"
