@@ -31,7 +31,7 @@ public:
     Editor(world::Level& level, sdl::Font& font);
     virtual ~Editor();
 
-    void render(sdl::Renderer& target) override;
+    void render(sdl::Renderer& target, int, int) override;
     bool event(const sdl::event::Event& event) override;
 
 private:

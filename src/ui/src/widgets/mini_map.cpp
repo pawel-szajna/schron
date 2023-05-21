@@ -54,7 +54,7 @@ bool MiniMap::event(const sdl::event::Event& event)
     return false;
 }
 
-void MiniMap::render(sdl::Renderer& renderer)
+void MiniMap::render(sdl::Renderer& renderer, int, int)
 {
     const auto& position = player.getPosition();
 

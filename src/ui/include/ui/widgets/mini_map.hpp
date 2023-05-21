@@ -25,7 +25,7 @@ public:
     MiniMap(sdl::Renderer& renderer, const world::Level& level, const game::Player& player);
     virtual ~MiniMap();
 
-    void render(sdl::Renderer& target) override;
+    void render(sdl::Renderer& target, int, int) override;
     bool event(const sdl::event::Event& event) override;
 
 private:

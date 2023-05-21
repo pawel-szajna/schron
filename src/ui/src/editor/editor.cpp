@@ -755,7 +755,7 @@ void Editor::drawGrid(sdl::Renderer& renderer) const
     }
 }
 
-void Editor::render(sdl::Renderer& renderer)
+void Editor::render(sdl::Renderer& renderer, int, int)
 {
     dragged = dragging;
 

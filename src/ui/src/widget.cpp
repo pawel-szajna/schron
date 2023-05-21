@@ -52,9 +52,9 @@ bool Object::event(const sdl::event::Event& event)
     return alg::any_of(children, &Object::event, event);
 }
 
-void Object::render(sdl::Renderer& target)
+void Object::render(sdl::Renderer& target, int x, int y)
 {
-    alg::invoke_each(children, &Object::render, target);
+    alg::invoke_each(children, &Object::render, target, x, y);
 }
 
 void Object::attach(Widget child)

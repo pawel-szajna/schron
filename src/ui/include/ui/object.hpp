@@ -22,7 +22,7 @@ public:
 
     virtual ~Object() = default;
 
-    virtual void render(sdl::Renderer& target);
+    virtual void render(sdl::Renderer& target, int x = 0, int y = 0);
 
     virtual bool event(const sdl::event::Event& event);
 

@@ -26,9 +26,9 @@ Text::Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x, 
 
 Text::~Text() = default;
 
-void Text::render(sdl::Renderer& target)
+void Text::render(sdl::Renderer& target, int rx, int ry)
 {
-    target.copy(texture);
+    target.copy(texture, std::nullopt, sdl::FRectangle{(float)rx, (float)ry, (float)width, (float)height});
 
     if (current)
     {

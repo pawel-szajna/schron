@@ -24,7 +24,7 @@ public:
     Text(sdl::Renderer& renderer, Fonts& fonts, int width, int height, int x = 0, int y = 0);
     virtual ~Text();
 
-    void render(sdl::Renderer& renderer) override;
+    void render(sdl::Renderer& renderer, int x, int y) override;
     bool event(const sdl::event::Event& event) override;
 
     void clear();
