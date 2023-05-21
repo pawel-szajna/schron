@@ -24,3 +24,20 @@ jobs:
               run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DDISABLE_PARALLELISM=ON -DDISABLE_DOCS=ON -GNinja
             - name: Build
               run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+            - name: Package
+              shell: bash
+              working-directory: ${{github.workspace}}/build
+              run: |
+                  mkdir schron
+                  cp bin/*.exe schron/
+                  cp bin/*.dll schron/
+                  cp -r ../res schron/
+                  cp -r ../scripts schron/
+                  cp ../README.rst schron/
+                  cp ../LICENSE schron/
+                  7z a schron.zip -r "schron/*"
+            - name: Upload
+              uses: actions/upload-artifact@v1
+              with:
+                  path: ${{github.workspace}}/schron.zip
+                  name: schron.zip
