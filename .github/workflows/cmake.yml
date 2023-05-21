@@ -30,14 +30,14 @@ jobs:
               run: |
                   mkdir schron
                   cp bin/*.exe schron/
-                  cp bin/*.dll schron/
+                  find . -iname '*.dll' -exec cp {} schron/ \;
                   cp -r ../res schron/
                   cp -r ../scripts schron/
                   cp ../README.rst schron/
                   cp ../LICENSE schron/
                   7z a schron.zip -r "schron/*"
             - name: Upload
-              uses: actions/upload-artifact@v1
+              uses: actions/upload-artifact@v3
               with:
-                  path: ${{github.workspace}}/build/schron.zip
-                  name: schron.zip
+                  path: ${{github.workspace}}/build/schron/
+                  name: schron-${{ github.event.repository.updated_at}}
