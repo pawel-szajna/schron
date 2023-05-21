@@ -115,11 +115,7 @@ void Scripting::runFunctionIfExists(const std::string& function)
             auto result = lua[function]();
             if (not result.valid())
             {
-#if not(defined(WINDOWS))
-                throw sol::error(std::string(result));
-#else
-                throw std::runtime_error{"Failure"};
-#endif
+                throw sol::error(result.get<std::string>());
             }
         }
         catch (std::exception& e)
