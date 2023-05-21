@@ -39,5 +39,5 @@ jobs:
             - name: Upload
               uses: actions/upload-artifact@v1
               with:
-                  path: ${{github.workspace}}/schron.zip
+                  path: ${{github.workspace}}/build/schron.zip
                   name: schron.zip
