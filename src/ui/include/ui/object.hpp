@@ -22,7 +22,7 @@ public:
 
     virtual ~Object() = default;
 
-    virtual void render(sdl::Renderer& target, int x = 0, int y = 0);
+    virtual void render(sdl::Renderer& target, int x, int y);
 
     virtual bool event(const sdl::event::Event& event);
 
@@ -32,7 +32,7 @@ public:
 
 private:
 
-    Object* parent;
-    Widgets children;
+    Object* parent{};
+    Widgets children{};
 };
 } // namespace ui

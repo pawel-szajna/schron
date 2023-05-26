@@ -28,7 +28,7 @@ void UI::clear()
 
 void UI::render()
 {
-    base->render(renderer);
+    base->render(renderer, 0, 0);
 }
 
 void UI::event(const sdl::event::Event& event)
